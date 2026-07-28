@@ -74,7 +74,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(frontendBuild));
 
   // SPA fallback: return index.html for all non-API routes
-  app.get('*', (req, res) => {
+  app.get('/{*path}', (req, res) => {
     res.sendFile(path.join(frontendBuild, 'index.html'));
   });
 }
