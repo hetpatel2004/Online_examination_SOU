@@ -30,7 +30,7 @@ import axios from 'axios';
 // In development: Vite proxy forwards /api to localhost:5000
 // In production: backend serves frontend, so /api hits the same server
 const API = axios.create({
-  baseURL: "https://online-examination-sou.onrender.com" || '/api'
+  baseURL: import.meta.env.VITE_API_URL || '/api'
 });
 
 // Request interceptor - adds JWT token to every request automatically
