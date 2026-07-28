@@ -1,0 +1,16 @@
+{
+  "name": "online-examination-sou",
+  "version": "1.0.0",
+  "description": "Online Examination System for Silver Oak University (SOU) MCA Department",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm run build",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "start": "cd backend && npm start",
+    "seed": "cd backend && npm run seed",
+    "preview": "cd frontend && npm run preview"
+  },
+  "keywords": ["mern", "online-examination", "sou"],
+  "author": "",
+  "license": "ISC"
+}
