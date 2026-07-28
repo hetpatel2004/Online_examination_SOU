@@ -1435,7 +1435,7 @@ const AdminDashboard = () => {
                             {sub.answerFile && (
                               <div className="sub-file-section">
                                 <h4>Uploaded File</h4>
-                                <a href={`http://localhost:5000${sub.answerFile}`} target="_blank" rel="noreferrer" className="sub-file-link">
+                                <a href={`https://online-examination-sou.onrender.com${sub.answerFile}`} target="_blank" rel="noreferrer" className="sub-file-link">
                                   📎 View Answer File
                                 </a>
                               </div>
