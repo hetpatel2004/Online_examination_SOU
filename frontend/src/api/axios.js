@@ -30,7 +30,7 @@ import axios from 'axios';
 // Backend mounts ALL routes under /api/ prefix (e.g. /api/auth/login, /api/admin/users).
 // If VITE_API_URL is set (Cloudflare Pages), it MUST include /api at the end.
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://online-examination-sou.onrender.com/api'
+  baseURL: 'https://online-examination-sou.onrender.com/api'
 });
 
 // Request interceptor - adds JWT token to every request automatically
