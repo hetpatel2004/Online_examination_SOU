@@ -1046,6 +1046,9 @@ body {
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Main content area - takes remaining space after sidebar */
@@ -1282,7 +1285,8 @@ body {
 /* ============ ADMIN/SECTION PAGES ============ */
 .admin-section {
   animation: fadeIn 0.3s ease;
-  width: 1000px;
+  width: 100%;
+  max-width: 1200px;
 }
 
 /* Section header with title and action button */
@@ -2692,7 +2696,8 @@ body {
 .modal {
   background: white;
   border-radius: 16px;
-  width: 1000px;
+  width: 90%;
+  max-width: 1000px;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -2701,7 +2706,8 @@ body {
 
 /* Smaller modal for delete confirmation */
 .modal-small {
-  width: 420px;
+  width: 90%;
+  max-width: 420px;
 }
 
 /* Modal header */
