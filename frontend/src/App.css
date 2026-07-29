@@ -2865,6 +2865,10 @@ body {
   .stat-number {
     font-size: 26px;
   }
+
+  .admin-section {
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -3103,6 +3107,10 @@ body {
 
   .filter-row {
     flex-wrap: wrap;
+  }
+
+  .admin-section {
+    width: 100%;
   }
 
   .modal {
