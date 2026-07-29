@@ -1108,13 +1108,19 @@ body {
 }
 
 /* Sidebar Header - University logo + panel title */
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar-title {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+  }
+
 
 .sidebar-logo {
   width: 40px;
@@ -3292,6 +3298,401 @@ body {
   .footer-social {
     flex-wrap: wrap;
     gap: 16px;
+  }
+
+  /* ===== AUTH PAGES RESPONSIVE ===== */
+  .auth-sidebar {
+    padding: 24px 20px;
+  }
+
+  .sidebar-content h2 {
+    font-size: 24px;
+  }
+
+  .sidebar-content h3 {
+    font-size: 16px;
+  }
+
+  .auth-form-container {
+    padding: 20px 16px;
+  }
+
+  .auth-form-wrapper {
+    padding: 24px 20px;
+  }
+
+  .auth-form-wrapper h2 {
+    font-size: 22px;
+  }
+
+  /* ===== SIDEBAR RESPONSIVE ===== */
+  .sidebar {
+    width: 100%;
+  }
+
+  .sidebar-header {
+    padding: 12px 16px;
+  }
+
+  .sidebar-title {
+    font-size: 14px;
+  }
+
+  .sidebar-nav {
+    padding: 4px 8px;
+    gap: 2px;
+  }
+
+  .sidebar-item {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .sidebar-icon {
+    font-size: 15px;
+    width: 20px;
+  }
+
+  .sidebar-footer {
+    padding: 12px 16px;
+  }
+
+  .sidebar-user {
+    gap: 8px;
+  }
+
+  .sidebar-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .sidebar-user-name {
+    font-size: 12px;
+  }
+
+  .sidebar-user-role {
+    font-size: 10px;
+  }
+
+  .sidebar-logout {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  /* ===== DASHBOARD RESPONSIVE ===== */
+  .dashboard-main {
+    padding: 0;
+  }
+
+  .dashboard-content {
+    padding: 16px 12px;
+  }
+
+  .dashboard-nav {
+    padding: 12px 16px;
+  }
+
+  .nav-welcome {
+    font-size: 12px;
+  }
+
+  .welcome-section {
+    padding: 24px 16px;
+  }
+
+  .welcome-section h1 {
+    font-size: 20px;
+  }
+
+  .section-header h2,
+  .section-header-row h2 {
+    font-size: 18px;
+  }
+
+  .section-header p,
+  .section-header-row p {
+    font-size: 13px;
+  }
+
+  .subjects-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .student-info {
+    padding: 16px;
+  }
+
+  .student-info h2 {
+    font-size: 18px;
+  }
+
+  .subjects-section {
+    padding: 16px;
+  }
+
+  .subjects-section h2 {
+    font-size: 18px;
+  }
+
+  .subject-card {
+    padding: 16px;
+  }
+
+  .subject-card h3 {
+    font-size: 14px;
+  }
+
+  .stats-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .search-input {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .table-container {
+    border-radius: 8px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .countdown-card {
+    padding: 24px 20px;
+  }
+
+  .countdown-number {
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+
+  .countdown-card h3 {
+    font-size: 16px;
+  }
+
+  .result-card {
+    padding: 24px 20px;
+  }
+
+  .result-icon {
+    font-size: 36px;
+  }
+
+  .score-number {
+    font-size: 40px;
+  }
+
+  .score-total {
+    font-size: 26px;
+  }
+
+  .question-card {
+    padding: 16px;
+  }
+
+  .question-text {
+    font-size: 14px;
+  }
+
+  .option-label {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .options-container {
+    gap: 8px;
+  }
+
+  .submit-exam-bar {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    padding: 16px;
+  }
+
+  .exam-questions-container {
+    max-width: 100%;
+  }
+
+  .lang-select-row {
+    flex-wrap: wrap;
+  }
+
+  .lang-select-row .lang-select {
+    min-width: 120px;
+  }
+
+  .code-textarea {
+    font-size: 12px;
+    padding: 10px;
+    min-height: 120px;
+  }
+
+  .modal {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .modal-small {
+    width: 92%;
+    margin: 16px auto;
+    border-radius: 12px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .btn {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  .exam-status {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .role-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .admin-section {
+    width: 100%;
+  }
+
+  /* Submit bar in exam */
+  .exam-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Submissions view */
+  .submission-header {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .submission-student {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .submission-score-section {
+    min-width: 0;
+  }
+
+  .submission-detail {
+    padding: 14px;
+  }
+
+  .sub-detail-student {
+    gap: 12px;
+  }
+
+  .sub-answer-item {
+    padding: 12px;
+  }
+
+  .sub-answer-q {
+    flex-wrap: wrap;
+  }
+
+  .sub-answer-a,
+  .sub-answer-correct {
+    margin-left: 0;
+  }
+
+  .ai-eval-scores {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ai-output-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-student-scores {
+    grid-template-columns: 1fr;
+  }
+
+  .grading-row {
+    flex-wrap: wrap;
+  }
+
+  .grading-input {
+    width: 60px;
+  }
+
+  .result-countdown-display {
+    flex-wrap: wrap;
+  }
+
+  .rc-num {
+    font-size: 22px;
+    min-width: 36px;
+    padding: 4px 8px;
+  }
+
+  .rc-unit {
+    min-width: 36px;
+  }
+
+  .preview-iframe {
+    height: 250px;
+  }
+
+  .admin-code-block {
+    font-size: 11px;
+    padding: 10px;
+    max-height: 160px;
   }
 }
 
