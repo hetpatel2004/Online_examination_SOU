@@ -3702,6 +3702,227 @@ body {
     padding: 10px;
     max-height: 160px;
   }
+
+  /* ===== SUPER ADMIN SPECIFIC ===== */
+  .assignment-group {
+    margin-bottom: 16px;
+  }
+
+  .assignment-group-title {
+    font-size: 14px;
+  }
+
+  .assign-select {
+    min-width: 140px;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .assigned-faculty {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .faculty-tags-wrap {
+    gap: 4px;
+  }
+
+  .enrollment-cell code {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+
+  .actions-cell {
+    gap: 2px;
+  }
+
+  .btn-icon {
+    font-size: 13px;
+    padding: 4px 6px;
+  }
+
+  .users-table th {
+    font-size: 10px;
+    padding: 8px;
+    white-space: nowrap;
+  }
+
+  .users-table td {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .exam-type-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .semester-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .desc-cell {
+    max-width: 100px;
+  }
+}
+
+/* ===== 360px — very small phones ===== */
+@media (max-width: 360px) {
+  .dashboard-content {
+    padding: 12px 8px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 6px;
+    font-size: 10px;
+  }
+
+  .users-table th {
+    font-size: 9px;
+  }
+
+  .enrollment-cell code {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  .btn-icon {
+    font-size: 11px;
+    padding: 3px 4px;
+  }
+
+  .actions-cell {
+    gap: 1px;
+  }
+
+  .stat-card {
+    padding: 10px;
+  }
+
+  .stat-number {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .welcome-section h1 {
+    font-size: 17px;
+  }
+
+  .welcome-section {
+    padding: 16px 12px;
+  }
+
+  .section-header-row h2 {
+    font-size: 15px;
+  }
+
+  .modal-body {
+    padding: 12px;
+  }
+
+  .modal-header {
+    padding: 10px 12px;
+  }
+
+  .modal-header h3 {
+    font-size: 14px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .assign-select {
+    min-width: 100px;
+    font-size: 11px;
+  }
+
+  .sidebar-item {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .sidebar-icon {
+    font-size: 13px;
+    width: 18px;
+  }
+
+  .sidebar-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .sidebar-user-name {
+    font-size: 10px;
+  }
+
+  .countdown-number {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  .countdown-card {
+    padding: 16px 12px;
+  }
+
+  .result-card {
+    padding: 16px 12px;
+  }
+
+  .question-card {
+    padding: 12px;
+  }
+
+  .option-label {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .code-textarea {
+    font-size: 11px;
+    padding: 8px;
+    min-height: 90px;
+  }
+
+  .submission-header {
+    padding: 8px 10px;
+  }
+
+  .submission-detail {
+    padding: 10px;
+  }
+
+  .sub-stat {
+    min-width: 80px;
+    padding: 10px;
+  }
+
+  .dashboard-nav {
+    padding: 8px 12px;
+  }
+
+  .admin-badge,
+  .student-badge {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
 }
 
 /* ============ SUBMISSIONS VIEW MODAL ============ */
