@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Home = () => {
   const [currentGallery, setCurrentGallery] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const galleryImages = [
     { url: 'https://silveroakuni.ac.in/assets/images/banner-images/home-page-banner/new/slide-1.webp', caption: 'Silver Oak University Campus' },
@@ -47,12 +48,15 @@ const Home = () => {
             className="sou-logo-nav"
           />
         </div>
-        <div className="nav-links">
-          <a href="#about" className="nav-link">About</a>
-          <a href="#campus" className="nav-link">Campus</a>
-          <a href="#features" className="nav-link">Why SOU</a>
-          <Link to="/login" className="nav-link">Login</Link>
-          <Link to="/register" className="nav-link btn-register">Register</Link>
+        <button className={`hamburger ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(!menuOpen)}>
+          <span></span><span></span><span></span>
+        </button>
+        <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
+          <a href="#about" className="nav-link" onClick={() => setMenuOpen(false)}>About</a>
+          <a href="#campus" className="nav-link" onClick={() => setMenuOpen(false)}>Campus</a>
+          <a href="#features" className="nav-link" onClick={() => setMenuOpen(false)}>Why SOU</a>
+          <Link to="/login" className="nav-link" onClick={() => setMenuOpen(false)}>Login</Link>
+          <Link to="/register" className="nav-link btn-register" onClick={() => setMenuOpen(false)}>Register</Link>
         </div>
       </nav>
 

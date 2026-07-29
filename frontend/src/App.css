@@ -67,6 +67,39 @@ body {
   background: #6b1109;
 }
 
+/* Hamburger menu button - hidden on desktop */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 1001;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #333;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
 /* ============ HERO SECTION (original) ============ */
 .hero-section {
   display: flex;
@@ -2833,12 +2866,36 @@ body {
     padding: 12px 20px;
   }
   
+  .hamburger {
+    display: flex;
+  }
+
   .nav-links {
-    gap: 12px;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    padding: 80px 24px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    gap: 16px;
+    z-index: 1000;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-link {
+    font-size: 16px;
+    padding: 8px 0;
   }
   
-  .nav-link {
-    font-size: 13px;
+  .btn-register {
+    text-align: center;
+    padding: 12px 24px;
   }
   
   .stats-bar {
@@ -2869,6 +2926,82 @@ body {
     grid-template-columns: 1fr;
   }
   
+  .about-section {
+    padding: 60px 20px;
+  }
+
+  .about-content h2 {
+    font-size: 28px;
+  }
+
+  .campus-section {
+    padding: 60px 20px;
+  }
+
+  .campus-section h2 {
+    font-size: 28px;
+  }
+
+  .campus-slider {
+    height: 220px;
+  }
+
+  .features-section {
+    padding: 60px 20px;
+  }
+
+  .features-section h2 {
+    font-size: 28px;
+  }
+
+  .recruiters-section {
+    padding: 60px 20px;
+  }
+
+  .recruiters-section h2 {
+    font-size: 28px;
+  }
+
+  .cta-section {
+    padding: 60px 20px;
+  }
+
+  .cta-content h2 {
+    font-size: 28px;
+  }
+
+  .footer {
+    padding: 40px 20px 20px;
+  }
+
+  .hero-section {
+    flex-direction: column;
+    padding: 100px 20px 60px;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .hero-content h1 {
+    font-size: 36px;
+  }
+
+  .hero-content h2 {
+    font-size: 20px;
+  }
+
+  .hero-stats {
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
   .orbit-container {
     width: 320px;
     height: 320px;
@@ -2973,6 +3106,192 @@ body {
 
   .modal-small {
     width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 16px;
+  }
+
+  .hero-section {
+    padding: 90px 16px 40px;
+    gap: 30px;
+  }
+
+  .hero-content h1 {
+    font-size: 28px;
+  }
+
+  .hero-content h2 {
+    font-size: 17px;
+  }
+
+  .hero-desc {
+    font-size: 14px;
+  }
+
+  .hero-stats {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .hero-stats .stat-number {
+    font-size: 22px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    text-align: center;
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+
+  .orbit-container {
+    width: 240px;
+    height: 240px;
+  }
+
+  .center-logo {
+    width: 90px;
+    height: 90px;
+  }
+
+  .sou-logo-main {
+    width: 70px;
+  }
+
+  .orbit-container::before {
+    width: 200px;
+    height: 200px;
+  }
+
+  .orbit-item {
+    width: 55px;
+    height: 55px;
+    border-radius: 10px;
+  }
+
+  .course-icon {
+    font-size: 18px;
+  }
+
+  .course-name {
+    font-size: 9px;
+  }
+
+  .stats-bar {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .stats-bar .stat-number {
+    font-size: 24px;
+  }
+
+  .about-section {
+    padding: 40px 16px;
+  }
+
+  .about-content h2 {
+    font-size: 24px;
+  }
+
+  .about-content p {
+    font-size: 14px;
+  }
+
+  .about-highlights {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .campus-section {
+    padding: 40px 16px;
+  }
+
+  .campus-section h2 {
+    font-size: 24px;
+  }
+
+  .campus-slider {
+    height: 180px;
+  }
+
+  .campus-caption {
+    font-size: 14px;
+    padding: 16px;
+  }
+
+  .activities-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .activity-card {
+    padding: 16px 12px;
+  }
+
+  .activity-icon {
+    font-size: 28px;
+  }
+
+  .features-section {
+    padding: 40px 16px;
+  }
+
+  .features-section h2 {
+    font-size: 24px;
+  }
+
+  .feature-card {
+    padding: 24px 16px;
+  }
+
+  .feature-icon {
+    font-size: 36px;
+  }
+
+  .recruiters-section {
+    padding: 40px 16px;
+  }
+
+  .recruiters-section h2 {
+    font-size: 24px;
+  }
+
+  .recruiters-logos {
+    gap: 16px;
+  }
+
+  .recruiters-logos img {
+    height: 28px;
+  }
+
+  .cta-section {
+    padding: 40px 16px;
+  }
+
+  .cta-content h2 {
+    font-size: 24px;
+  }
+
+  .cta-content p {
+    font-size: 15px;
+  }
+
+  .footer {
+    padding: 30px 16px 16px;
+  }
+
+  .footer-social {
+    flex-wrap: wrap;
+    gap: 16px;
   }
 }
 
