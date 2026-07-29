@@ -1095,6 +1095,19 @@ body {
   overflow-y: auto;
 }
 
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
 /* Admin sidebar - warm brown gradient (#5b3a29) */
 .sidebar-admin {
   background: linear-gradient(180deg, #5b3a29 0%, #4a2e1f 50%, #3d2518 100%);
@@ -1744,6 +1757,27 @@ body {
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(91, 58, 41, 0.08);
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .users-table {
@@ -3489,6 +3523,7 @@ body {
 
   .table-container {
     border-radius: 8px;
+    max-height: 400px;
   }
 
   .users-table th,
@@ -3918,6 +3953,10 @@ body {
   .sub-stat {
     min-width: 80px;
     padding: 10px;
+  }
+
+  .table-container {
+    max-height: 300px;
   }
 
   .dashboard-nav {
