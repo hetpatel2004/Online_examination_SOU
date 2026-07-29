@@ -68,6 +68,9 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Serve uploaded answer files (for both dev and production)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Production: serve frontend build as static files
 if (process.env.NODE_ENV === 'production') {
   const frontendBuild = path.join(__dirname, '..', 'frontend', 'dist');
