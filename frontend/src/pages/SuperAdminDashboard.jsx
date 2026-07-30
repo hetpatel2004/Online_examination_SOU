@@ -45,6 +45,9 @@ const SuperAdminDashboard = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
 
+  // Mobile sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -403,9 +406,12 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="dashboard-page dashboard-layout">
-      <Sidebar role="superadmin" activePage={activePage} onNavigate={setActivePage} />
+      <Sidebar role="superadmin" activePage={activePage} onNavigate={setActivePage} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
       <div className="dashboard-main">
         <nav className="dashboard-nav">
+          <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
           <div className="nav-brand"><span className="admin-badge">SUPER ADMIN PANEL</span></div>
           <div className="nav-welcome">Welcome, {user?.name}</div>
         </nav>

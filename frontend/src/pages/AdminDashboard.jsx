@@ -83,6 +83,9 @@ const AdminDashboard = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
 
+  // ========== MOBILE SIDEBAR STATE ==========
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   // ========== DELETE CONFIRMATION STATE ==========
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -91,7 +94,7 @@ const AdminDashboard = () => {
   const [managingExam, setManagingExam] = useState(null); // exam being managed
   const [questions, setQuestions] = useState([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
-  const [questionForm, setQuestionForm] = useState({ questionText: '', questionType: 'mcq', options: ['', '', '', ''], correctAnswer: '', marks: 1 });
+  const [questionForm, setQuestionForm] = useState({ questionText: '', questionType: 'mcq', options: ['', '', '', ''], correctAnswer: '', marks: 1, modelAnswer: '', testCases: [] });
   const [questionLoading, setQuestionLoading] = useState(false);
 
   // ========== BULK UPLOAD STATE ==========
@@ -358,7 +361,7 @@ const AdminDashboard = () => {
     setShowQuestionModal(false);
     setManagingExam(null);
     setQuestions([]);
-    setQuestionForm({ questionText: '', questionType: 'mcq', options: ['', '', '', ''], correctAnswer: '', marks: 1 });
+    setQuestionForm({ questionText: '', questionType: 'mcq', options: ['', '', '', ''], correctAnswer: '', marks: 1, modelAnswer: '', testCases: [] });
   };
 
   const fetchQuestions = async (examId) => {
@@ -379,7 +382,7 @@ const AdminDashboard = () => {
     try {
       await API.post(`/admin/exams/${managingExam._id}/questions`, questionForm);
       toast.success('Question added successfully!');
-      setQuestionForm({ questionText: '', questionType: questionForm.questionType, options: ['', '', '', ''], correctAnswer: '', marks: 1 });
+      setQuestionForm({ questionText: '', questionType: questionForm.questionType, options: ['', '', '', ''], correctAnswer: '', marks: 1, modelAnswer: '', testCases: [] });
       await fetchQuestions(managingExam._id);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add question');
@@ -845,9 +848,12 @@ const AdminDashboard = () => {
   // ========== MAIN RETURN ==========
   return (
     <div className="dashboard-page dashboard-layout">
-      <Sidebar role="admin" activePage={activePage} onNavigate={setActivePage} />
+      <Sidebar role="admin" activePage={activePage} onNavigate={setActivePage} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
       <div className="dashboard-main">
         <nav className="dashboard-nav">
+          <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
           <div className="nav-brand"><span className="admin-badge">ADMIN PANEL</span></div>
           <div className="nav-welcome">Welcome, {user?.name}</div>
         </nav>
@@ -1209,6 +1215,73 @@ const AdminDashboard = () => {
                     </>
                   )}
 
+                  {questionForm.questionType === 'practical' && (
+                    <>
+                      <div className="form-group">
+                        <label>Model Answer (expected correct code)</label>
+                        <textarea
+                          name="modelAnswer"
+                          value={questionForm.modelAnswer}
+                          onChange={handleQuestionFormChange}
+                          placeholder="Write the correct solution code here..."
+                          rows="6"
+                          style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'13px',resize:'vertical'}}
+                        />
+                        <span className="field-hint">Student code will be compared against this model answer for accurate grading.</span>
+                      </div>
+                      <div className="form-group">
+                        <label>Test Cases ({questionForm.testCases.length})</label>
+                        <span className="field-hint" style={{display:'block',marginBottom:'8px'}}>Define input/output pairs to validate code correctness.</span>
+                        {questionForm.testCases.map((tc, tci) => (
+                          <div key={tci} style={{display:'flex',gap:'8px',marginBottom:'6px',alignItems:'center'}}>
+                            <input
+                              type="text"
+                              value={tc.input}
+                              onChange={(e) => {
+                                const newTCs = [...questionForm.testCases];
+                                newTCs[tci] = { ...newTCs[tci], input: e.target.value };
+                                setQuestionForm({ ...questionForm, testCases: newTCs });
+                              }}
+                              placeholder="Input"
+                              style={{flex:1,padding:'8px',borderRadius:'6px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'12px'}}
+                            />
+                            <input
+                              type="text"
+                              value={tc.expectedOutput}
+                              onChange={(e) => {
+                                const newTCs = [...questionForm.testCases];
+                                newTCs[tci] = { ...newTCs[tci], expectedOutput: e.target.value };
+                                setQuestionForm({ ...questionForm, testCases: newTCs });
+                              }}
+                              placeholder="Expected output"
+                              style={{flex:1,padding:'8px',borderRadius:'6px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'12px'}}
+                            />
+                            <button
+                              type="button"
+                              className="btn-icon btn-delete"
+                              onClick={() => {
+                                const newTCs = questionForm.testCases.filter((_, i) => i !== tci);
+                                setQuestionForm({ ...questionForm, testCases: newTCs });
+                              }}
+                              style={{padding:'4px 8px',fontSize:'14px'}}
+                            >✕</button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => {
+                            setQuestionForm({
+                              ...questionForm,
+                              testCases: [...questionForm.testCases, { input: '', expectedOutput: '' }]
+                            });
+                          }}
+                          style={{marginTop:'4px',fontSize:'12px',padding:'4px 12px'}}
+                        >+ Add Test Case</button>
+                      </div>
+                    </>
+                  )}
+
                   <button type="submit" className="btn btn-primary" disabled={questionLoading} style={{marginTop:'8px'}}>
                     {questionLoading ? 'Adding...' : '+ Add Question'}
                   </button>
@@ -1234,6 +1307,17 @@ const AdminDashboard = () => {
                                   {String.fromCharCode(65 + oi)}. {opt} {opt === q.correctAnswer && '✓'}
                                 </div>
                               ))}
+                            </div>
+                          )}
+                          {q.questionType === 'practical' && q.modelAnswer && (
+                            <details style={{marginTop:'6px',marginLeft:'24px',fontSize:'12px'}}>
+                              <summary style={{cursor:'pointer',color:'#00612e',fontWeight:600}}>Model Answer</summary>
+                              <pre style={{background:'#f0faf0',padding:'8px',borderRadius:'6px',marginTop:'4px',whiteSpace:'pre-wrap',fontSize:'11px',border:'1px solid #c8e6c9'}}>{q.modelAnswer}</pre>
+                            </details>
+                          )}
+                          {q.questionType === 'practical' && q.testCases && q.testCases.length > 0 && (
+                            <div style={{marginTop:'4px',marginLeft:'24px',fontSize:'11px',color:'#555'}}>
+                              <span style={{fontWeight:600}}>{q.testCases.length}</span> test case{q.testCases.length !== 1 ? 's' : ''}
                             </div>
                           )}
                           <div style={{marginTop:'4px',fontSize:'12px',color:'#888'}}>

@@ -1087,6 +1087,10 @@ body {
   overflow-y: auto;
 }
 
+.sidebar-close-btn {
+  display: none;
+}
+
 .sidebar::-webkit-scrollbar {
   width: 4px;
 }
@@ -2924,48 +2928,6 @@ body {
   
   .recruiters-logos img {
     height: 35px;
-  }
-
-  /* Dashboard responsive - stack sidebar and content */
-  .dashboard-layout {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-  }
-
-  .sidebar-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 8px 12px;
-    gap: 4px;
-  }
-
-  .sidebar-item {
-    padding: 10px 16px;
-    white-space: nowrap;
-  }
-
-  .sidebar-footer {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .sidebar-user {
-    margin-bottom: 0;
-    flex: 1;
-  }
-
-  .sidebar-logout {
-    width: auto;
-  }
-
-  .dashboard-main {
-    margin-left: 0;
   }
 
   .dashboard-content {
@@ -5475,65 +5437,87 @@ body {
   background-clip: text;
 }
 
-/* Mobile responsive: sidebar toggle on small screens */
+/* Mobile hamburger button for dashboards */
+.dash-hamburger {
+  display: none !important;
+}
+
+/* Sidebar backdrop overlay on mobile */
+.sidebar-backdrop {
+  display: none;
+}
+
+/* Mobile responsive: sidebar overlay on small screens */
 @media (max-width: 768px) {
-  .dashboard-page {
+  .dash-hamburger {
+    display: flex !important;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    gap: 5px;
+    padding: 6px;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .dash-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2.5px;
+    background: #0F4D2C;
+    border-radius: 2px;
+    transition: all 0.3s ease;
   }
 
   .sidebar {
-    width: 100%;
-    max-height: 60px;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 0;
+    position: fixed;
+    left: -280px;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    transition: left 0.3s ease;
+    z-index: 200;
+    flex-direction: column;
   }
 
-  .sidebar:hover,
-  .sidebar:focus-within {
-    max-height: 100vh;
-    overflow-y: auto;
+  .sidebar.sidebar-open {
+    left: 0;
   }
 
-  .sidebar-header {
-    width: 100%;
-    padding: 12px 16px;
-  }
-
-  .sidebar-nav {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 4px 8px;
-    gap: 4px;
-  }
-
-  .sidebar-item {
-    flex: 1;
-    min-width: 80px;
-    padding: 10px 12px;
-    justify-content: center;
-    font-size: 12px;
-  }
-
-  .sidebar-footer {
-    width: 100%;
-    flex-direction: row;
+  .sidebar-close-btn {
+    display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
-  .sidebar-footer .sidebar-user {
-    margin-bottom: 0;
+  .sidebar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
   }
 
-  .sidebar-footer .theme-toggle {
-    width: auto;
-    padding: 8px 12px;
-    margin-top: 0;
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 199;
   }
 
   .dashboard-main {

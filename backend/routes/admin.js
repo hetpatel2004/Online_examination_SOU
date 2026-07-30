@@ -533,7 +533,7 @@ router.post('/exams/:examId/questions', auth, adminOnly, async (req, res) => {
     const check = await verifyExamOwnership(req.params.examId, req.user.id);
     if (check.error) return res.status(check.status).json({ message: check.error });
 
-    const { questionText, questionType, options, correctAnswer, marks } = req.body;
+    const { questionText, questionType, options, correctAnswer, marks, modelAnswer, testCases } = req.body;
 
     if (!questionText || !questionType) {
       return res.status(400).json({ message: 'Question text and type are required' });
@@ -554,7 +554,9 @@ router.post('/exams/:examId/questions', auth, adminOnly, async (req, res) => {
       options: questionType === 'mcq' ? options : [],
       correctAnswer: questionType === 'mcq' ? correctAnswer : '',
       marks: marks || 1,
-      order
+      order,
+      modelAnswer: questionType === 'practical' ? (modelAnswer || '') : '',
+      testCases: questionType === 'practical' && Array.isArray(testCases) ? testCases : [],
     });
 
     await question.save();
@@ -579,7 +581,7 @@ router.put('/exams/:examId/questions/:questionId', auth, adminOnly, async (req, 
     const check = await verifyExamOwnership(req.params.examId, req.user.id);
     if (check.error) return res.status(check.status).json({ message: check.error });
 
-    const { questionText, questionType, options, correctAnswer, marks } = req.body;
+    const { questionText, questionType, options, correctAnswer, marks, modelAnswer, testCases } = req.body;
 
     const question = await Question.findById(req.params.questionId);
     if (!question) {
@@ -591,6 +593,8 @@ router.put('/exams/:examId/questions/:questionId', auth, adminOnly, async (req, 
     if (options) question.options = options;
     if (correctAnswer !== undefined) question.correctAnswer = correctAnswer;
     if (marks) question.marks = marks;
+    if (modelAnswer !== undefined) question.modelAnswer = modelAnswer;
+    if (testCases !== undefined && Array.isArray(testCases)) question.testCases = testCases;
 
     await question.save();
     res.json({ question });
@@ -691,13 +695,14 @@ router.post('/exams/:examId/questions/bulk', auth, adminOnly, async (req, res) =
             }
           }
         } else {
-          // Practical: question, marks
+          // Practical: question, marks[, modelAnswer]
           questionsData.push({
             questionText: cols[0],
             questionType: 'practical',
             options: [],
             correctAnswer: '',
-            marks: Number(cols[1]) || 10
+            marks: Number(cols[1]) || 10,
+            modelAnswer: cols[2] || ''
           });
         }
       }
@@ -726,7 +731,9 @@ router.post('/exams/:examId/questions/bulk', auth, adminOnly, async (req, res) =
       options: q.options || [],
       correctAnswer: q.correctAnswer || '',
       marks: q.marks || 1,
-      order: order++
+      order: order++,
+      modelAnswer: q.modelAnswer || '',
+      testCases: Array.isArray(q.testCases) ? q.testCases : [],
     }));
 
     const inserted = await Question.insertMany(questionsToInsert, { ordered: false });

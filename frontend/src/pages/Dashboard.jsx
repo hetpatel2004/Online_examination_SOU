@@ -7,6 +7,7 @@ import API from '../api/axios';
 const Dashboard = () => {
   const { user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -980,9 +981,12 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page dashboard-layout">
-      <Sidebar role="user" activePage={activePage} onNavigate={setActivePage} />
+      <Sidebar role="user" activePage={activePage} onNavigate={setActivePage} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
       <div className="dashboard-main">
         <nav className="dashboard-nav">
+          <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
           <div className="nav-brand">
             <span className="student-badge">STUDENT PANEL</span>
           </div>

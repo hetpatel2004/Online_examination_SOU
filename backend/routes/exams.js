@@ -143,9 +143,9 @@ router.get('/:examId/questions', auth, async (req, res) => {
       }
     }
 
-    // Fetch full question data WITHOUT correctAnswer
+    // Fetch full question data WITHOUT correctAnswer or modelAnswer
     const questions = await Question.find({ _id: { $in: assignedQuestionIds } })
-      .select('-correctAnswer')
+      .select('-correctAnswer -modelAnswer')
       .sort({ order: 1 });
 
     res.json({ questions, examType: exam.examType });

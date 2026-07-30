@@ -51,6 +51,16 @@ const questionSchema = new mongoose.Schema({
   order: {
     type: Number,
     default: 0
+  },
+
+  modelAnswer: {
+    type: String,
+    default: ''
+  },
+
+  testCases: {
+    type: [testCaseSchema],
+    default: []
   }
 }, { timestamps: true });
 
