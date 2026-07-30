@@ -1026,20 +1026,18 @@ body {
 }
 
 /* ============ DASHBOARD ============ */
-/* Main page wrapper - student warm cream background (#ECDFCC) */
+/* Clean white background for all roles */
 .dashboard-page {
   min-height: 100vh;
-  background: #ECDFCC;
+  background: #ffffff;
 }
 
-/* Admin page background - warm brown (#776052) */
 .dashboard-page.admin-theme {
-  background: #776052;
+  background: #ffffff;
 }
 
-/* Super Admin page background - light navy */
 .dashboard-page.sa-theme {
-  background: #e8eaf6;
+  background: #ffffff;
 }
 
 /* Dashboard Layout - Sidebar on left, main content on right */
@@ -1060,6 +1058,7 @@ body {
   flex-direction: column;
   padding: 32px 40px;
   min-width: 0;
+  background: #f8f9fa;
 }
 
 /* Top navigation bar in the main content area */
@@ -1078,7 +1077,7 @@ body {
 
 .nav-welcome {
   font-size: 14px;
-  color: #5b3a29;
+  color: #1a237e;
   font-weight: 600;
 }
 
@@ -1418,11 +1417,11 @@ body {
 }
 
 .sa-theme .coming-soon {
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
   border-radius: 14px;
   padding: 40px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(26, 35, 126, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .sa-theme .coming-soon h3 {
@@ -1488,8 +1487,8 @@ body {
 
 /* SA theme - form sections */
 .sa-theme .add-form-section {
-  background: #e8eaf6 !important;
-  border-color: #7986cb !important;
+  background: #ffffff !important;
+  border-color: #e0d6c8 !important;
 }
 
 /* SA theme - table rows */
@@ -1626,10 +1625,10 @@ body {
 
 .stat-card {
   flex: 1;
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
   padding: 24px;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(91, 58, 41, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   text-align: center;
   border-top: 3px solid #5b3a29;
   transition: transform 0.2s ease;
@@ -1722,9 +1721,9 @@ body {
 
 /* ============ DATA TABLE ============ */
 .table-container {
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(91, 58, 41, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   overflow-x: auto;
   overflow-y: auto;
   max-height: 600px;
@@ -1755,15 +1754,15 @@ body {
 }
 
 .users-table th {
-  background: #f5f0e8;
+  background: #f0f2f5;
   padding: 14px 16px;
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: #5b3a29;
+  color: #1a237e;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #d4c9b8;
+  border-bottom: 2px solid #e0e0e0;
   white-space: nowrap;
 }
 .users-table td {
@@ -2555,11 +2554,11 @@ body {
 }
 
 .student-info {
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
   padding: 30px;
   border-radius: 16px;
   margin-bottom: 28px;
-  box-shadow: 0 2px 10px rgba(91, 58, 41, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .student-info h2 {
@@ -2607,10 +2606,10 @@ body {
 }
 
 .subjects-section {
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
   padding: 30px;
   border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(91, 58, 41, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .subjects-section h2 {
