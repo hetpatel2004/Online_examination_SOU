@@ -263,7 +263,7 @@ const SuperAdminDashboard = () => {
         <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">👤</span><h3>No Admins</h3><p>Create your first admin account.</p></div>
       ) : (
         <div className="table-container"><table className="users-table"><thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Course</th><th>Actions</th></tr></thead><tbody>
-          {admins.map((a, i) => (<tr key={a._id}><td>{i + 1}</td><td className="name-cell"><strong>{a.name}</strong></td><td className="enrollment-cell"><code>{a.enrollmentNumber}</code></td><td>{a.email}</td><td>{a.phone}</td><td>{a.course}</td><td className="actions-cell"><button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button></td></tr>))}
+          {admins.map((a, i) => (<tr key={a._id}><td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell"><strong>{a.name}</strong></td><td data-label="Enrollment" className="enrollment-cell"><code>{a.enrollmentNumber}</code></td><td data-label="Email">{a.email}</td><td data-label="Phone">{a.phone}</td><td data-label="Course">{a.course}</td><td data-label="Actions" className="actions-cell"><button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button></td></tr>))}
         </tbody></table></div>
       )}
     </div>

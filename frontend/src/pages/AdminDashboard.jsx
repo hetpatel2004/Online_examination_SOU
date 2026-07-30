@@ -598,9 +598,9 @@ const AdminDashboard = () => {
                     {filteredUsers.length === 0 ? <tr><td colSpan="8" className="no-data">{searchTerm ? 'No students match' : 'No students yet'}</td></tr> :
                       filteredUsers.map((u, i) => (
                         <tr key={u._id}>
-                          <td>{i + 1}</td><td className="name-cell">{u.name}</td><td className="enrollment-cell">{u.enrollmentNumber}</td>
-                          <td>{u.email}</td><td>{u.phone}</td><td>{u.course}</td><td>{u.semester}</td>
-                          <td className="actions-cell">
+                          <td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell">{u.name}</td><td data-label="Enrollment" className="enrollment-cell">{u.enrollmentNumber}</td>
+                          <td data-label="Email">{u.email}</td><td data-label="Phone">{u.phone}</td><td data-label="Course">{u.course}</td><td data-label="Sem">{u.semester}</td>
+                          <td data-label="Actions" className="actions-cell">
                             <button className="btn-icon btn-edit" onClick={() => openEditModal('student', u)}>✏️</button>
                             <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'student', id: u._id, name: u.name })}>🗑️</button>
                           </td>
@@ -724,21 +724,21 @@ const AdminDashboard = () => {
                         const status = getExamStatus(ex);
                         return (
                           <tr key={ex._id}>
-                            <td>{i + 1}</td>
-                            <td className="name-cell">{ex.subjectName}</td>
-                            <td className="enrollment-cell">{ex.subjectCode}</td>
-                            <td><span className={`exam-type-tag ${ex.examType === 'mcq' ? 'type-mcq' : 'type-practical'}`}>{ex.examType === 'mcq' ? 'MCQ' : 'Practical'}</span></td>
-                            <td>{ex.date}</td>
-                            <td>{ex.time}</td>
-                            <td>{ex.duration} min</td>
-                            <td><span className="semester-tag">Sem {ex.semester}</span></td>
-                            <td>{ex.course}</td>
-                            <td>
+                            <td data-label="#">{i + 1}</td>
+                            <td data-label="Subject" className="name-cell">{ex.subjectName}</td>
+                            <td data-label="Code" className="enrollment-cell">{ex.subjectCode}</td>
+                            <td data-label="Type"><span className={`exam-type-tag ${ex.examType === 'mcq' ? 'type-mcq' : 'type-practical'}`}>{ex.examType === 'mcq' ? 'MCQ' : 'Practical'}</span></td>
+                            <td data-label="Date">{ex.date}</td>
+                            <td data-label="Time">{ex.time}</td>
+                            <td data-label="Duration">{ex.duration} min</td>
+                            <td data-label="Sem"><span className="semester-tag">Sem {ex.semester}</span></td>
+                            <td data-label="Course">{ex.course}</td>
+                            <td data-label="Status">
                               <span className={`exam-status ${status === 'upcoming' ? 'status-upcoming' : status === 'ongoing' ? 'status-ongoing' : 'status-completed'}`}>
                                 {status === 'upcoming' ? 'Upcoming' : status === 'ongoing' ? 'LIVE' : 'Completed'}
                               </span>
                             </td>
-                            <td className="actions-cell">
+                            <td data-label="Actions" className="actions-cell">
                               <button className="btn-icon btn-edit" title="View Submissions" onClick={() => openSubmissionsModal(ex)}>📋</button>
                               <button className="btn-icon btn-edit" title="Manage Questions" onClick={() => openQuestionManager(ex)}>❓</button>
                               <button className="btn-icon btn-edit" title="Set Result Date" onClick={() => { setResultDateValue(ex.resultDate || ''); setDeleteConfirm({ type: 'resultDate', id: ex._id, name: ex.subjectName }); }}>📅</button>

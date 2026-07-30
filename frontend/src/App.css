@@ -3551,6 +3551,84 @@ body {
     overflow-wrap: break-word;
   }
 
+  .users-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .users-table thead {
+    display: none;
+  }
+
+  .users-table tbody,
+  .users-table tr,
+  .users-table td {
+    display: block;
+  }
+
+  .users-table tr {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(91, 58, 41, 0.1);
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(91, 58, 41, 0.08);
+  }
+
+  .users-table td {
+    padding: 5px 0;
+    font-size: 13px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .users-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #5b3a29;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 75px;
+    flex-shrink: 0;
+  }
+
+  .users-table td:first-child {
+    font-weight: 700;
+    font-size: 11px;
+    color: #5b3a29;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ede6db;
+    margin-bottom: 4px;
+  }
+
+  .users-table td:first-child::before {
+    display: none;
+  }
+
+  .users-table td:last-child {
+    padding-top: 8px;
+    border-top: 1px solid #ede6db;
+    margin-top: 4px;
+    justify-content: flex-end;
+  }
+
+  .users-table td:last-child::before {
+    display: none;
+  }
+
+  .users-table td.name-cell {
+    font-weight: 600;
+  }
+
+  .users-table .no-data {
+    display: table-cell;
+    text-align: center;
+    padding: 32px 16px !important;
+  }
+
   .countdown-card {
     padding: 24px 20px;
   }
@@ -3832,20 +3910,34 @@ body {
     padding: 12px 8px;
   }
 
-  .users-table th,
-  .users-table td {
-    padding: 6px;
-    font-size: 10px;
-  }
-
   .users-table th {
-    font-size: 9px;
-    white-space: normal;
+    display: none;
   }
 
   .users-table td {
     word-break: break-word;
     overflow-wrap: break-word;
+    padding: 4px 0;
+    font-size: 12px;
+  }
+
+  .users-table tr {
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+
+  .users-table td::before {
+    font-size: 9px;
+    min-width: 60px;
+  }
+
+  .users-table td:first-child {
+    font-size: 10px;
+    padding-bottom: 6px;
+  }
+
+  .users-table td:last-child {
+    padding-top: 6px;
   }
 
   .enrollment-cell code {
