@@ -1115,25 +1115,12 @@ body {
 }
 
 /* Sidebar Header - University logo + panel title */
-  .sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .sidebar-title {
-    font-size: 16px;
-    letter-spacing: 0.5px;
-  }
-
-
-.sidebar-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .sidebar-title {
@@ -1141,6 +1128,13 @@ body {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.5px;
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 /* Sidebar Navigation - vertical menu */
