@@ -123,7 +123,6 @@ const Dashboard = () => {
 
   // ---- Start countdown for exam start ----
   const startCountdown = (exam) => {
-    setActivePage('exams');
     const timeLeft = getTimeUntilStart(exam);
     if (timeLeft <= 0) {
       startExam(exam);
@@ -195,14 +194,12 @@ const Dashboard = () => {
     const existingSub = submissions[exam._id];
     const alreadySubmitted = existingSub && ((existingSub.answers && existingSub.answers.length > 0) || existingSub.answerFile);
     if (alreadySubmitted) {
-      setActivePage('exams');
       checkSubmission(exam);
       return;
     }
     setSubmission(null);
     setResultPublished(false);
     setExamQuestions([]);
-    setActivePage('exams');
     setTakingExam(exam);
     setAnswers({});
     setLoadingQuestions(true);
@@ -226,7 +223,6 @@ const Dashboard = () => {
 
   const checkSubmission = async (exam) => {
     try {
-      setActivePage('exams');
       const { data } = await API.get(`/exams/${exam._id}/submission`);
       setSubmission(data.submission);
       setResultPublished(data.resultPublished || false);
@@ -372,7 +368,349 @@ const Dashboard = () => {
     setResultCountdownExam(null);
   };
 
+  const renderExamCountdownUI = () => {
+    if (!countdown || !countdownExam) return null;
+    return (
+      <div className="admin-section">
+        <div className="section-header-row">
+          <div>
+            <h2>Exam Starting Soon — {countdownExam.subjectName}</h2>
+            <p>{countdownExam.date} at {countdownExam.time}</p>
+          </div>
+          <button className="btn btn-secondary" onClick={cancelCountdown}>✕ Cancel</button>
+        </div>
+        <div className="countdown-container">
+          <div className="countdown-card">
+            <span className="countdown-icon">⏰</span>
+            <h3>Exam starts in</h3>
+            <div className="countdown-display">
+              <div className="countdown-unit">
+                <span className="countdown-number">{String(countdown.hours).padStart(2, '0')}</span>
+                <span className="countdown-label">Hours</span>
+              </div>
+              <span className="countdown-separator">:</span>
+              <div className="countdown-unit">
+                <span className="countdown-number">{String(countdown.minutes).padStart(2, '0')}</span>
+                <span className="countdown-label">Minutes</span>
+              </div>
+              <span className="countdown-separator">:</span>
+              <div className="countdown-unit">
+                <span className="countdown-number">{String(countdown.seconds).padStart(2, '0')}</span>
+                <span className="countdown-label">Seconds</span>
+              </div>
+            </div>
+            <p className="countdown-info">{countdownExam.examType === 'mcq' ? 'MCQ' : 'Practical'} Exam • {countdownExam.duration} mins • {countdownExam.totalMarks} marks</p>
+            <p className="countdown-hint">The exam will start automatically when the timer reaches zero.</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderExamTakingUI = () => {
+    if (!takingExam || submission) return null;
+    return (
+      <div className="admin-section">
+        <div className="section-header-row">
+          <div>
+            <h2>{takingExam.subjectName} — {takingExam.examType === 'mcq' ? 'MCQ Exam' : 'Practical Exam'}</h2>
+            <p>Duration: {takingExam.duration} mins | Total Marks: {takingExam.totalMarks}</p>
+          </div>
+          <button className="btn btn-secondary" onClick={exitExam}>✕ Exit Exam</button>
+        </div>
+        {loadingQuestions ? (
+          <div className="loading">Loading questions...</div>
+        ) : examQuestions.length === 0 ? (
+          <div className="coming-soon">
+            <span className="coming-icon">📝</span>
+            <h3>No Questions Available</h3>
+            <p>This exam does not have any questions yet.</p>
+          </div>
+        ) : (
+          <div className="exam-questions-container">
+            {examQuestions.map((q, idx) => (
+              <div className="question-card" key={q._id}>
+                <div className="question-header">
+                  <span className="question-number">Q{idx + 1}</span>
+                  <span className="question-marks">{q.marks} mark{q.marks !== 1 ? 's' : ''}</span>
+                </div>
+                <p className="question-text">{q.questionText}</p>
+                {q.questionType === 'mcq' && q.options && (
+                  <div className="options-container">
+                    {q.options.map((opt, oi) => (
+                      <label key={oi} className={`option-label ${answers[q._id] === opt ? 'selected' : ''}`}>
+                        <input type="radio" name={`q-${q._id}`} value={opt} checked={answers[q._id] === opt} onChange={() => handleAnswerChange(q._id, opt)} />
+                        <span className="option-letter">{String.fromCharCode(65 + oi)}</span>
+                        <span className="option-text">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {(q.questionType === 'practical' || !q.questionType) && (
+                  <div className="practical-answer">
+                    <div className="lang-select-row">
+                      <label className="lang-label">Language:</label>
+                      <select
+                        className="lang-select"
+                        value={codeLanguages[q._id] || 'python'}
+                        onChange={(e) => setCodeLanguages({ ...codeLanguages, [q._id]: e.target.value })}
+                      >
+                        <optgroup label="Backend">
+                          <option value="python">Python</option>
+                          <option value="java">Java</option>
+                          <option value="c">C</option>
+                          <option value="cpp">C++</option>
+                          <option value="csharp">C#</option>
+                          <option value="go">Go</option>
+                          <option value="rust">Rust</option>
+                          <option value="php">PHP</option>
+                          <option value="ruby">Ruby</option>
+                          <option value="kotlin">Kotlin</option>
+                          <option value="swift">Swift</option>
+                          <option value="scala">Scala</option>
+                          <option value="r">R</option>
+                        </optgroup>
+                        <optgroup label="Frontend">
+                          <option value="javascript">JavaScript</option>
+                          <option value="jsx">React (JSX)</option>
+                          <option value="typescript">TypeScript</option>
+                          <option value="tsx">React (TSX)</option>
+                          <option value="html">HTML</option>
+                          <option value="css">CSS</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                          <option value="sql">SQL</option>
+                          <option value="bash">Bash</option>
+                          <option value="haskell">Haskell</option>
+                        </optgroup>
+                      </select>
+                    </div>
+                    <textarea
+                      className="code-textarea"
+                      placeholder="// Write your code here..."
+                      value={answers[q._id] || ''}
+                      onChange={(e) => handleAnswerChange(q._id, e.target.value)}
+                      rows="8"
+                      spellCheck="false"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            <div className="submit-exam-bar">
+              <p>Answered: {Object.keys(answers).length} / {examQuestions.length} questions</p>
+              <button className="btn btn-primary" onClick={submitExam} disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit Exam'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderSubmissionResultUI = () => {
+    if (!submission) return null;
+    const isAIEvaluated = submission.evaluationMethod === 'ai';
+    return (
+      <div className="admin-section">
+        <div className="section-header-row">
+          <div>
+            <h2>Exam Submitted — {takingExam?.subjectName || 'Exam'}</h2>
+          </div>
+          <button className="btn btn-secondary" onClick={exitExam}>Back to Exams</button>
+        </div>
+        <div className="submission-result">
+          <div className="result-card">
+            {resultPublished ? (
+              <>
+                <span className="result-icon">{submission.passed ? '🎉' : submission.score > 0 ? '📊' : '📝'}</span>
+                <h3>Results Published!</h3>
+
+                {isAIEvaluated ? (
+                  <div className="ai-student-result">
+                    <div className="ai-student-scores">
+                      <div className="ai-student-score-card main">
+                        <span className="ai-score-value big">{submission.score}<span className="ai-score-of"> / {submission.totalMarks}</span></span>
+                        <span className="ai-score-label">Final Marks</span>
+                      </div>
+                      <div className="ai-student-score-card">
+                        <span className="ai-score-value">{submission.correctnessScore || 0}%</span>
+                        <span className="ai-score-label">Correctness</span>
+                      </div>
+                      <div className="ai-student-score-card">
+                        <span className="ai-score-value">{submission.qualityScore || 0}%</span>
+                        <span className="ai-score-label">Code Quality</span>
+                      </div>
+                    </div>
+                    <div className="ai-student-meta">
+                      {submission.executionTime > 0 && (
+                        <span className="ai-meta-item">⏱️ Execution: {(submission.executionTime / 1000).toFixed(2)}s</span>
+                      )}
+                      {submission.memoryUsed && (
+                        <span className="ai-meta-item">💾 Memory: {submission.memoryUsed}</span>
+                      )}
+                      <span className={`ai-meta-item ${submission.passed ? 'passed' : 'failed'}`}>
+                        {submission.passed ? '✅ Passed' : '❌ Not Passed'}
+                      </span>
+                    </div>
+                    {submission.aiFeedback && (
+                      <div className="ai-student-feedback">
+                        <h4>Feedback</h4>
+                        <p>{submission.aiFeedback}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {submission.totalMarks > 0 && (
+                      <div className="score-display">
+                        <span className="score-number">{submission.score}</span>
+                        <span className="score-divider">/</span>
+                        <span className="score-total">{submission.totalMarks}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {(submission.answers && submission.answers.length > 0) || (submission.submittedCode && submission.submittedCode.length > 0) ? (
+                  <div className="result-answers-section">
+                    <h4>Answer Review</h4>
+                    <div className="result-answers-list">
+                      {submission.answers && submission.answers.map((ans, idx) => (
+                        <div key={idx} className={`result-answer-item ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
+                          <div className="ra-header">
+                            <span className="ra-number">Q{idx + 1}</span>
+                            {ans.marks > 0 && <span className="ra-marks">{ans.marks} mark{ans.marks !== 1 ? 's' : ''}</span>}
+                            <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
+                              {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                            </span>
+                          </div>
+                          <p className="ra-question">{ans.questionText || 'Question'}</p>
+                          {ans.options && ans.options.length > 0 ? (
+                            <div className="ra-options">
+                              {ans.options.map((opt, oi) => (
+                                <div key={oi} className={`ra-option ${opt === ans.correctAnswer ? 'ra-correct-opt' : ''} ${opt === ans.answer && opt !== ans.correctAnswer ? 'ra-wrong-opt' : ''}`}>
+                                  <span className="ra-opt-letter">{String.fromCharCode(65 + oi)}</span>
+                                  <span className="ra-opt-text">{opt}</span>
+                                  {opt === ans.correctAnswer && <span className="ra-opt-badge correct">✓ Right Answer</span>}
+                                  {opt === ans.answer && opt !== ans.correctAnswer && <span className="ra-opt-badge wrong">✗ Your Answer</span>}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="ra-answer-compare">
+                              <div className="ra-answer-block wrong">
+                                <strong>Your answer:</strong>
+                                <pre className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</pre>
+                              </div>
+                              {!ans.isCorrect && (
+                                <div className="ra-answer-block correct">
+                                  <strong>Correct answer:</strong>
+                                  <pre className="text-correct">{ans.correctAnswer || '(No model answer provided)'}</pre>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {submission.submittedCode && submission.submittedCode.map((sc, idx) => {
+                        if (submission.answers?.some(a => a.questionId?.toString() === sc.questionId?.toString())) return null;
+                        return (
+                          <div key={'code-' + idx} className="result-answer-item">
+                            <div className="ra-header">
+                              <span className="ra-number">Q{idx + 1}</span>
+                              <span className="ra-marks">{sc.language}</span>
+                            </div>
+                            <div className="ra-answer-compare">
+                              <div className="ra-answer-block">
+                                <strong>Submitted code:</strong>
+                                <pre>{sc.code || '(No code)'}</pre>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <span className="result-icon">✅</span>
+                <h3>Exam Submitted Successfully!</h3>
+                {isAIEvaluated && (
+                  <p style={{ color: '#2878B5', fontSize: '13px', margin: '8px 0', background: '#E8F3EC', padding: '8px 14px', borderRadius: '8px' }}>
+                    🤖 This exam uses AI evaluation. Your code is being analyzed for correctness and quality. Results will appear after the result date.
+                  </p>
+                )}
+                <p style={{ color: '#666', fontSize: '15px', margin: '12px 0' }}>
+                  Your submission has been recorded.
+                </p>
+                {takingExam?.resultDate && (
+                  <>
+                    {resultCountdown && resultCountdownExam?._id === takingExam?._id ? (
+                      <div className="result-countdown-box">
+                        <p style={{ color: '#888', fontSize: '13px', marginBottom: '8px' }}>Results will be published in:</p>
+                        <div className="result-countdown-display">
+                          {resultCountdown.days > 0 && (
+                            <span className="rc-unit">
+                              <span className="rc-num">{String(resultCountdown.days).padStart(2, '0')}</span>
+                              <span className="rc-label">Days</span>
+                            </span>
+                          )}
+                          {resultCountdown.days > 0 && <span className="rc-sep">:</span>}
+                          <span className="rc-unit">
+                            <span className="rc-num">{String(resultCountdown.hours).padStart(2, '0')}</span>
+                            <span className="rc-label">Hrs</span>
+                          </span>
+                          <span className="rc-sep">:</span>
+                          <span className="rc-unit">
+                            <span className="rc-num">{String(resultCountdown.minutes).padStart(2, '0')}</span>
+                            <span className="rc-label">Min</span>
+                          </span>
+                          <span className="rc-sep">:</span>
+                          <span className="rc-unit">
+                            <span className="rc-num">{String(resultCountdown.seconds).padStart(2, '0')}</span>
+                            <span className="rc-label">Sec</span>
+                          </span>
+                        </div>
+                        <p style={{ color: '#aaa', fontSize: '12px', marginTop: '6px' }}>
+                          Result date: {new Date(takingExam.resultDate).toLocaleString()}
+                        </p>
+                      </div>
+                    ) : (
+                      <p style={{ color: '#888', fontSize: '13px', marginTop: '8px' }}>
+                        📅 Result date: {new Date(takingExam.resultDate).toLocaleString()}
+                      </p>
+                    )}
+                  </>
+                )}
+                {!takingExam?.resultDate && (
+                  <p style={{ color: '#888', fontSize: '13px', marginTop: '8px' }}>
+                    Results will be announced on the scheduled result date by the admin.
+                  </p>
+                )}
+              </>
+            )}
+            <p className="submitted-at">Submitted: {new Date(submission.submittedAt).toLocaleString()}</p>
+            {submission.answerFile && (
+              <p className="submitted-at">Answer file uploaded ✓</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderPage = () => {
+    const countdownUI = renderExamCountdownUI();
+    const takingUI = renderExamTakingUI();
+    const submissionUI = renderSubmissionResultUI();
+    if (countdownUI) return countdownUI;
+    if (takingUI) return takingUI;
+    if (submissionUI) return submissionUI;
+
     switch (activePage) {
       case 'subjects':
         return (
@@ -420,7 +758,7 @@ const Dashboard = () => {
         );
 
       case 'subjectDetail':
-        if (!selectedSubject) return renderPage('subjects');
+        if (!selectedSubject) { setActivePage('subjects'); return null; }
         const subjectExams = exams.filter(e => e.subjectCode === selectedSubject.code);
         return (
           <div className="admin-section">
@@ -509,341 +847,6 @@ const Dashboard = () => {
         );
 
       case 'exams':
-        // EXAM START COUNTDOWN TIMER UI
-        if (countdown && countdownExam) {
-          return (
-            <div className="admin-section">
-              <div className="section-header-row">
-                <div>
-                  <h2>Exam Starting Soon — {countdownExam.subjectName}</h2>
-                  <p>{countdownExam.date} at {countdownExam.time}</p>
-                </div>
-                <button className="btn btn-secondary" onClick={cancelCountdown}>✕ Cancel</button>
-              </div>
-              <div className="countdown-container">
-                <div className="countdown-card">
-                  <span className="countdown-icon">⏰</span>
-                  <h3>Exam starts in</h3>
-                  <div className="countdown-display">
-                    <div className="countdown-unit">
-                      <span className="countdown-number">{String(countdown.hours).padStart(2, '0')}</span>
-                      <span className="countdown-label">Hours</span>
-                    </div>
-                    <span className="countdown-separator">:</span>
-                    <div className="countdown-unit">
-                      <span className="countdown-number">{String(countdown.minutes).padStart(2, '0')}</span>
-                      <span className="countdown-label">Minutes</span>
-                    </div>
-                    <span className="countdown-separator">:</span>
-                    <div className="countdown-unit">
-                      <span className="countdown-number">{String(countdown.seconds).padStart(2, '0')}</span>
-                      <span className="countdown-label">Seconds</span>
-                    </div>
-                  </div>
-                  <p className="countdown-info">{countdownExam.examType === 'mcq' ? 'MCQ' : 'Practical'} Exam • {countdownExam.duration} mins • {countdownExam.totalMarks} marks</p>
-                  <p className="countdown-hint">The exam will start automatically when the timer reaches zero.</p>
-                </div>
-              </div>
-            </div>
-          );
-        }
-
-        // EXAM TAKING UI
-        if (takingExam && !submission) {
-          return (
-            <div className="admin-section">
-              <div className="section-header-row">
-                <div>
-                  <h2>{takingExam.subjectName} — {takingExam.examType === 'mcq' ? 'MCQ Exam' : 'Practical Exam'}</h2>
-                  <p>Duration: {takingExam.duration} mins | Total Marks: {takingExam.totalMarks}</p>
-                </div>
-                <button className="btn btn-secondary" onClick={exitExam}>✕ Exit Exam</button>
-              </div>
-              {loadingQuestions ? (
-                <div className="loading">Loading questions...</div>
-              ) : examQuestions.length === 0 ? (
-                <div className="coming-soon">
-                  <span className="coming-icon">📝</span>
-                  <h3>No Questions Available</h3>
-                  <p>This exam does not have any questions yet.</p>
-                </div>
-              ) : (
-                <div className="exam-questions-container">
-                  {examQuestions.map((q, idx) => (
-                    <div className="question-card" key={q._id}>
-                      <div className="question-header">
-                        <span className="question-number">Q{idx + 1}</span>
-                        <span className="question-marks">{q.marks} mark{q.marks !== 1 ? 's' : ''}</span>
-                      </div>
-                      <p className="question-text">{q.questionText}</p>
-                      {q.questionType === 'mcq' && q.options && (
-                        <div className="options-container">
-                          {q.options.map((opt, oi) => (
-                            <label key={oi} className={`option-label ${answers[q._id] === opt ? 'selected' : ''}`}>
-                              <input type="radio" name={`q-${q._id}`} value={opt} checked={answers[q._id] === opt} onChange={() => handleAnswerChange(q._id, opt)} />
-                              <span className="option-letter">{String.fromCharCode(65 + oi)}</span>
-                              <span className="option-text">{opt}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                      {(q.questionType === 'practical' || !q.questionType) && (
-                        <div className="practical-answer">
-                          <div className="lang-select-row">
-                            <label className="lang-label">Language:</label>
-                            <select
-                              className="lang-select"
-                              value={codeLanguages[q._id] || 'python'}
-                              onChange={(e) => setCodeLanguages({ ...codeLanguages, [q._id]: e.target.value })}
-                            >
-                              <optgroup label="Backend">
-                                <option value="python">Python</option>
-                                <option value="java">Java</option>
-                                <option value="c">C</option>
-                                <option value="cpp">C++</option>
-                                <option value="csharp">C#</option>
-                                <option value="go">Go</option>
-                                <option value="rust">Rust</option>
-                                <option value="php">PHP</option>
-                                <option value="ruby">Ruby</option>
-                                <option value="kotlin">Kotlin</option>
-                                <option value="swift">Swift</option>
-                                <option value="scala">Scala</option>
-                                <option value="r">R</option>
-                              </optgroup>
-                              <optgroup label="Frontend">
-                                <option value="javascript">JavaScript</option>
-                                <option value="jsx">React (JSX)</option>
-                                <option value="typescript">TypeScript</option>
-                                <option value="tsx">React (TSX)</option>
-                                <option value="html">HTML</option>
-                                <option value="css">CSS</option>
-                              </optgroup>
-                              <optgroup label="Other">
-                                <option value="sql">SQL</option>
-                                <option value="bash">Bash</option>
-                                <option value="haskell">Haskell</option>
-                              </optgroup>
-                            </select>
-                          </div>
-                          <textarea
-                            className="code-textarea"
-                            placeholder="// Write your code here..."
-                            value={answers[q._id] || ''}
-                            onChange={(e) => handleAnswerChange(q._id, e.target.value)}
-                            rows="8"
-                            spellCheck="false"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <div className="submit-exam-bar">
-                    <p>Answered: {Object.keys(answers).length} / {examQuestions.length} questions</p>
-                    <button className="btn btn-primary" onClick={submitExam} disabled={submitting}>
-                      {submitting ? 'Submitting...' : 'Submit Exam'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        }
-
-        // SUBMISSION RESULT UI — shown after submit or when clicking "View Result"
-        if (submission) {
-          const isAIEvaluated = submission.evaluationMethod === 'ai';
-          return (
-            <div className="admin-section">
-              <div className="section-header-row">
-                <div>
-                  <h2>Exam Submitted — {takingExam?.subjectName || 'Exam'}</h2>
-                </div>
-                <button className="btn btn-secondary" onClick={exitExam}>Back to Exams</button>
-              </div>
-              <div className="submission-result">
-                <div className="result-card">
-                  {resultPublished ? (
-                    <>
-                      <span className="result-icon">{submission.passed ? '🎉' : submission.score > 0 ? '📊' : '📝'}</span>
-                      <h3>Results Published!</h3>
-
-                      {isAIEvaluated ? (
-                        <div className="ai-student-result">
-                          <div className="ai-student-scores">
-                            <div className="ai-student-score-card main">
-                              <span className="ai-score-value big">{submission.score}<span className="ai-score-of"> / {submission.totalMarks}</span></span>
-                              <span className="ai-score-label">Final Marks</span>
-                            </div>
-                            <div className="ai-student-score-card">
-                              <span className="ai-score-value">{submission.correctnessScore || 0}%</span>
-                              <span className="ai-score-label">Correctness</span>
-                            </div>
-                            <div className="ai-student-score-card">
-                              <span className="ai-score-value">{submission.qualityScore || 0}%</span>
-                              <span className="ai-score-label">Code Quality</span>
-                            </div>
-                          </div>
-                          <div className="ai-student-meta">
-                            {submission.executionTime > 0 && (
-                              <span className="ai-meta-item">⏱️ Execution: {(submission.executionTime / 1000).toFixed(2)}s</span>
-                            )}
-                            {submission.memoryUsed && (
-                              <span className="ai-meta-item">💾 Memory: {submission.memoryUsed}</span>
-                            )}
-                            <span className={`ai-meta-item ${submission.passed ? 'passed' : 'failed'}`}>
-                              {submission.passed ? '✅ Passed' : '❌ Not Passed'}
-                            </span>
-                          </div>
-                          {submission.aiFeedback && (
-                            <div className="ai-student-feedback">
-                              <h4>Feedback</h4>
-                              <p>{submission.aiFeedback}</p>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <>
-                          {submission.totalMarks > 0 && (
-                            <div className="score-display">
-                              <span className="score-number">{submission.score}</span>
-                              <span className="score-divider">/</span>
-                              <span className="score-total">{submission.totalMarks}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      {(submission.answers && submission.answers.length > 0) || (submission.submittedCode && submission.submittedCode.length > 0) ? (
-                        <div className="result-answers-section">
-                          <h4>Answer Review</h4>
-                          <div className="result-answers-list">
-                            {submission.answers && submission.answers.map((ans, idx) => (
-                              <div key={idx} className={`result-answer-item ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
-                                <div className="ra-header">
-                                  <span className="ra-number">Q{idx + 1}</span>
-                                  {ans.marks > 0 && <span className="ra-marks">{ans.marks} mark{ans.marks !== 1 ? 's' : ''}</span>}
-                                  <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
-                                    {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
-                                  </span>
-                                </div>
-                                <p className="ra-question">{ans.questionText || 'Question'}</p>
-                                {ans.options && ans.options.length > 0 ? (
-                                  <div className="ra-options">
-                                    {ans.options.map((opt, oi) => (
-                                      <div key={oi} className={`ra-option ${opt === ans.correctAnswer ? 'ra-correct-opt' : ''} ${opt === ans.answer && opt !== ans.correctAnswer ? 'ra-wrong-opt' : ''}`}>
-                                        <span className="ra-opt-letter">{String.fromCharCode(65 + oi)}</span>
-                                        <span className="ra-opt-text">{opt}</span>
-                                        {opt === ans.correctAnswer && <span className="ra-opt-badge correct">✓ Right Answer</span>}
-                                        {opt === ans.answer && opt !== ans.correctAnswer && <span className="ra-opt-badge wrong">✗ Your Answer</span>}
-                                      </div>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  <div className="ra-answer-compare">
-                                    <div className="ra-answer-block wrong">
-                                      <strong>Your answer:</strong>
-                                      <pre className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</pre>
-                                    </div>
-                                    {!ans.isCorrect && (
-                                      <div className="ra-answer-block correct">
-                                        <strong>Correct answer:</strong>
-                                        <pre className="text-correct">{ans.correctAnswer || '(No model answer provided)'}</pre>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                            {submission.submittedCode && submission.submittedCode.map((sc, idx) => {
-                              if (submission.answers?.some(a => a.questionId?.toString() === sc.questionId?.toString())) return null;
-                              return (
-                                <div key={'code-' + idx} className="result-answer-item">
-                                  <div className="ra-header">
-                                    <span className="ra-number">Q{idx + 1}</span>
-                                    <span className="ra-marks">{sc.language}</span>
-                                  </div>
-                                  <div className="ra-answer-compare">
-                                    <div className="ra-answer-block">
-                                      <strong>Submitted code:</strong>
-                                      <pre>{sc.code || '(No code)'}</pre>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      <span className="result-icon">✅</span>
-                      <h3>Exam Submitted Successfully!</h3>
-                      {isAIEvaluated && (
-                        <p style={{ color: '#2878B5', fontSize: '13px', margin: '8px 0', background: '#E8F3EC', padding: '8px 14px', borderRadius: '8px' }}>
-                          🤖 This exam uses AI evaluation. Your code is being analyzed for correctness and quality. Results will appear after the result date.
-                        </p>
-                      )}
-                      <p style={{ color: '#666', fontSize: '15px', margin: '12px 0' }}>
-                        Your submission has been recorded.
-                      </p>
-                      {takingExam?.resultDate && (
-                        <>
-                          {resultCountdown && resultCountdownExam?._id === takingExam?._id ? (
-                            <div className="result-countdown-box">
-                              <p style={{ color: '#888', fontSize: '13px', marginBottom: '8px' }}>Results will be published in:</p>
-                              <div className="result-countdown-display">
-                                {resultCountdown.days > 0 && (
-                                  <span className="rc-unit">
-                                    <span className="rc-num">{String(resultCountdown.days).padStart(2, '0')}</span>
-                                    <span className="rc-label">Days</span>
-                                  </span>
-                                )}
-                                {resultCountdown.days > 0 && <span className="rc-sep">:</span>}
-                                <span className="rc-unit">
-                                  <span className="rc-num">{String(resultCountdown.hours).padStart(2, '0')}</span>
-                                  <span className="rc-label">Hrs</span>
-                                </span>
-                                <span className="rc-sep">:</span>
-                                <span className="rc-unit">
-                                  <span className="rc-num">{String(resultCountdown.minutes).padStart(2, '0')}</span>
-                                  <span className="rc-label">Min</span>
-                                </span>
-                                <span className="rc-sep">:</span>
-                                <span className="rc-unit">
-                                  <span className="rc-num">{String(resultCountdown.seconds).padStart(2, '0')}</span>
-                                  <span className="rc-label">Sec</span>
-                                </span>
-                              </div>
-                              <p style={{ color: '#aaa', fontSize: '12px', marginTop: '6px' }}>
-                                Result date: {new Date(takingExam.resultDate).toLocaleString()}
-                              </p>
-                            </div>
-                          ) : (
-                            <p style={{ color: '#888', fontSize: '13px', marginTop: '8px' }}>
-                              📅 Result date: {new Date(takingExam.resultDate).toLocaleString()}
-                            </p>
-                          )}
-                        </>
-                      )}
-                      {!takingExam?.resultDate && (
-                        <p style={{ color: '#888', fontSize: '13px', marginTop: '8px' }}>
-                          Results will be announced on the scheduled result date by the admin.
-                        </p>
-                      )}
-                    </>
-                  )}
-                  <p className="submitted-at">Submitted: {new Date(submission.submittedAt).toLocaleString()}</p>
-                  {submission.answerFile && (
-                    <p className="submitted-at">Answer file uploaded ✓</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        }
-
         // EXAM LIST UI
         return (
           <div className="admin-section">
