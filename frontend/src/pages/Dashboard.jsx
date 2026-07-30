@@ -588,15 +588,20 @@ const Dashboard = () => {
                           </div>
                           <p className="ra-question">{ans.questionText || 'Question'}</p>
                           {ans.options && ans.options.length > 0 ? (
-                            <div className="ra-options">
-                              {ans.options.map((opt, oi) => (
-                                <div key={oi} className={`ra-option ${opt === ans.correctAnswer ? 'ra-correct-opt' : ''} ${opt === ans.answer && opt !== ans.correctAnswer ? 'ra-wrong-opt' : ''}`}>
-                                  <span className="ra-opt-letter">{String.fromCharCode(65 + oi)}</span>
-                                  <span className="ra-opt-text">{opt}</span>
-                                  {opt === ans.correctAnswer && <span className="ra-opt-badge correct">✓ Right Answer</span>}
-                                  {opt === ans.answer && opt !== ans.correctAnswer && <span className="ra-opt-badge wrong">✗ Your Answer</span>}
-                                </div>
-                              ))}
+                            <div className="ra-answer-compare">
+                              <div className="ra-answer-block wrong">
+                                <strong>Your answer:</strong>
+                                <span className={`sub-a-value ${ans.isCorrect ? 'text-correct' : 'text-incorrect'}`}>
+                                  {ans.answer || '(No answer)'}
+                                </span>
+                              </div>
+                              <div className="ra-answer-block correct">
+                                <strong>Correct answer:</strong>
+                                <span className="text-correct">{ans.correctAnswer}</span>
+                                <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`} style={{marginLeft:'12px',fontSize:'12px'}}>
+                                  {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                                </span>
+                              </div>
                             </div>
                           ) : (
                             <div className="ra-answer-compare">
