@@ -35,7 +35,7 @@ router.get('/', auth, async (req, res) => {
     if (req.query.semester) filter.semester = Number(req.query.semester);
     if (req.query.course) filter.course = req.query.course;
 
-    const exams = await Exam.find(filter).sort({ date: 1, time: 1 });
+    const exams = await Exam.find(filter).sort({ date: 1, time: 1 }).lean();
     res.json({ exams });
   } catch (error) {
     console.error('Error fetching exams:', error.message);
@@ -52,7 +52,8 @@ router.get('/my-submissions', auth, async (req, res) => {
   try {
     const submissions = await Submission.find({ studentId: req.user.id })
       .select('examId score totalMarks submittedAt status answerFile answers')
-      .populate('examId', 'resultDate date time duration subjectName subjectCode examType totalMarks');
+      .populate('examId', 'resultDate date time duration subjectName subjectCode examType totalMarks')
+      .lean();
     res.json({ submissions });
   } catch (error) {
     console.error('Error fetching submissions:', error.message);
@@ -96,7 +97,10 @@ router.get('/:examId/questions', auth, async (req, res) => {
 
     if (!assignedQuestionIds) {
       // First time OR reassigning due to questionsPerStudent change
-      const allQuestions = await Question.find({ examId: req.params.examId });
+      const allQuestions = await Question.find(
+        { examId: req.params.examId },
+        { _id: 1, marks: 1 }
+      ).lean();
       if (allQuestions.length === 0) {
         return res.json({ questions: [], examType: exam.examType, message: 'No questions available for this exam yet. Please contact your admin.' });
       }
@@ -107,11 +111,8 @@ router.get('/:examId/questions', auth, async (req, res) => {
       const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
 
       if (exam.examType === 'mcq') {
-        // MCQ → every student gets every question, different order
         selected = shuffled;
       } else {
-        // Practical → random subset based on questionsPerStudent setting
-        // If questionsPerStudent is 0 or unset, give all questions
         const qps = Number(exam.questionsPerStudent) || 0;
         const count = qps > 0 ? qps : allQuestions.length;
         selected = shuffled.slice(0, Math.min(count, allQuestions.length));
@@ -119,12 +120,10 @@ router.get('/:examId/questions', auth, async (req, res) => {
       assignedQuestionIds = selected.map(q => q._id);
 
       if (submission) {
-        // Update existing preliminary submission with assigned questions
         submission.assignedQuestions = assignedQuestionIds;
         submission.totalMarks = selected.reduce((sum, q) => sum + q.marks, 0);
         await submission.save();
       } else {
-        // Create a new preliminary submission with assigned questions
         try {
           submission = new Submission({
             examId: req.params.examId,
@@ -134,8 +133,7 @@ router.get('/:examId/questions', auth, async (req, res) => {
           });
           await submission.save();
         } catch (saveErr) {
-          // If unique index conflict, just fetch existing
-          submission = await Submission.findOne({ examId: req.params.examId, studentId: req.user.id });
+          submission = await Submission.findOne({ examId: req.params.examId, studentId: req.user.id }).lean();
           if (submission && submission.assignedQuestions && submission.assignedQuestions.length > 0) {
             assignedQuestionIds = submission.assignedQuestions;
           }
@@ -144,9 +142,10 @@ router.get('/:examId/questions', auth, async (req, res) => {
     }
 
     // Fetch full question data WITHOUT correctAnswer or modelAnswer
-    const questions = await Question.find({ _id: { $in: assignedQuestionIds } })
-      .select('-correctAnswer -modelAnswer')
-      .sort({ order: 1 });
+    const questions = await Question.find(
+      { _id: { $in: assignedQuestionIds } },
+      { correctAnswer: 0, modelAnswer: 0 }
+    ).sort({ order: 1 }).lean();
 
     res.json({ questions, examType: exam.examType });
   } catch (error) {

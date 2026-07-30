@@ -187,22 +187,31 @@ const Dashboard = () => {
   };
 
   const startExam = async (exam) => {
-    // If student already submitted, show submission view instead
     const existingSub = submissions[exam._id];
-    if (existingSub && existingSub.answers && existingSub.answers.length > 0) {
+    const alreadySubmitted = existingSub && ((existingSub.answers && existingSub.answers.length > 0) || existingSub.answerFile);
+    if (alreadySubmitted) {
       checkSubmission(exam);
       return;
     }
-    setLoadingQuestions(true);
     setSubmission(null);
     setResultPublished(false);
+    setExamQuestions([]);
+    setTakingExam(exam);
+    setAnswers({});
+    setLoadingQuestions(true);
     try {
       const { data } = await API.get(`/exams/${exam._id}/questions`);
+      if (!data.questions || data.questions.length === 0) {
+        toast.warning(data.message || 'No questions available for this exam.');
+        setTakingExam(null);
+        setLoadingQuestions(false);
+        return;
+      }
       setExamQuestions(data.questions);
-      setTakingExam(exam);
-      setAnswers({});
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to load exam questions');
+      setTakingExam(null);
+      setExamQuestions([]);
     } finally {
       setLoadingQuestions(false);
     }
@@ -384,7 +393,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="subjects-grid">
                     {subjects.map((subject) => (
-                      <div className="subject-card clickable" key={subject._id} onClick={() => { setSelectedSubject(subject); setActivePage('subjectDetail'); fetchExams(); }}>
+                      <div className="subject-card clickable" key={subject._id} onClick={() => { setSelectedSubject(subject); setActivePage('subjectDetail'); fetchExams(); fetchSubmissions(); }}>
                         <div className="subject-icon">📘</div>
                         <h3>{subject.name}</h3>
                         <p>Code: {subject.code}</p>
@@ -435,7 +444,7 @@ const Dashboard = () => {
                   {subjectExams.map((exam) => {
                     const status = getExamStatus(exam);
                     const sub = submissions[exam._id];
-                    const hasSubmitted = sub && sub.answers && sub.answers.length > 0;
+                    const hasSubmitted = sub && ((sub.answers && sub.answers.length > 0) || sub.answerFile);
                     const resultReady = hasSubmitted && isResultPublished(exam);
                     const resultPending = hasSubmitted && !resultReady && exam.resultDate;
                     const examOver = status === 'completed';
@@ -837,7 +846,7 @@ const Dashboard = () => {
                     {exams.map((exam) => {
                       const status = getExamStatus(exam);
                       const sub = submissions[exam._id];
-                      const hasSubmitted = sub && sub.answers && sub.answers.length > 0;
+                      const hasSubmitted = sub && ((sub.answers && sub.answers.length > 0) || sub.answerFile);
                       const resultReady = hasSubmitted && isResultPublished(exam);
                       const resultPending = hasSubmitted && !resultReady && exam.resultDate;
                       const examOver = status === 'completed';

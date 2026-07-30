@@ -17,7 +17,13 @@ router.post('/send-reminder/:examId', auth, adminOnly, async (req, res) => {
     const exam = await Exam.findById(req.params.examId);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
     const result = await notifyExamReminder(exam);
-    res.json({ message: `Reminder sent to ${result.sent} of ${result.total} students`, result });
+    let msg = result.sent > 0
+      ? `✓ Reminder sent to ${result.sent} of ${result.total} students`
+      : result.error
+      ? `✗ Failed: ${result.error}`
+      : `No emails sent (${result.total} students found, ${result.sent} sent)`;
+    if (result.isEthereal && result.sent > 0) msg += ' (using Ethereal test — view at https://ethereal.email/login)';
+    res.json({ message: msg, result });
   } catch (err) {
     console.error('[NOTIFY] Reminder error:', err.message);
     res.status(500).json({ message: err.message });
@@ -29,7 +35,13 @@ router.post('/send-results/:examId', auth, adminOnly, async (req, res) => {
     const exam = await Exam.findById(req.params.examId);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
     const result = await notifyResultPublished(exam);
-    res.json({ message: `Results notified to ${result.sent} of ${result.total} students`, result });
+    let msg = result.sent > 0
+      ? `✓ Results notified to ${result.sent} of ${result.total} students`
+      : result.error
+      ? `✗ Failed: ${result.error}`
+      : `No results sent (${result.total} submissions found, ${result.sent} sent)`;
+    if (result.isEthereal && result.sent > 0) msg += ' (using Ethereal test — view at https://ethereal.email/login)';
+    res.json({ message: msg, result });
   } catch (err) {
     console.error('[NOTIFY] Results error:', err.message);
     res.status(500).json({ message: err.message });
