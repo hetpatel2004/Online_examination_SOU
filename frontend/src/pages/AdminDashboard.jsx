@@ -37,6 +37,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
+import ExamCalendar from '../components/ExamCalendar';
 import API from '../api/axios';
 
 const AdminDashboard = () => {
@@ -666,6 +667,38 @@ const AdminDashboard = () => {
         );
 
       // ==========================================
+      // TIMETABLE - Interactive Calendar View
+      // ==========================================
+      case 'timetable':
+        return (
+          <div className="admin-section">
+            <div className="section-header-row">
+              <div>
+                <h2>Exam Timetable</h2>
+                <p>Drag & drop exams to reschedule. View all exams in calendar format.</p>
+              </div>
+              <button className="btn btn-secondary" onClick={() => setActivePage('exams')}>← Back to List</button>
+            </div>
+            {exams.length === 0 ? (
+              <div className="loading">Loading exams...</div>
+            ) : (
+              <ExamCalendar
+                exams={exams}
+                onReschedule={async (examId, newDate, currentTime) => {
+                  try {
+                    await API.put(`/admin/exams/${examId}`, { date: newDate });
+                    toast.success('Exam rescheduled successfully!');
+                    fetchExams();
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || 'Failed to reschedule');
+                  }
+                }}
+              />
+            )}
+          </div>
+        );
+
+      // ==========================================
       // EXAMS SECTION - Schedule and manage exams
       // ==========================================
       case 'exams':
@@ -742,6 +775,11 @@ const AdminDashboard = () => {
                               <button className="btn-icon btn-edit" title="View Submissions" onClick={() => openSubmissionsModal(ex)}>📋</button>
                               <button className="btn-icon btn-edit" title="Manage Questions" onClick={() => openQuestionManager(ex)}>❓</button>
                               <button className="btn-icon btn-edit" title="Set Result Date" onClick={() => { setResultDateValue(ex.resultDate || ''); setDeleteConfirm({ type: 'resultDate', id: ex._id, name: ex.subjectName }); }}>📅</button>
+                              <button className="btn-icon btn-notify" title="Send Email Reminder" onClick={async () => { try { await API.post(`/notifications/send-reminder/${ex._id}`); toast.success('Reminder sent!'); } catch (e) { toast.error('Failed to send'); } }}>📧</button>
+                              <button className="btn-icon btn-notify" title="Notify Results" onClick={async () => { try { await API.post(`/notifications/send-results/${ex._id}`); toast.success('Results notified!'); } catch (e) { toast.error('Failed to send'); } }}>📊</button>
+                              {ex.examType === 'practical' && (
+                                <button className="btn-icon btn-edit" title="Check Plagiarism" onClick={async () => { try { const { data } = await API.get(`/admin/exams/${ex._id}/plagiarism`); const flagged = data.pairs?.filter(p => p.flagged)?.length || 0; toast.info(`Plagiarism check complete: ${flagged} flagged pairs out of ${data.summary?.comparisons || 0} comparisons`); } catch (e) { toast.error('Failed to check plagiarism'); } }}>🔍</button>
+                              )}
                               <button className="btn-icon btn-edit" onClick={() => openEditModal('exam', ex)}>✏️</button>
                               <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'exam', id: ex._id, name: ex.subjectName })}>🗑️</button>
                             </td>
@@ -793,6 +831,9 @@ const AdminDashboard = () => {
                 </div>
                 <div className="subject-card admin-card clickable" onClick={() => setActivePage('exams')}>
                   <div className="subject-icon">📝</div><h3>Schedule Exams</h3><p>Set exam date, time, and subject details</p>
+                </div>
+                <div className="subject-card admin-card clickable" onClick={() => { setActivePage('timetable'); fetchExams(); }}>
+                  <div className="subject-icon">📅</div><h3>Exam Timetable</h3><p>Interactive calendar with drag & drop rescheduling</p>
                 </div>
               </div>
             </div>

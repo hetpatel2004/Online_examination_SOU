@@ -1,8 +1,10 @@
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ role, activePage, onNavigate }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -15,6 +17,7 @@ const Sidebar = ({ role, activePage, onNavigate }) => {
     { id: 'subjects', icon: '📚', label: 'My Subjects' },
     { id: 'students', icon: '👥', label: 'Students' },
     { id: 'exams', icon: '📝', label: 'Exams' },
+    { id: 'timetable', icon: '📅', label: 'Timetable' },
   ];
 
   const studentMenu = [
@@ -73,6 +76,10 @@ const Sidebar = ({ role, activePage, onNavigate }) => {
         </div>
         <button className="sidebar-logout" onClick={handleLogout}>
           🚪 Logout
+        </button>
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {theme === 'light' ? '🌙' : '☀️'}
+          <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
         </button>
       </div>
     </aside>

@@ -16,6 +16,36 @@
   --sou-warning: #D89B00;
   --sou-danger: #D64545;
   --sou-info: #2878B5;
+  --sou-sidebar-bg: linear-gradient(180deg, #0F4D2C 0%, #0F4D2C 50%, #0F4D2C 100%);
+  --sou-card-bg: #FFFFFF;
+  --sou-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --sou-card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --sou-glass-bg: rgba(255, 255, 255, 0.7);
+  --sou-glass-border: rgba(255, 255, 255, 0.3);
+  --sou-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --sou-nav-text: #1F2933;
+}
+
+[data-theme="dark"] {
+  --sou-primary: #1DB954;
+  --sou-primary-dark: #0F4D2C;
+  --sou-primary-light: #1a3a2a;
+  --sou-background: #0f0f1a;
+  --sou-surface: #1a1a2e;
+  --sou-card-bg: #1e1e36;
+  --sou-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --sou-card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --sou-border: #2d2d4a;
+  --sou-text: #e0e0e0;
+  --sou-text-secondary: #a0a0b8;
+  --sou-gold: #D4A843;
+  --sou-sidebar-bg: linear-gradient(180deg, #0a0a1a 0%, #111128 50%, #0f0f1a 100%);
+  --sou-glass-bg: rgba(30, 30, 54, 0.7);
+  --sou-glass-border: rgba(255, 255, 255, 0.08);
+  --sou-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --sou-nav-text: #e0e0e0;
+  --sou-oak-light: #2d2d4a;
+  --sou-info: #64B5F6;
 }
 
 * {

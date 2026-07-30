@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [exams, setExams] = useState([]);
   const [loadingExams, setLoadingExams] = useState(false);
   const [examError, setExamError] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
   const [takingExam, setTakingExam] = useState(null);
   const [examQuestions, setExamQuestions] = useState([]);
@@ -382,16 +383,111 @@ const Dashboard = () => {
                 ) : (
                   <div className="subjects-grid">
                     {subjects.map((subject) => (
-                      <div className="subject-card" key={subject._id}>
+                      <div className="subject-card clickable" key={subject._id} onClick={() => { setSelectedSubject(subject); setActivePage('subjectDetail'); fetchExams(); }}>
                         <div className="subject-icon">📘</div>
                         <h3>{subject.name}</h3>
                         <p>Code: {subject.code}</p>
                         <p className="subject-desc">{subject.description || 'No description available'}</p>
                         <span className="subject-status">Semester {subject.semester} • {subject.course}</span>
+                        <div className="subject-card-hover">
+                          <span>View Exams →</span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
+              </>
+            )}
+          </div>
+        );
+
+      case 'subjectDetail':
+        if (!selectedSubject) return renderPage('subjects');
+        const subjectExams = exams.filter(e => e.subjectCode === selectedSubject.code);
+        return (
+          <div className="admin-section">
+            <div className="section-header-row">
+              <div>
+                <h2>{selectedSubject.name}</h2>
+                <p>{selectedSubject.description || 'No description'} — Code: {selectedSubject.code} | Semester {selectedSubject.semester} • {selectedSubject.course}</p>
+              </div>
+              <button className="btn btn-secondary" onClick={() => { setSelectedSubject(null); setActivePage('subjects'); }}>
+                ← Back to Subjects
+              </button>
+            </div>
+            {loadingExams ? (
+              <div className="loading">Loading exams...</div>
+            ) : examError ? (
+              <div className="error-msg">{examError}</div>
+            ) : subjectExams.length === 0 ? (
+              <div className="coming-soon">
+                <span className="coming-icon">📝</span>
+                <h3>No Exams for This Subject</h3>
+                <p>There are no exams scheduled for {selectedSubject.name} yet.</p>
+              </div>
+            ) : (
+              <>
+                <div className="subjects-count">
+                  <span className="count-badge">{subjectExams.length} exam{subjectExams.length !== 1 ? 's' : ''} found for this subject</span>
+                </div>
+                <div className="subjects-grid">
+                  {subjectExams.map((exam) => {
+                    const status = getExamStatus(exam);
+                    const sub = submissions[exam._id];
+                    const hasSubmitted = sub && sub.answers && sub.answers.length > 0;
+                    const resultReady = hasSubmitted && isResultPublished(exam);
+                    const resultPending = hasSubmitted && !resultReady && exam.resultDate;
+                    const examOver = status === 'completed';
+                    let badgeClass = 'status-upcoming';
+                    let badgeText = 'Upcoming';
+                    if (hasSubmitted) { badgeClass = 'status-completed'; badgeText = 'Attempted'; }
+                    else if (examOver) { badgeClass = 'status-completed'; badgeText = 'Missed'; }
+                    else if (status === 'ongoing') { badgeClass = 'status-ongoing'; badgeText = 'LIVE Now'; }
+                    return (
+                      <div className={`subject-card ${status === 'ongoing' && !hasSubmitted ? 'card-live' : ''} ${hasSubmitted ? 'card-attempted' : ''} ${examOver && !hasSubmitted ? 'card-missed' : ''}`} key={exam._id}>
+                        <div className="subject-icon">{hasSubmitted ? '✅' : examOver ? '❌' : status === 'ongoing' ? '🔴' : '📋'}</div>
+                        <h3>{exam.subjectName}</h3>
+                        <p>Code: {exam.subjectCode}</p>
+                        <div className="exam-details">
+                          <p>📅 {exam.date} at {exam.time}</p>
+                          <p>⏱ {exam.duration} minutes</p>
+                          <p>📊 {exam.totalMarks} marks</p>
+                          <p>📝 Type: {exam.examType === 'mcq' ? 'MCQ' : 'Practical'}</p>
+                          {exam.examType === 'practical' && (
+                            <p>{exam.evaluationMethod === 'ai' ? '🤖 AI Evaluation' : '✋ Manual Grading'}</p>
+                          )}
+                        </div>
+                        <div className="exam-actions">
+                          <span className={`exam-status ${badgeClass}`}>{badgeText}</span>
+                          {hasSubmitted && resultReady && (
+                            <div className="result-ready-badge">
+                              <span className="score-mini">{sub.score}/{sub.totalMarks}</span>
+                              <button className="btn btn-primary btn-sm" onClick={() => checkSubmission(exam)}>View Result</button>
+                            </div>
+                          )}
+                          {resultPending && (
+                            <div className="result-pending-box">
+                              <ExamResultTimer exam={exam} />
+                              <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>View Submission</button>
+                            </div>
+                          )}
+                          {hasSubmitted && !exam.resultDate && (
+                            <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>View Submission</button>
+                          )}
+                          {!hasSubmitted && status === 'upcoming' && (
+                            <button className="btn btn-primary btn-sm" onClick={() => startCountdown(exam)} disabled={loadingQuestions}>⏰ Set Timer</button>
+                          )}
+                          {!hasSubmitted && status === 'ongoing' && exam.totalQuestions > 0 && (
+                            <button className="btn btn-primary btn-sm btn-live" onClick={() => startExam(exam)} disabled={loadingQuestions}>🔴 Take Exam</button>
+                          )}
+                          {!hasSubmitted && status === 'ongoing' && (!exam.totalQuestions || exam.totalQuestions === 0) && (
+                            <span className="exam-status" style={{ background: 'rgba(216,155,0,0.1)', color: '#D89B00', fontSize: '11px', padding: '4px 10px', borderRadius: '10px' }}>Questions pending</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </>
             )}
           </div>
@@ -601,6 +697,44 @@ const Dashboard = () => {
                             </div>
                           )}
                         </>
+                      )}
+
+                      {submission.answers && submission.answers.length > 0 && submission.answers[0].questionText && (
+                        <div className="result-answers-section">
+                          <h4>Answer Review</h4>
+                          <div className="result-answers-list">
+                            {submission.answers.map((ans, idx) => (
+                              <div key={idx} className={`result-answer-item ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
+                                <div className="ra-header">
+                                  <span className="ra-number">Q{idx + 1}</span>
+                                  {ans.marks > 0 && <span className="ra-marks">{ans.marks} mark{ans.marks !== 1 ? 's' : ''}</span>}
+                                  <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
+                                    {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                                  </span>
+                                </div>
+                                <p className="ra-question">{ans.questionText}</p>
+                                {ans.options && ans.options.length > 0 && (
+                                  <div className="ra-options">
+                                    {ans.options.map((opt, oi) => (
+                                      <div key={oi} className={`ra-option ${opt === ans.correctAnswer ? 'ra-correct-opt' : ''} ${opt === ans.answer && opt !== ans.correctAnswer ? 'ra-wrong-opt' : ''}`}>
+                                        <span className="ra-opt-letter">{String.fromCharCode(65 + oi)}</span>
+                                        <span className="ra-opt-text">{opt}</span>
+                                        {opt === ans.correctAnswer && <span className="ra-opt-badge correct">✓ Right Answer</span>}
+                                        {opt === ans.answer && opt !== ans.correctAnswer && <span className="ra-opt-badge wrong">✗ Your Answer</span>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {(!ans.options || ans.options.length === 0) && (
+                                  <div className="ra-answer-compare">
+                                    <p><strong>Your answer:</strong> <span className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</span></p>
+                                    {!ans.isCorrect && <p><strong>Correct answer:</strong> <span className="text-correct">{ans.correctAnswer}</span></p>}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </>
                   ) : (

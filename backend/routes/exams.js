@@ -365,13 +365,44 @@ router.get('/:examId/submission', auth, async (req, res) => {
     const resultPublished = exam.resultDate && now >= new Date(exam.resultDate);
 
     if (resultPublished) {
-      // Show full result — students see limited AI data (no generated solutions)
       const resultObj = submission.toObject();
+
+      if (exam.examType === 'mcq' && resultObj.answers && resultObj.answers.length > 0) {
+        const questionIds = resultObj.answers.map(a => a.questionId);
+        const questions = await Question.find({ _id: { $in: questionIds } });
+        const qMap = {};
+        questions.forEach(q => { qMap[q._id.toString()] = q; });
+        resultObj.answers = resultObj.answers.map(a => {
+          const q = qMap[a.questionId?.toString()];
+          const studentAns = (a.answer || '').trim().toLowerCase();
+          const correctAns = (q ? q.correctAnswer : '').trim().toLowerCase();
+          return {
+            ...a,
+            questionText: q ? q.questionText : 'Question deleted',
+            correctAnswer: q ? q.correctAnswer : '',
+            options: q ? q.options : [],
+            marks: q ? q.marks : 0,
+            isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
+          };
+        });
+      }
+
       if (exam.examType === 'practical' && resultObj.evaluationMethod === 'ai') {
-        // Strip hidden evaluation data from student view
         delete resultObj.generatedSolution;
         delete resultObj.submittedCode;
       }
+
+      if (exam.examType === 'practical' && resultObj.answers && resultObj.answers.length > 0) {
+        const questionIds = resultObj.answers.map(a => a.questionId);
+        const questions = await Question.find({ _id: { $in: questionIds } });
+        const qMap = {};
+        questions.forEach(q => { qMap[q._id.toString()] = q; });
+        resultObj.answers = resultObj.answers.map(a => {
+          const q = qMap[a.questionId?.toString()];
+          return { ...a, questionText: q ? q.questionText : 'Question deleted', marks: q ? q.marks : 0 };
+        });
+      }
+
       res.json({ submission: resultObj, resultPublished: true });
     } else {
       // Only show that submission exists, hide score

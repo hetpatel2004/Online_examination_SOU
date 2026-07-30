@@ -4,6 +4,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from './pages/Home';
@@ -22,6 +23,7 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
+      <ThemeProvider>
       <Router>
         <div className="app">
           <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover theme="colored" />
@@ -48,6 +50,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

@@ -36,6 +36,7 @@ const adminRoutes = require('./routes/admin');
 const subjectRoutes = require('./routes/subjects');
 const examRoutes = require('./routes/exams');
 const superAdminRoutes = require('./routes/superadmin');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/superadmin', superAdminRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Test endpoint
 app.get('/api/test', (req, res) => {

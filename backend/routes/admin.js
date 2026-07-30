@@ -917,4 +917,23 @@ router.put('/exams/:examId/submissions/:studentId/grade', auth, adminOnly, async
   }
 });
 
+// ============================================================
+// PLAGIARISM CHECK
+// GET /api/admin/exams/:examId/plagiarism
+// Compares all student code submissions for similarity
+// ============================================================
+router.get('/exams/:examId/plagiarism', auth, adminOnly, async (req, res) => {
+  try {
+    const check = await verifyExamOwnership(req.params.examId, req.user.id);
+    if (check.error) return res.status(check.status).json({ message: check.error });
+
+    const { generatePlagiarismReport } = require('../services/plagiarismService');
+    const report = await generatePlagiarismReport(req.params.examId);
+    res.json(report);
+  } catch (error) {
+    console.error('Error generating plagiarism report:', error.message);
+    res.status(500).json({ message: 'Failed to generate plagiarism report' });
+  }
+});
+
 module.exports = router;
