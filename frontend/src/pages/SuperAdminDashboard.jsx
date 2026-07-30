@@ -402,7 +402,7 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="dashboard-page dashboard-layout sa-theme">
+    <div className="dashboard-page dashboard-layout">
       <Sidebar role="superadmin" activePage={activePage} onNavigate={setActivePage} />
       <div className="dashboard-main">
         <nav className="dashboard-nav">
