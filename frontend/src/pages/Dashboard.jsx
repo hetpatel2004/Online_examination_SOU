@@ -487,11 +487,8 @@ const Dashboard = () => {
                           {!hasSubmitted && status === 'upcoming' && (
                             <button className="btn btn-primary btn-sm" onClick={() => startCountdown(exam)} disabled={loadingQuestions}>⏰ Set Timer</button>
                           )}
-                          {!hasSubmitted && status === 'ongoing' && exam.totalQuestions > 0 && (
+                          {!hasSubmitted && status === 'ongoing' && (
                             <button className="btn btn-primary btn-sm btn-live" onClick={() => startExam(exam)} disabled={loadingQuestions}>🔴 Take Exam</button>
-                          )}
-                          {!hasSubmitted && status === 'ongoing' && (!exam.totalQuestions || exam.totalQuestions === 0) && (
-                            <span className="exam-status" style={{ background: 'rgba(216,155,0,0.1)', color: '#D89B00', fontSize: '11px', padding: '4px 10px', borderRadius: '10px' }}>Questions pending</span>
                           )}
                         </div>
                       </div>
@@ -929,18 +926,11 @@ const Dashboard = () => {
                               </button>
                             )}
 
-                            {/* NOT SUBMITTED + ONGOING + HAS QUESTIONS → Take Exam */}
-                            {!hasSubmitted && status === 'ongoing' && exam.totalQuestions > 0 && (
+                            {/* NOT SUBMITTED + ONGOING → Take Exam */}
+                            {!hasSubmitted && status === 'ongoing' && (
                               <button className="btn btn-primary btn-sm btn-live" onClick={() => startExam(exam)} disabled={loadingQuestions}>
                                 🔴 Take Exam
                               </button>
-                            )}
-
-                            {/* NOT SUBMITTED + ONGOING + NO QUESTIONS */}
-                            {!hasSubmitted && status === 'ongoing' && (!exam.totalQuestions || exam.totalQuestions === 0) && (
-                              <span className="exam-status" style={{ background: 'rgba(216,155,0,0.1)', color: '#D89B00', fontSize: '11px', padding: '4px 10px', borderRadius: '10px' }}>
-                                Questions pending
-                              </span>
                             )}
                           </div>
                         </div>
