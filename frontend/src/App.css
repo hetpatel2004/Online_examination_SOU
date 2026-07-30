@@ -3902,6 +3902,61 @@ body {
   .desc-cell {
     max-width: 100px;
   }
+
+  /* Keep subject tables as normal scrollable tables on mobile */
+  .subject-table {
+    border-collapse: collapse;
+  }
+
+  .subject-table thead {
+    display: table-header-group;
+  }
+
+  .subject-table tbody {
+    display: table-row-group;
+  }
+
+  .subject-table tr {
+    display: table-row;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .subject-table th,
+  .subject-table td {
+    display: table-cell;
+    padding: 10px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .subject-table th {
+    white-space: nowrap;
+  }
+
+  .subject-table td::before {
+    display: none;
+  }
+
+  .subject-table td:first-child,
+  .subject-table td:last-child {
+    border: none;
+    justify-content: normal;
+    font-weight: normal;
+    padding: 10px 12px;
+    margin: 0;
+  }
+
+  .subject-table .no-data {
+    display: table-cell;
+  }
 }
 
 /* ===== 360px — very small phones ===== */
@@ -4073,6 +4128,60 @@ body {
 
   .table-container {
     max-height: 300px;
+  }
+
+  /* Keep subject tables as normal scrollable table on very small phones */
+  .subject-table {
+    border-collapse: collapse;
+  }
+
+  .subject-table thead {
+    display: table-header-group;
+  }
+
+  .subject-table tbody {
+    display: table-row-group;
+  }
+
+  .subject-table tr {
+    display: table-row;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .subject-table th,
+  .subject-table td {
+    display: table-cell;
+    padding: 6px;
+    font-size: 10px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .subject-table th {
+    white-space: nowrap;
+    font-size: 9px;
+  }
+
+  .subject-table td::before {
+    display: none;
+  }
+
+  .subject-table td:first-child,
+  .subject-table td:last-child {
+    border: none;
+    justify-content: normal;
+    font-weight: normal;
+    padding: 6px;
+    margin: 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .subject-table .no-data {
+    display: table-cell;
   }
 
   .dashboard-nav {

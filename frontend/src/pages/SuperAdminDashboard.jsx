@@ -320,7 +320,7 @@ const SuperAdminDashboard = () => {
         {loadingSubjects ? <div className="loading">Loading subjects...</div> : filteredSubjects.length === 0 ? (
           <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">📚</span><h3>No Subjects</h3><p>Add your first subject.</p></div>
         ) : (
-          <div className="table-container"><table className="users-table"><thead><tr><th>#</th><th>Code</th><th>Name</th><th>Course</th><th>Sem</th><th>Assigned To</th><th>Actions</th></tr></thead><tbody>
+          <div className="table-container"><table className="users-table subject-table"><thead><tr><th>#</th><th>Code</th><th>Name</th><th>Course</th><th>Sem</th><th>Assigned To</th><th>Actions</th></tr></thead><tbody>
             {filteredSubjects.map((s, i) => {
               const assignedList = Array.isArray(s.assignedTo) ? s.assignedTo : (s.assignedTo ? [s.assignedTo] : []);
               return (<tr key={s._id}><td>{i + 1}</td><td className="enrollment-cell"><code>{s.code}</code></td><td className="name-cell"><strong>{s.name}</strong></td><td>{s.course}</td><td><span className="semester-tag">Sem {s.semester}</span></td><td><div className="faculty-tags-wrap">{assignedList.length > 0 ? assignedList.map(a => <span key={a._id} className="assigned-faculty">{a.name}</span>) : <span className="unassigned-tag">Unassigned</span>}</div></td><td className="actions-cell">

@@ -644,7 +644,7 @@ const AdminDashboard = () => {
                   ))}
                 </div>
                 <div className="table-container">
-                  <table className="users-table">
+                  <table className="users-table subject-table">
                     <thead><tr><th>#</th><th>Subject Name</th><th>Code</th><th>Semester</th><th>Course</th><th>Description</th></tr></thead>
                     <tbody>
                       {filteredSubjects.length === 0 ? (
