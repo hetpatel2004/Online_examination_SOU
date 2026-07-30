@@ -1,7 +1,7 @@
 {
   "name": "online-examination-sou",
   "version": "1.0.0",
-  "description": "Online Examination System for Silver Oak University (SOU) MCA Department",
+  "description": "Online Examination System for Silver Oak University (SOU)",
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "build": "cd frontend && npm run build",

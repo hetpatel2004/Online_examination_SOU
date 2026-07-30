@@ -65,7 +65,7 @@ const Home = () => {
         <div className="hero-content">
           <div className="badge">Online Examination Portal</div>
           <h1>Silver Oak University</h1>
-          <h2>MCA Online Examination System</h2>
+          <h2>Online Examination System</h2>
           <p className="hero-desc">
             Carrying forward the legacy of the renowned Silver Oak Group of Institutes, 
             SOU stands tall as one of the best private universities in Gujarat. 

@@ -1110,18 +1110,8 @@ body {
 }
 
 /* Admin sidebar - warm brown gradient (#5b3a29) */
-.sidebar-admin {
-  background: linear-gradient(180deg, #5b3a29 0%, #4a2e1f 50%, #3d2518 100%);
-}
-
-/* Student sidebar - dark olive gradient (#3C3D37) */
-.sidebar-student {
-  background: linear-gradient(180deg, #3C3D37 0%, #33342e 50%, #2a2b25 100%);
-}
-
-/* Super Admin sidebar - deep navy gradient */
-.sidebar-superadmin {
-  background: linear-gradient(180deg, #1a237e 0%, #131a6b 50%, #0d1250 100%);
+.sidebar {
+  background: linear-gradient(180deg, #0d1250 0%, #131a6b 50%, #1a237e 100%);
 }
 
 /* Sidebar Header - University logo + panel title */
@@ -1184,25 +1174,11 @@ body {
   color: white;
 }
 
-/* Active item highlight - admin (gold/brown accent) */
-.sidebar-admin .sidebar-item.active {
-  background: rgba(218, 165, 32, 0.25);
+/* Active item highlight */
+.sidebar-item.active {
+  background: rgba(218, 165, 32, 0.2);
   color: white;
   border-right: 3px solid #daa520;
-}
-
-/* Active item highlight - student (cream/sage accent) */
-.sidebar-student .sidebar-item.active {
-  background: rgba(236, 223, 204, 0.2);
-  color: white;
-  border-right: 3px solid #ECDFCC;
-}
-
-/* Active item highlight - super admin (silver accent) */
-.sidebar-superadmin .sidebar-item.active {
-  background: rgba(192, 192, 192, 0.2);
-  color: white;
-  border-right: 3px solid #c0c0c0;
 }
 
 .sidebar-icon {
@@ -1243,16 +1219,8 @@ body {
   flex-shrink: 0;
 }
 
-.sidebar-admin .sidebar-avatar {
+.sidebar-avatar {
   background: linear-gradient(135deg, #daa520, #b8860b);
-}
-
-.sidebar-student .sidebar-avatar {
-  background: linear-gradient(135deg, #8B9A6B, #6B7B52);
-}
-
-.sidebar-superadmin .sidebar-avatar {
-  background: linear-gradient(135deg, #7986cb, #3949ab);
 }
 
 .sidebar-user-info {

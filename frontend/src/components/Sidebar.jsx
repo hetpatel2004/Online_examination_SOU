@@ -32,10 +32,9 @@ const Sidebar = ({ role, activePage, onNavigate }) => {
   ];
 
   const menuItems = role === 'superadmin' ? superAdminMenu : role === 'admin' ? adminMenu : studentMenu;
-  const themeClass = role === 'superadmin' ? 'sidebar-superadmin' : role === 'admin' ? 'sidebar-admin' : 'sidebar-student';
 
   return (
-    <aside className={`sidebar ${themeClass}`}>
+    <aside className="sidebar">
       <div className="sidebar-header">
         <img
           src="https://silveroakuni.ac.in/assets/images/logo/sou-l.svg"
