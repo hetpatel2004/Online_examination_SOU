@@ -608,7 +608,7 @@ const Dashboard = () => {
                       <span className="result-icon">✅</span>
                       <h3>Exam Submitted Successfully!</h3>
                       {isAIEvaluated && (
-                        <p style={{ color: '#1565c0', fontSize: '13px', margin: '8px 0', background: '#e3f2fd', padding: '8px 14px', borderRadius: '8px' }}>
+                        <p style={{ color: '#2878B5', fontSize: '13px', margin: '8px 0', background: '#E8F3EC', padding: '8px 14px', borderRadius: '8px' }}>
                           🤖 This exam uses AI evaluation. Your code is being analyzed for correctness and quality. Results will appear after the result date.
                         </p>
                       )}
@@ -794,7 +794,7 @@ const Dashboard = () => {
 
                             {/* NOT SUBMITTED + ONGOING + NO QUESTIONS */}
                             {!hasSubmitted && status === 'ongoing' && (!exam.totalQuestions || exam.totalQuestions === 0) && (
-                              <span className="exam-status" style={{ background: 'rgba(255,152,0,0.1)', color: '#e65100', fontSize: '11px', padding: '4px 10px', borderRadius: '10px' }}>
+                              <span className="exam-status" style={{ background: 'rgba(216,155,0,0.1)', color: '#D89B00', fontSize: '11px', padding: '4px 10px', borderRadius: '10px' }}>
                                 Questions pending
                               </span>
                             )}

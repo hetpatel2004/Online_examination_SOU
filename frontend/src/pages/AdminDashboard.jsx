@@ -629,8 +629,8 @@ const AdminDashboard = () => {
             {loadingSubjects ? <div className="loading">Loading subjects...</div> : subjectError ? <div className="error-msg">{subjectError}</div> : subjects.length === 0 ? (
               <div className="coming-soon" style={{ padding: '48px 40px', textAlign: 'center' }}>
                 <span className="coming-icon" style={{ fontSize: '48px', display: 'block', marginBottom: '16px' }}>📋</span>
-                <h3 style={{ color: '#5b3a29', marginBottom: '8px' }}>No Subjects Assigned Yet</h3>
-                <p style={{ color: '#776052', fontSize: '15px', maxWidth: '420px', margin: '0 auto', lineHeight: '1.6' }}>
+                <h3 style={{ color: '#176B3A', marginBottom: '8px' }}>No Subjects Assigned Yet</h3>
+                <p style={{ color: '#667085', fontSize: '15px', maxWidth: '420px', margin: '0 auto', lineHeight: '1.6' }}>
                   The Super Admin will soon assign you as a faculty for specific subjects. Once assigned, you will be able to create exams, manage questions, and view submissions for those subjects.
                 </p>
               </div>
@@ -893,7 +893,7 @@ const AdminDashboard = () => {
                           ))}
                       </select>
                       {subjects.filter(s => s.semester === Number(formData.semester || '1') && s.course === (formData.course || 'MCA')).length === 0 && (
-                        <span className="field-hint" style={{color:'#c62828'}}>No assigned subjects for this semester & course.</span>
+                        <span className="field-hint" style={{color:'#D64545'}}>No assigned subjects for this semester & course.</span>
                       )}
                     </div>
                     <div className="form-group">
@@ -1026,7 +1026,7 @@ const AdminDashboard = () => {
 
               {/* Bulk Upload Section */}
               {showBulkUpload && (
-                <div className="question-form-section" style={{background:'#fff3e0',border:'2px solid #ff9800'}}>
+                <div className="question-form-section" style={{background:'#FFF8E1',border:'2px solid #D89B00'}}>
                   <h4>Bulk Upload Questions ({managingExam.examType === 'mcq' ? 'MCQ' : 'Practical'})</h4>
 
                   {/* File Upload */}
@@ -1057,7 +1057,7 @@ const AdminDashboard = () => {
 
                   {/* Format Guide */}
                   <div style={{marginBottom:'12px',padding:'10px 14px',background:'white',borderRadius:'8px',border:'1px solid #ffe0b2',fontSize:'12px',color:'#666',lineHeight:'1.6'}}>
-                    <strong style={{color:'#e65100'}}>CSV Format:</strong><br/>
+                    <strong style={{color:'#D89B00'}}>CSV Format:</strong><br/>
                     {managingExam.examType === 'mcq' ? (
                       <>
                         <code style={{background:'#f5f5f5',padding:'2px 6px',borderRadius:'3px'}}>

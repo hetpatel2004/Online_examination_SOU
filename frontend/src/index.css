@@ -1,3 +1,23 @@
+:root {
+  --sou-primary: #176B3A;
+  --sou-primary-dark: #0F4D2C;
+  --sou-primary-light: #E8F3EC;
+  --sou-green: #2E7D4F;
+  --sou-oak: #795548;
+  --sou-oak-light: #EFE6DF;
+  --sou-gold: #C9A227;
+  --sou-white: #FFFFFF;
+  --sou-background: #F8FAF9;
+  --sou-surface: #FFFFFF;
+  --sou-border: #D9E2DC;
+  --sou-text: #1F2933;
+  --sou-text-secondary: #667085;
+  --sou-success: #198754;
+  --sou-warning: #D89B00;
+  --sou-danger: #D64545;
+  --sou-info: #2878B5;
+}
+
 * {
   margin: 0;
   padding: 0;

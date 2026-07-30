@@ -802,7 +802,7 @@ body {
 
 .auth-sidebar {
   flex: 1;
-  background: linear-gradient(135deg, #00612e, #004d25);
+  background: linear-gradient(135deg, #176B3A, #0F4D2C);
   color: white;
   padding: 60px;
   display: flex;
@@ -888,7 +888,7 @@ body {
 
 .auth-form-wrapper h2 {
   font-size: 28px;
-  color: #00612e;
+  color: #176B3A;
   margin-bottom: 8px;
 }
 
@@ -899,7 +899,7 @@ body {
 
 .error-message {
   background: #ffebee;
-  color: #c62828;
+  color: #D64545;
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -931,8 +931,8 @@ body {
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #5b3a29;
-  box-shadow: 0 0 0 3px rgba(91, 58, 41, 0.1);
+  border-color: #176B3A;
+  box-shadow: 0 0 0 3px rgba(23, 107, 58, 0.1);
 }
 
 .form-group input::placeholder {
@@ -966,7 +966,7 @@ body {
 
 .password-toggle:hover {
   opacity: 1;
-  color: #8a1610;
+  color: #176B3A;
 }
 
 .field-hint {
@@ -988,7 +988,7 @@ body {
 .btn-submit {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #8a1610, #6b1109);
+  background: linear-gradient(135deg, #176B3A, #0F4D2C);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1001,7 +1001,7 @@ body {
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(138, 22, 16, 0.4);
+  box-shadow: 0 4px 15px rgba(23, 107, 58, 0.4);
 }
 
 .btn-submit:disabled {
@@ -1016,7 +1016,7 @@ body {
 }
 
 .auth-switch a {
-  color: #8a1610;
+  color: #176B3A;
   text-decoration: none;
   font-weight: 500;
 }
@@ -1069,7 +1069,7 @@ body {
 
 .nav-welcome {
   font-size: 14px;
-  color: #1a237e;
+  color: #0F4D2C;
   font-weight: 600;
 }
 
@@ -1100,9 +1100,9 @@ body {
   border-radius: 2px;
 }
 
-/* Admin sidebar - warm brown gradient (#5b3a29) */
+/* Admin sidebar - warm brown gradient (#176B3A) */
 .sidebar {
-  background: linear-gradient(180deg, #0d1250 0%, #131a6b 50%, #1a237e 100%);
+  background: linear-gradient(180deg, #0F4D2C 0%, #0F4D2C 50%, #0F4D2C 100%);
 }
 
 /* Sidebar Header - University logo + panel title */
@@ -1161,9 +1161,9 @@ body {
 
 /* Active item highlight */
 .sidebar-item.active {
-  background: rgba(218, 165, 32, 0.2);
+  background: rgba(201, 162, 39, 0.2);
   color: white;
-  border-right: 3px solid #daa520;
+  border-right: 3px solid #C9A227;
 }
 
 .sidebar-icon {
@@ -1205,7 +1205,7 @@ body {
 }
 
 .sidebar-avatar {
-  background: linear-gradient(135deg, #daa520, #b8860b);
+  background: linear-gradient(135deg, #C9A227, #C9A227);
 }
 
 .sidebar-user-info {
@@ -1244,8 +1244,8 @@ body {
 }
 
 .sidebar-logout:hover {
-  background: rgba(218, 165, 32, 0.3);
-  border-color: rgba(218, 165, 32, 0.5);
+  background: rgba(201, 162, 39, 0.3);
+  border-color: rgba(201, 162, 39, 0.5);
   color: white;
 }
 
@@ -1265,12 +1265,12 @@ body {
 
 .section-header h2 {
   font-size: 24px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 6px;
 }
 
 .section-header p {
-  color: #776052;
+  color: #667085;
   font-size: 14px;
 }
 
@@ -1286,12 +1286,12 @@ body {
 
 .section-header-row h2 {
   font-size: 24px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 4px;
 }
 
 .section-header-row p {
-  color: #776052;
+  color: #667085;
   font-size: 14px;
 }
 
@@ -1311,19 +1311,19 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #5b3a29, #4a2e1f);
-  color: #ECDFCC;
-  box-shadow: 0 2px 8px rgba(91, 58, 41, 0.3);
+  background: linear-gradient(135deg, #176B3A, #0F4D2C);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(23, 107, 58, 0.3);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(91, 58, 41, 0.4);
+  box-shadow: 0 4px 12px rgba(23, 107, 58, 0.4);
 }
 
 .btn-secondary {
   background: #f0ece4;
-  color: #5b3a29;
+  color: #176B3A;
 }
 
 .btn-secondary:hover {
@@ -1331,14 +1331,14 @@ body {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #8B4513, #6B3410);
-  color: #ECDFCC;
-  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+  background: linear-gradient(135deg, #D64545, #D64545);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(214, 69, 69, 0.3);
 }
 
 .btn-danger:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
+  box-shadow: 0 4px 12px rgba(214, 69, 69, 0.4);
 }
 
 /* Icon buttons in table actions column */
@@ -1353,7 +1353,7 @@ body {
 }
 
 .btn-edit:hover {
-  background: rgba(91, 58, 41, 0.1);
+  background: rgba(23, 107, 58, 0.1);
 }
 
 .btn-delete:hover {
@@ -1400,7 +1400,7 @@ body {
   gap: 4px;
   padding: 4px 10px;
   background: #e8f5e9;
-  color: #2e7d32;
+  color: #198754;
   border-radius: 20px;
   font-weight: 600;
   font-size: 0.8rem;
@@ -1412,7 +1412,7 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  color: #c62828;
+  color: #D64545;
   font-weight: bold;
   font-size: 11px;
   padding: 0 2px;
@@ -1436,7 +1436,7 @@ body {
   display: inline-block;
   padding: 4px 10px;
   background: #fff3e0;
-  color: #e65100;
+  color: #D89B00;
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.85rem;
@@ -1454,8 +1454,8 @@ body {
 
 .assign-select:focus {
   outline: none;
-  border-color: #1a237e;
-  box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.15);
+  border-color: #0F4D2C;
+  box-shadow: 0 0 0 2px rgba(15, 77, 44, 0.15);
 }
 
 .faculty-all-assigned {
@@ -1469,7 +1469,7 @@ body {
 }
 
 .assignment-group-title {
-  color: #1a237e;
+  color: #0F4D2C;
   margin-bottom: 12px;
   font-size: 1.05rem;
   border-bottom: 2px solid #e8eaf6;
@@ -1492,7 +1492,7 @@ body {
   border-radius: 14px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   text-align: center;
-  border-top: 3px solid #5b3a29;
+  border-top: 3px solid #176B3A;
   transition: transform 0.2s ease;
 }
 
@@ -1500,11 +1500,11 @@ body {
   transform: translateY(-2px);
 }
 
-.stat-card.stat-blue { border-top-color: #5b3a29; }
-.stat-card.stat-green { border-top-color: #8B9A6B; }
-.stat-card.stat-purple { border-top-color: #daa520; }
-.stat-card.stat-red { border-top-color: #8B4513; }
-.stat-card.stat-orange { border-top-color: #c41718; }
+.stat-card.stat-blue { border-top-color: #176B3A; }
+.stat-card.stat-green { border-top-color: #2E7D4F; }
+.stat-card.stat-purple { border-top-color: #C9A227; }
+.stat-card.stat-red { border-top-color: #D64545; }
+.stat-card.stat-orange { border-top-color: #D64545; }
 
 .stat-number {
   display: block;
@@ -1538,8 +1538,8 @@ body {
 
 .search-input:focus {
   outline: none;
-  border-color: #5b3a29;
-  box-shadow: 0 0 0 3px rgba(91, 58, 41, 0.1);
+  border-color: #176B3A;
+  box-shadow: 0 0 0 3px rgba(23, 107, 58, 0.1);
 }
 
 /* ============ FILTER ROW (semester buttons) ============ */
@@ -1571,14 +1571,14 @@ body {
 }
 
 .filter-btn:hover {
-  border-color: #5b3a29;
-  color: #5b3a29;
+  border-color: #176B3A;
+  color: #176B3A;
 }
 
 .filter-btn.active {
-  background: #5b3a29;
-  border-color: #5b3a29;
-  color: #ECDFCC;
+  background: #176B3A;
+  border-color: #176B3A;
+  color: #FFFFFF;
 }
 
 /* ============ DATA TABLE ============ */
@@ -1621,7 +1621,7 @@ body {
   text-align: left;
   font-size: 12px;
   font-weight: 700;
-  color: #1a237e;
+  color: #0F4D2C;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #e0e0e0;
@@ -1640,7 +1640,7 @@ body {
 
 .name-cell {
   font-weight: 600;
-  color: #5b3a29;
+  color: #176B3A;
 }
 
 .enrollment-cell {
@@ -1651,12 +1651,12 @@ body {
   font-family: 'Courier New', monospace;
   font-size: 13px;
   font-weight: 600;
-  background: #f5f0e8;
-  color: #5b3a29;
+  background: #E8F3EC;
+  color: #176B3A;
   padding: 4px 10px;
   border-radius: 6px;
   display: inline-block;
-  border: 1px solid #e0d6c8;
+  border: 1px solid #D9E2DC;
   letter-spacing: 0.5px;
 }
 
@@ -1678,8 +1678,8 @@ body {
   border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
-  background: rgba(91, 58, 41, 0.1);
-  color: #5b3a29;
+  background: rgba(23, 107, 58, 0.1);
+  color: #176B3A;
 }
 
 .role-tag {
@@ -1693,13 +1693,13 @@ body {
 }
 
 .role-tag.role-admin {
-  background: rgba(91, 58, 41, 0.1);
-  color: #5b3a29;
+  background: rgba(23, 107, 58, 0.1);
+  color: #176B3A;
 }
 
 .role-tag.role-student {
   background: rgba(60, 61, 55, 0.1);
-  color: #3C3D37;
+  color: #176B3A;
 }
 
 .no-data {
@@ -1718,7 +1718,7 @@ body {
 
 .error-msg {
   background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
+  color: #D64545;
   padding: 12px 20px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -1732,8 +1732,8 @@ body {
 
 .count-badge {
   display: inline-block;
-  background: rgba(91, 58, 41, 0.1);
-  color: #5b3a29;
+  background: rgba(23, 107, 58, 0.1);
+  color: #176B3A;
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 13px;
@@ -1759,12 +1759,12 @@ body {
 
 .status-upcoming {
   background: rgba(139, 154, 107, 0.15);
-  color: #6B7B52;
+  color: #2E7D4F;
 }
 
 .status-completed {
-  background: rgba(139, 69, 19, 0.1);
-  color: #8B4513;
+  background: rgba(214, 69, 69, 0.1);
+  color: #D64545;
 }
 
 /* Exam details inside student cards */
@@ -1790,13 +1790,13 @@ body {
 }
 
 .type-mcq {
-  background: rgba(0, 97, 46, 0.1);
-  color: #00612e;
+  background: rgba(23, 107, 58, 0.1);
+  color: #176B3A;
 }
 
 .type-practical {
-  background: rgba(138, 22, 16, 0.1);
-  color: #8a1610;
+  background: rgba(214, 69, 69, 0.1);
+  color: #D64545;
 }
 
 /* Large modal for question management */
@@ -1922,46 +1922,46 @@ body {
 
 /* Card highlight when exam is about to start (within 30 min) */
 .card-soon {
-  border: 2px solid #ff9800 !important;
+  border: 2px solid #D89B00 !important;
   animation: pulse-border 2s infinite;
 }
 
 /* Card highlight when exam is live now */
 .card-live {
-  border: 2px solid #c41718 !important;
+  border: 2px solid #D64545 !important;
   animation: pulse-live 1.5s infinite;
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: #ff9800; }
-  50% { border-color: #ffc107; }
+  0%, 100% { border-color: #D89B00; }
+  50% { border-color: #E8B800; }
 }
 
 @keyframes pulse-live {
-  0%, 100% { border-color: #c41718; box-shadow: 0 0 0 0 rgba(196, 23, 24, 0.3); }
-  50% { border-color: #ff4444; box-shadow: 0 0 12px 2px rgba(196, 23, 24, 0.15); }
+  0%, 100% { border-color: #D64545; box-shadow: 0 0 0 0 rgba(214, 69, 69, 0.3); }
+  50% { border-color: #D64545; box-shadow: 0 0 12px 2px rgba(214, 69, 69, 0.15); }
 }
 
 /* Card when student has attempted the exam */
 .card-attempted {
-  border: 2px solid #2e7d32 !important;
+  border: 2px solid #198754 !important;
   background: linear-gradient(135deg, #f8fdf8, #f0faf0) !important;
 }
 
 /* Card when student missed the exam */
 .card-missed {
-  border: 2px dashed #c62828 !important;
+  border: 2px dashed #D64545 !important;
   background: linear-gradient(135deg, #fffafa, #fef5f5) !important;
   opacity: 0.85;
 }
 
 .status-ongoing {
-  background: rgba(196, 23, 24, 0.1);
-  color: #c41718;
+  background: rgba(214, 69, 69, 0.1);
+  color: #D64545;
 }
 
 .btn-live {
-  background: #c41718 !important;
+  background: #D64545 !important;
   animation: btn-pulse 2s infinite;
 }
 
@@ -2178,7 +2178,7 @@ body {
 
 /* ============ RESULT COUNTDOWN (inside submission card) ============ */
 .result-countdown-box {
-  background: linear-gradient(135deg, #f8f9fa, #ecdfcc30);
+  background: linear-gradient(135deg, #f8f9fa, #FFFFFF30);
   border: 1px solid #e0d5c7;
   border-radius: 12px;
   padding: 20px 28px;
@@ -2203,7 +2203,7 @@ body {
 .rc-num {
   font-size: 28px;
   font-weight: 800;
-  color: #5b3a29;
+  color: #176B3A;
   background: white;
   border-radius: 8px;
   padding: 6px 10px;
@@ -2229,7 +2229,7 @@ body {
 
 /* ============ EXAM CARD RESULT COUNTDOWN (on card) ============ */
 .card-result-countdown {
-  background: linear-gradient(135deg, #f8f9fa, #ecdfcc22);
+  background: linear-gradient(135deg, #f8f9fa, #FFFFFF22);
   border: 1px dashed #c5b9a8;
   border-radius: 10px;
   padding: 10px 14px;
@@ -2254,7 +2254,7 @@ body {
 .card-cd-num {
   font-size: 18px;
   font-weight: 800;
-  color: #5b3a29;
+  color: #176B3A;
   background: white;
   border-radius: 5px;
   padding: 3px 7px;
@@ -2280,13 +2280,13 @@ body {
 .score-mini {
   font-size: 15px;
   font-weight: 800;
-  color: #2e7d32;
+  color: #198754;
 }
 
 .result-ready-text {
   font-size: 12px;
   font-weight: 600;
-  color: #2e7d32;
+  color: #198754;
   margin-top: 4px;
   display: block;
 }
@@ -2331,8 +2331,8 @@ body {
 
 /* ============ BADGES ============ */
 .admin-badge {
-  background: linear-gradient(135deg, #5b3a29, #4a2e1f);
-  color: #ECDFCC;
+  background: linear-gradient(135deg, #176B3A, #0F4D2C);
+  color: #FFFFFF;
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 12px;
@@ -2341,8 +2341,8 @@ body {
 }
 
 .student-badge {
-  background: linear-gradient(135deg, #3C3D37, #2a2b25);
-  color: #ECDFCC;
+  background: linear-gradient(135deg, #176B3A, #2a2b25);
+  color: #FFFFFF;
   padding: 6px 16px;
   border-radius: 20px;
   font-size: 12px;
@@ -2351,12 +2351,12 @@ body {
 }
 
 .admin-welcome {
-  background: linear-gradient(135deg, #5b3a29, #3d2518) !important;
+  background: linear-gradient(135deg, #176B3A, #0F4D2C) !important;
 }
 
 .role-badge {
-  background: #5b3a29;
-  color: #ECDFCC;
+  background: #176B3A;
+  color: #FFFFFF;
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
@@ -2364,12 +2364,12 @@ body {
 }
 
 .admin-card {
-  border-left: 4px solid #5b3a29;
+  border-left: 4px solid #176B3A;
 }
 
 .admin-card:hover {
-  border-color: #daa520;
-  box-shadow: 0 4px 15px rgba(91, 58, 41, 0.15);
+  border-color: #C9A227;
+  box-shadow: 0 4px 15px rgba(23, 107, 58, 0.15);
 }
 
 /* ============ DASHBOARD CONTENT ============ */
@@ -2382,8 +2382,8 @@ body {
 }
 
 .welcome-section {
-  background: linear-gradient(135deg, #5b3a29, #3d2518);
-  color: #ECDFCC;
+  background: linear-gradient(135deg, #176B3A, #0F4D2C);
+  color: #FFFFFF;
   padding: 40px;
   border-radius: 16px;
   margin-bottom: 28px;
@@ -2425,7 +2425,7 @@ body {
 
 .student-info h2 {
   font-size: 22px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 24px;
 }
 
@@ -2436,10 +2436,10 @@ body {
 }
 
 .info-item {
-  background: linear-gradient(135deg, #f5f0e8, #ede5d8);
+  background: linear-gradient(135deg, #E8F3EC, #ede5d8);
   padding: 16px 20px;
   border-radius: 10px;
-  border-left: 3px solid #5b3a29;
+  border-left: 3px solid #176B3A;
 }
 
 .info-item label {
@@ -2459,8 +2459,8 @@ body {
 }
 
 .semester-highlight {
-  background: linear-gradient(135deg, #5b3a29, #3d2518);
-  color: #ECDFCC;
+  background: linear-gradient(135deg, #176B3A, #0F4D2C);
+  color: #FFFFFF;
   padding: 4px 14px;
   border-radius: 12px;
   font-size: 14px;
@@ -2476,7 +2476,7 @@ body {
 
 .subjects-section h2 {
   font-size: 22px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 8px;
 }
 
@@ -2500,9 +2500,9 @@ body {
 }
 
 .subject-card:hover {
-  border-color: #5b3a29;
+  border-color: #176B3A;
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(91, 58, 41, 0.12);
+  box-shadow: 0 8px 24px rgba(23, 107, 58, 0.12);
 }
 
 /* Clickable cards that navigate to other sections */
@@ -2511,7 +2511,7 @@ body {
 }
 
 .subject-card.clickable:hover {
-  border-color: #5b3a29;
+  border-color: #176B3A;
 }
 
 .subject-icon {
@@ -2521,7 +2521,7 @@ body {
 
 .subject-card h3 {
   font-size: 16px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 8px;
 }
 
@@ -2533,8 +2533,8 @@ body {
 
 .subject-status {
   display: inline-block;
-  background: #fff3cd;
-  color: #856404;
+  background: #FFF8E1;
+  color: #D89B00;
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -2587,7 +2587,7 @@ body {
 
 .modal-header h3 {
   font-size: 18px;
-  color: #5b3a29;
+  color: #176B3A;
 }
 
 /* Close button (X) */
@@ -2631,7 +2631,7 @@ body {
 
 .delete-warning {
   font-size: 13px;
-  color: #dc3545;
+  color: #D64545;
   font-weight: 500;
 }
 
@@ -2664,8 +2664,8 @@ body {
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #5b3a29;
-  box-shadow: 0 0 0 3px rgba(91, 58, 41, 0.1);
+  border-color: #176B3A;
+  box-shadow: 0 0 0 3px rgba(23, 107, 58, 0.1);
 }
 
 /* Two-column form row */
@@ -3392,10 +3392,10 @@ body {
   .users-table tr {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(91, 58, 41, 0.1);
+    box-shadow: 0 2px 8px rgba(23, 107, 58, 0.1);
     margin-bottom: 14px;
     padding: 14px 16px;
-    border: 1px solid rgba(91, 58, 41, 0.08);
+    border: 1px solid rgba(23, 107, 58, 0.08);
   }
 
   .users-table td {
@@ -3410,7 +3410,7 @@ body {
   .users-table td::before {
     content: attr(data-label);
     font-weight: 700;
-    color: #5b3a29;
+    color: #176B3A;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -3421,7 +3421,7 @@ body {
   .users-table td:first-child {
     font-weight: 700;
     font-size: 11px;
-    color: #5b3a29;
+    color: #176B3A;
     padding-bottom: 8px;
     border-bottom: 1px solid #ede6db;
     margin-bottom: 4px;
@@ -4039,7 +4039,7 @@ body {
 .sub-stat-num {
   font-size: 22px;
   font-weight: 800;
-  color: #5b3a29;
+  color: #176B3A;
   display: block;
 }
 
@@ -4148,7 +4148,7 @@ body {
 .sub-score-num {
   font-size: 22px;
   font-weight: 800;
-  color: #5b3a29;
+  color: #176B3A;
 }
 
 .sub-score-of {
@@ -4166,12 +4166,12 @@ body {
 
 .sub-percentage.pass {
   background: #e8f5e9;
-  color: #2e7d32;
+  color: #198754;
 }
 
 .sub-percentage.fail {
   background: #ffebee;
-  color: #c62828;
+  color: #D64545;
 }
 
 .sub-status-tag {
@@ -4180,7 +4180,7 @@ body {
   padding: 4px 10px;
   border-radius: 10px;
   background: #fff3e0;
-  color: #e65100;
+  color: #D89B00;
 }
 
 .sub-expand-icon {
@@ -4231,7 +4231,7 @@ body {
 .sub-answers-section h4,
 .sub-file-section h4 {
   font-size: 15px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 14px;
   font-weight: 700;
 }
@@ -4246,12 +4246,12 @@ body {
 }
 
 .sub-answer-item.correct {
-  border-left-color: #2e7d32;
+  border-left-color: #198754;
   background: #f6fdf6;
 }
 
 .sub-answer-item.wrong {
-  border-left-color: #c62828;
+  border-left-color: #D64545;
   background: #fffafa;
 }
 
@@ -4265,7 +4265,7 @@ body {
 .sub-q-num {
   font-size: 12px;
   font-weight: 800;
-  color: #5b3a29;
+  color: #176B3A;
   background: #f5f0ea;
   padding: 3px 10px;
   border-radius: 6px;
@@ -4311,12 +4311,12 @@ body {
 }
 
 .sub-a-value.correct-text {
-  color: #2e7d32 !important;
+  color: #198754 !important;
   font-weight: 700;
 }
 
 .sub-a-value.wrong-text {
-  color: #c62828 !important;
+  color: #D64545 !important;
   font-weight: 700;
   text-decoration: line-through;
 }
@@ -4331,12 +4331,12 @@ body {
 
 .tag-correct {
   background: #e8f5e9;
-  color: #2e7d32;
+  color: #198754;
 }
 
 .tag-wrong {
   background: #ffebee;
-  color: #c62828;
+  color: #D64545;
 }
 
 .sub-file-link {
@@ -4345,7 +4345,7 @@ body {
   gap: 6px;
   padding: 8px 16px;
   background: #f5f0ea;
-  color: #5b3a29;
+  color: #176B3A;
   border-radius: 8px;
   text-decoration: none;
   font-size: 13px;
@@ -4376,7 +4376,7 @@ body {
 .grading-header h4 {
   margin: 0;
   font-size: 0.95rem;
-  color: #5b3a29;
+  color: #176B3A;
 }
 
 .grading-form {
@@ -4415,7 +4415,7 @@ body {
 
 .grading-input:focus {
   outline: none;
-  border-color: #8B6914;
+  border-color: #C9A227;
   box-shadow: 0 0 0 2px rgba(139, 105, 20, 0.15);
 }
 
@@ -4430,14 +4430,14 @@ body {
 
 .grading-total-label {
   font-weight: 600;
-  color: #5b3a29;
+  color: #176B3A;
   font-size: 0.95rem;
 }
 
 .grading-total-value {
   font-weight: 700;
   font-size: 1.1rem;
-  color: #8B6914;
+  color: #C9A227;
 }
 
 .grading-summary {
@@ -4502,7 +4502,7 @@ body {
 }
 
 .lang-select-row .lang-select:focus {
-  border-color: #3C3D37;
+  border-color: #176B3A;
   box-shadow: 0 0 0 2px rgba(60,61,55,0.15);
 }
 
@@ -4530,7 +4530,7 @@ body {
 }
 
 .lang-select:focus {
-  border-color: #4fc3f7;
+  border-color: #176B3A;
 }
 
 .btn-run {
@@ -4574,7 +4574,7 @@ body {
 }
 
 .code-textarea:focus {
-  border-color: #4fc3f7;
+  border-color: #176B3A;
   box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.15);
 }
 
@@ -4590,12 +4590,12 @@ body {
 }
 
 .code-output.output-success {
-  border-color: #a5d6a7;
-  background: #f1f8e9;
+  border-color: #198754;
+  background: #E8F3EC;
 }
 
 .code-output.output-error {
-  border-color: #ef9a9a;
+  border-color: #D64545;
   background: #fff5f5;
 }
 
@@ -4619,9 +4619,9 @@ body {
 .code-output.output-running {
   padding: 12px 16px;
   background: #fff3e0;
-  border-color: #ffcc02;
+  border-color: #D89B00;
   text-align: center;
-  color: #e65100;
+  color: #D89B00;
   font-size: 13px;
 }
 
@@ -4663,7 +4663,7 @@ body {
 }
 
 .output-error .output-content {
-  color: #c62828;
+  color: #D64545;
 }
 
 /* Admin submissions: code block for practical answers */
@@ -4705,11 +4705,11 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   background: #e8eaf6;
-  color: #283593;
+  color: #0F4D2C;
 }
 
 .eval-method-badge {
-  color: #1565c0 !important;
+  color: #2878B5 !important;
   font-weight: 600;
 }
 
@@ -4744,12 +4744,12 @@ body {
   display: block;
   font-size: 18px;
   font-weight: 800;
-  color: #5b3a29;
+  color: #176B3A;
 }
 
 .ai-eval-details h5 {
   font-size: 13px;
-  color: #5b3a29;
+  color: #176B3A;
   margin: 16px 0 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -4767,7 +4767,7 @@ body {
   display: inline-block;
   font-size: 12px;
   font-weight: 700;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 6px;
   padding: 2px 8px;
   background: #f0ebe6;
@@ -4813,12 +4813,12 @@ body {
 
 .ai-output-box.expected pre {
   background: #e8f5e9;
-  color: #2e7d32;
+  color: #198754;
 }
 
 .ai-output-box.student.has-error pre {
   background: #ffebee;
-  color: #c62828;
+  color: #D64545;
 }
 
 .ai-solution-section {
@@ -4865,7 +4865,7 @@ body {
 }
 
 .ai-student-score-card.main {
-  background: linear-gradient(135deg, #5b3a29, #776052);
+  background: linear-gradient(135deg, #176B3A, #667085);
 }
 
 .ai-student-score-card.main .ai-score-value {
@@ -4904,13 +4904,13 @@ body {
 
 .ai-meta-item.passed {
   background: #e8f5e9;
-  color: #2e7d32;
+  color: #198754;
   font-weight: 700;
 }
 
 .ai-meta-item.failed {
   background: #ffebee;
-  color: #c62828;
+  color: #D64545;
   font-weight: 700;
 }
 
@@ -4924,7 +4924,7 @@ body {
 
 .ai-student-feedback h4 {
   font-size: 14px;
-  color: #5b3a29;
+  color: #176B3A;
   margin-bottom: 8px;
 }
 
@@ -4934,3 +4934,8 @@ body {
   color: #555;
   white-space: pre-wrap;
 }
+
+
+
+
+
