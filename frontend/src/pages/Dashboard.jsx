@@ -572,73 +572,6 @@ const Dashboard = () => {
                     )}
                   </>
                 )}
-
-                {(submission.answers && submission.answers.length > 0) || (submission.submittedCode && submission.submittedCode.length > 0) ? (
-                  <div className="result-answers-section">
-                    <h4>Answer Review</h4>
-                    <div className="result-answers-list">
-                      {submission.answers && submission.answers.map((ans, idx) => (
-                        <div key={idx} className={`result-answer-item ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
-                          <div className="ra-header">
-                            <span className="ra-number">Q{idx + 1}</span>
-                            {ans.marks > 0 && <span className="ra-marks">{ans.marks} mark{ans.marks !== 1 ? 's' : ''}</span>}
-                            <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
-                              {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
-                            </span>
-                          </div>
-                          <p className="ra-question">{ans.questionText || 'Question'}</p>
-                          {ans.options && ans.options.length > 0 ? (
-                            <div className="ra-answer-compare">
-                              <div className="ra-answer-block wrong">
-                                <strong>Your answer:</strong>
-                                <span className={`sub-a-value ${ans.isCorrect ? 'text-correct' : 'text-incorrect'}`}>
-                                  {ans.answer || '(No answer)'}
-                                </span>
-                              </div>
-                              <div className="ra-answer-block correct">
-                                <strong>Correct answer:</strong>
-                                <span className="text-correct">{ans.correctAnswer}</span>
-                                <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`} style={{marginLeft:'12px',fontSize:'12px'}}>
-                                  {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="ra-answer-compare">
-                              <div className="ra-answer-block wrong">
-                                <strong>Your answer:</strong>
-                                <pre className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</pre>
-                              </div>
-                              {!ans.isCorrect && (
-                                <div className="ra-answer-block correct">
-                                  <strong>Correct answer:</strong>
-                                  <pre className="text-correct">{ans.correctAnswer || '(No model answer provided)'}</pre>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {submission.submittedCode && submission.submittedCode.map((sc, idx) => {
-                        if (submission.answers?.some(a => a.questionId?.toString() === sc.questionId?.toString())) return null;
-                        return (
-                          <div key={'code-' + idx} className="result-answer-item">
-                            <div className="ra-header">
-                              <span className="ra-number">Q{idx + 1}</span>
-                              <span className="ra-marks">{sc.language}</span>
-                            </div>
-                            <div className="ra-answer-compare">
-                              <div className="ra-answer-block">
-                                <strong>Submitted code:</strong>
-                                <pre>{sc.code || '(No code)'}</pre>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
               </>
             ) : (
               <>
@@ -698,6 +631,72 @@ const Dashboard = () => {
                 )}
               </>
             )}
+            {(submission.answers && submission.answers.length > 0) || (submission.submittedCode && submission.submittedCode.length > 0) ? (
+              <div className="result-answers-section">
+                <h4>Answer Review</h4>
+                <div className="result-answers-list">
+                  {submission.answers && submission.answers.map((ans, idx) => (
+                    <div key={idx} className={`result-answer-item ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
+                      <div className="ra-header">
+                        <span className="ra-number">Q{idx + 1}</span>
+                        {ans.marks > 0 && <span className="ra-marks">{ans.marks} mark{ans.marks !== 1 ? 's' : ''}</span>}
+                        <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
+                          {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                        </span>
+                      </div>
+                      <p className="ra-question">{ans.questionText || 'Question'}</p>
+                      {ans.options && ans.options.length > 0 ? (
+                        <div className="ra-answer-compare">
+                          <div className="ra-answer-block wrong">
+                            <strong>Your answer:</strong>
+                            <span className={`sub-a-value ${ans.isCorrect ? 'text-correct' : 'text-incorrect'}`}>
+                              {ans.answer || '(No answer)'}
+                            </span>
+                          </div>
+                          <div className="ra-answer-block correct">
+                            <strong>Correct answer:</strong>
+                            <span className="text-correct">{ans.correctAnswer}</span>
+                            <span className={`ra-verdict ${ans.isCorrect ? 'correct' : 'incorrect'}`} style={{marginLeft:'12px',fontSize:'12px'}}>
+                              {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="ra-answer-compare">
+                          <div className="ra-answer-block wrong">
+                            <strong>Your answer:</strong>
+                            <pre className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</pre>
+                          </div>
+                          {!ans.isCorrect && (
+                            <div className="ra-answer-block correct">
+                              <strong>Correct answer:</strong>
+                              <pre className="text-correct">{ans.correctAnswer || '(No model answer provided)'}</pre>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {submission.submittedCode && submission.submittedCode.map((sc, idx) => {
+                    if (submission.answers?.some(a => a.questionId?.toString() === sc.questionId?.toString())) return null;
+                    return (
+                      <div key={'code-' + idx} className="result-answer-item">
+                        <div className="ra-header">
+                          <span className="ra-number">Q{idx + 1}</span>
+                          <span className="ra-marks">{sc.language}</span>
+                        </div>
+                        <div className="ra-answer-compare">
+                          <div className="ra-answer-block">
+                            <strong>Submitted code:</strong>
+                            <pre>{sc.code || '(No code)'}</pre>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
             <p className="submitted-at">Submitted: {new Date(submission.submittedAt).toLocaleString()}</p>
             {submission.answerFile && (
               <p className="submitted-at">Answer file uploaded ✓</p>
