@@ -1059,6 +1059,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: 32px 40px;
+  min-width: 0;
 }
 
 /* Top navigation bar in the main content area */
@@ -1300,6 +1301,8 @@ body {
   animation: fadeIn 0.3s ease;
   width: 100%;
   max-width: 1200px;
+  overflow-x: auto;
+  min-width: 0;
 }
 
 /* Section header with title and action button */
@@ -1324,6 +1327,8 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .section-header-row h2 {
@@ -1653,6 +1658,8 @@ body {
   display: flex;
   gap: 20px;
   margin-bottom: 24px;
+  overflow-x: auto;
+  min-width: 0;
 }
 
 .stat-card {
@@ -2547,6 +2554,8 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 40px;
+  overflow-x: auto;
+  min-width: 0;
 }
 
 .welcome-section {
@@ -2787,6 +2796,7 @@ body {
   gap: 10px;
   padding: 16px 24px;
   border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
 }
 
 /* Delete confirmation message */
