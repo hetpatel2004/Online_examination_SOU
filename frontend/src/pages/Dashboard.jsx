@@ -70,13 +70,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (activePage === 'subjects') fetchSubjects();
-    if (activePage === 'exams') {
+    if (activePage === 'exams' || activePage === 'subjectDetail') {
       fetchExams();
       fetchSubmissions();
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (resultTimerRef.current) clearInterval(resultTimerRef.current);
+      setCountdown(null);
+      setCountdownExam(null);
+      setResultCountdown(null);
+      setResultCountdownExam(null);
     };
   }, [activePage]);
 
@@ -706,11 +710,11 @@ const Dashboard = () => {
                         </>
                       )}
 
-                      {submission.answers && submission.answers.length > 0 && submission.answers[0].questionText && (
+                      {(submission.answers && submission.answers.length > 0) || (submission.submittedCode && submission.submittedCode.length > 0) ? (
                         <div className="result-answers-section">
                           <h4>Answer Review</h4>
                           <div className="result-answers-list">
-                            {submission.answers.map((ans, idx) => (
+                            {submission.answers && submission.answers.map((ans, idx) => (
                               <div key={idx} className={`result-answer-item ${ans.isCorrect ? 'correct' : 'incorrect'}`}>
                                 <div className="ra-header">
                                   <span className="ra-number">Q{idx + 1}</span>
@@ -719,8 +723,8 @@ const Dashboard = () => {
                                     {ans.isCorrect ? '✅ Correct' : '❌ Incorrect'}
                                   </span>
                                 </div>
-                                <p className="ra-question">{ans.questionText}</p>
-                                {ans.options && ans.options.length > 0 && (
+                                <p className="ra-question">{ans.questionText || 'Question'}</p>
+                                {ans.options && ans.options.length > 0 ? (
                                   <div className="ra-options">
                                     {ans.options.map((opt, oi) => (
                                       <div key={oi} className={`ra-option ${opt === ans.correctAnswer ? 'ra-correct-opt' : ''} ${opt === ans.answer && opt !== ans.correctAnswer ? 'ra-wrong-opt' : ''}`}>
@@ -731,18 +735,42 @@ const Dashboard = () => {
                                       </div>
                                     ))}
                                   </div>
-                                )}
-                                {(!ans.options || ans.options.length === 0) && (
+                                ) : (
                                   <div className="ra-answer-compare">
-                                    <p><strong>Your answer:</strong> <span className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</span></p>
-                                    {!ans.isCorrect && <p><strong>Correct answer:</strong> <span className="text-correct">{ans.correctAnswer}</span></p>}
+                                    <div className="ra-answer-block wrong">
+                                      <strong>Your answer:</strong>
+                                      <pre className={ans.isCorrect ? 'text-correct' : 'text-incorrect'}>{ans.answer || '(Not answered)'}</pre>
+                                    </div>
+                                    {!ans.isCorrect && (
+                                      <div className="ra-answer-block correct">
+                                        <strong>Correct answer:</strong>
+                                        <pre className="text-correct">{ans.correctAnswer || '(No model answer provided)'}</pre>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
                             ))}
+                            {submission.submittedCode && submission.submittedCode.map((sc, idx) => {
+                              if (submission.answers?.some(a => a.questionId?.toString() === sc.questionId?.toString())) return null;
+                              return (
+                                <div key={'code-' + idx} className="result-answer-item">
+                                  <div className="ra-header">
+                                    <span className="ra-number">Q{idx + 1}</span>
+                                    <span className="ra-marks">{sc.language}</span>
+                                  </div>
+                                  <div className="ra-answer-compare">
+                                    <div className="ra-answer-block">
+                                      <strong>Submitted code:</strong>
+                                      <pre>{sc.code || '(No code)'}</pre>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-                      )}
+                      ) : null}
                     </>
                   ) : (
                     <>
