@@ -123,6 +123,7 @@ const Dashboard = () => {
 
   // ---- Start countdown for exam start ----
   const startCountdown = (exam) => {
+    setActivePage('exams');
     const timeLeft = getTimeUntilStart(exam);
     if (timeLeft <= 0) {
       startExam(exam);
@@ -194,12 +195,14 @@ const Dashboard = () => {
     const existingSub = submissions[exam._id];
     const alreadySubmitted = existingSub && ((existingSub.answers && existingSub.answers.length > 0) || existingSub.answerFile);
     if (alreadySubmitted) {
+      setActivePage('exams');
       checkSubmission(exam);
       return;
     }
     setSubmission(null);
     setResultPublished(false);
     setExamQuestions([]);
+    setActivePage('exams');
     setTakingExam(exam);
     setAnswers({});
     setLoadingQuestions(true);
@@ -223,6 +226,7 @@ const Dashboard = () => {
 
   const checkSubmission = async (exam) => {
     try {
+      setActivePage('exams');
       const { data } = await API.get(`/exams/${exam._id}/submission`);
       setSubmission(data.submission);
       setResultPublished(data.resultPublished || false);
