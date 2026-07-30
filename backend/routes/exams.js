@@ -363,54 +363,65 @@ router.get('/:examId/submission', auth, async (req, res) => {
     const now = new Date();
     const resultPublished = exam.resultDate && now >= new Date(exam.resultDate);
 
+    const resultObj = submission.toObject();
+
+    // Always enrich MCQ answers with question details, correctAnswer, isCorrect
+    if (exam.examType === 'mcq' && resultObj.answers && resultObj.answers.length > 0) {
+      const questionIds = resultObj.answers.map(a => a.questionId);
+      const questions = await Question.find({ _id: { $in: questionIds } });
+      const qMap = {};
+      questions.forEach(q => { qMap[q._id.toString()] = q; });
+      resultObj.answers = resultObj.answers.map(a => {
+        const q = qMap[a.questionId?.toString()];
+        const studentAns = (a.answer || '').trim().toLowerCase();
+        const correctAns = (q ? q.correctAnswer : '').trim().toLowerCase();
+        return {
+          ...a,
+          questionText: q ? q.questionText : 'Question deleted',
+          correctAnswer: q ? q.correctAnswer : '',
+          options: q ? q.options : [],
+          marks: q ? q.marks : 0,
+          isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
+        };
+      });
+    }
+
+    // Always enrich practical answers with questionText/marks (but hide correctAnswer before publish)
+    if (exam.examType === 'practical' && resultObj.answers && resultObj.answers.length > 0) {
+      const questionIds = resultObj.answers.map(a => a.questionId);
+      const questions = await Question.find({ _id: { $in: questionIds } });
+      const qMap = {};
+      questions.forEach(q => { qMap[q._id.toString()] = q; });
+      resultObj.answers = resultObj.answers.map(a => {
+        const q = qMap[a.questionId?.toString()];
+        return {
+          ...a,
+          questionText: q ? q.questionText : 'Question deleted',
+          marks: q ? q.marks : 0,
+          correctAnswer: resultPublished ? (q ? q.correctAnswer : '') : undefined,
+          isCorrect: resultPublished ? (q ? true : false) : undefined
+        };
+      });
+    }
+
+    if (exam.examType === 'practical' && resultObj.evaluationMethod === 'ai') {
+      delete resultObj.generatedSolution;
+      delete resultObj.submittedCode;
+    }
+
     if (resultPublished) {
-      const resultObj = submission.toObject();
-
-      if (exam.examType === 'mcq' && resultObj.answers && resultObj.answers.length > 0) {
-        const questionIds = resultObj.answers.map(a => a.questionId);
-        const questions = await Question.find({ _id: { $in: questionIds } });
-        const qMap = {};
-        questions.forEach(q => { qMap[q._id.toString()] = q; });
-        resultObj.answers = resultObj.answers.map(a => {
-          const q = qMap[a.questionId?.toString()];
-          const studentAns = (a.answer || '').trim().toLowerCase();
-          const correctAns = (q ? q.correctAnswer : '').trim().toLowerCase();
-          return {
-            ...a,
-            questionText: q ? q.questionText : 'Question deleted',
-            correctAnswer: q ? q.correctAnswer : '',
-            options: q ? q.options : [],
-            marks: q ? q.marks : 0,
-            isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
-          };
-        });
-      }
-
-      if (exam.examType === 'practical' && resultObj.evaluationMethod === 'ai') {
-        delete resultObj.generatedSolution;
-        delete resultObj.submittedCode;
-      }
-
-      if (exam.examType === 'practical' && resultObj.answers && resultObj.answers.length > 0) {
-        const questionIds = resultObj.answers.map(a => a.questionId);
-        const questions = await Question.find({ _id: { $in: questionIds } });
-        const qMap = {};
-        questions.forEach(q => { qMap[q._id.toString()] = q; });
-        resultObj.answers = resultObj.answers.map(a => {
-          const q = qMap[a.questionId?.toString()];
-          return { ...a, questionText: q ? q.questionText : 'Question deleted', marks: q ? q.marks : 0 };
-        });
-      }
-
       res.json({ submission: resultObj, resultPublished: true });
     } else {
-      // Only show that submission exists, hide score
+      // Hide score but keep answers for review
       res.json({
         submission: {
-          _id: submission._id,
-          submittedAt: submission.submittedAt,
-          status: submission.status,
-          answerFile: submission.answerFile
+          _id: resultObj._id,
+          submittedAt: resultObj.submittedAt,
+          status: resultObj.status,
+          answerFile: resultObj.answerFile,
+          answers: resultObj.answers,
+          submittedCode: resultObj.submittedCode,
+          examId: resultObj.examId
         },
         resultPublished: false
       });
