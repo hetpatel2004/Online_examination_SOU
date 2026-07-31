@@ -365,7 +365,8 @@ router.get('/:examId/submission', auth, async (req, res) => {
 
     const resultObj = submission.toObject();
 
-    // Always enrich MCQ answers with question details, correctAnswer, isCorrect
+    // Enrich MCQ answers with question details. Correct answer and verdict are
+    // ONLY included once the result date has passed (resultPublished).
     if (exam.examType === 'mcq' && resultObj.answers && resultObj.answers.length > 0) {
       const questionIds = resultObj.answers.map(a => a.questionId);
       const questions = await Question.find({ _id: { $in: questionIds } });
@@ -378,10 +379,14 @@ router.get('/:examId/submission', auth, async (req, res) => {
         return {
           ...a,
           questionText: q ? q.questionText : 'Question deleted',
-          correctAnswer: q ? q.correctAnswer : '',
           options: q ? q.options : [],
           marks: q ? q.marks : 0,
-          isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
+          ...(resultPublished
+            ? {
+                correctAnswer: q ? q.correctAnswer : '',
+                isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
+              }
+            : {})
         };
       });
     }
