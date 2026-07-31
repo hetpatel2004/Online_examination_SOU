@@ -50,6 +50,15 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Normalize resultDate to an absolute UTC ISO timestamp so that comparisons
+// (`new Date(exam.resultDate)`) mean the same moment on any server, regardless of
+// its timezone. Invalid/empty values are stored as null.
+const normalizeResultDate = (val) => {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+};
+
 // Multer config for practical answer ZIP uploads
 const uploadDir = path.join(__dirname, '..', 'uploads', 'answers');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -393,7 +402,7 @@ router.post('/exams', auth, adminOnly, async (req, res) => {
       totalQuestions: totalQuestions || 0,
       examType: examType || 'mcq',
       questionsPerStudent: Number(questionsPerStudent) || 0,
-      resultDate: resultDate || null,
+      resultDate: normalizeResultDate(resultDate),
       evaluationMethod: examType === 'practical' ? (evaluationMethod || 'manual') : 'manual',
       evaluationStrictness: examType === 'practical' && evaluationMethod === 'ai' ? (evaluationStrictness || 'medium') : 'medium'
     });
@@ -452,7 +461,7 @@ router.put('/exams/:id', auth, adminOnly, async (req, res) => {
     if (examType) exam.examType = examType;
     const oldQuestionsPerStudent = exam.questionsPerStudent;
     if (questionsPerStudent !== undefined) exam.questionsPerStudent = Number(questionsPerStudent);
-    if (resultDate !== undefined) exam.resultDate = resultDate || null;
+    if (resultDate !== undefined) exam.resultDate = normalizeResultDate(resultDate);
     if (evaluationMethod !== undefined) exam.evaluationMethod = evaluationMethod || 'manual';
     if (evaluationStrictness !== undefined) exam.evaluationStrictness = evaluationStrictness || 'medium';
 
@@ -802,7 +811,7 @@ router.put('/exams/:examId/result-date', auth, adminOnly, async (req, res) => {
     const { resultDate } = req.body;
     const exam = await Exam.findByIdAndUpdate(
       req.params.examId,
-      { resultDate: resultDate || null },
+      { resultDate: normalizeResultDate(resultDate) },
       { new: true }
     );
     if (!exam) return res.status(404).json({ message: 'Exam not found' });

@@ -40,6 +40,24 @@ import Sidebar from '../components/Sidebar';
 import ExamCalendar from '../components/ExamCalendar';
 import API from '../api/axios';
 
+// Convert a datetime-local input value (admin's local time) to an absolute UTC ISO
+// timestamp. Without this, the stored value has no timezone and gets misread on
+// servers running in a different timezone (e.g. Render runs in UTC).
+const toIsoDate = (val) => {
+  if (!val) return '';
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? val : d.toISOString();
+};
+
+// Convert a stored result date back to the local datetime-local format for the edit form.
+const toLocalInputDate = (val) => {
+  if (!val) return '';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val).slice(0, 16);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 const AdminDashboard = () => {
   const { user } = useAuth();
 
@@ -252,11 +270,12 @@ const AdminDashboard = () => {
     setFormError('');
     setFormLoading(true);
     try {
+      const payload = { ...formData, resultDate: toIsoDate(formData.resultDate) };
       if (editingItem) {
-        await API.put(`/admin/exams/${editingItem._id}`, formData);
+        await API.put(`/admin/exams/${editingItem._id}`, payload);
         toast.success('Exam updated successfully!');
       } else {
-        await API.post('/admin/exams', formData);
+        await API.post('/admin/exams', payload);
         toast.success('Exam scheduled successfully!');
       }
       closeModal();
@@ -320,7 +339,7 @@ const AdminDashboard = () => {
         totalQuestions: item.totalQuestions || '0',
         examType: item.examType || 'mcq',
         questionsPerStudent: item.questionsPerStudent || '0',
-        resultDate: item.resultDate || '',
+        resultDate: toLocalInputDate(item.resultDate),
         evaluationMethod: item.evaluationMethod || 'manual',
         evaluationStrictness: item.evaluationStrictness || 'medium'
       });
@@ -450,7 +469,7 @@ const AdminDashboard = () => {
   const handleSetResultDate = async (examId) => {
     setSettingResultDate(true);
     try {
-      await API.put(`/admin/exams/${examId}/result-date`, { resultDate: resultDateValue || null });
+      await API.put(`/admin/exams/${examId}/result-date`, { resultDate: resultDateValue ? toIsoDate(resultDateValue) : null });
       toast.success('Result date updated!');
       fetchExams();
     } catch (error) {
@@ -777,7 +796,7 @@ const AdminDashboard = () => {
                             <td data-label="Actions" className="actions-cell">
                               <button className="btn-icon btn-edit" title="View Submissions" onClick={() => openSubmissionsModal(ex)}>📋</button>
                               <button className="btn-icon btn-edit" title="Manage Questions" onClick={() => openQuestionManager(ex)}>❓</button>
-                              <button className="btn-icon btn-edit" title="Set Result Date" onClick={() => { setResultDateValue(ex.resultDate || ''); setDeleteConfirm({ type: 'resultDate', id: ex._id, name: ex.subjectName }); }}>📅</button>
+                              <button className="btn-icon btn-edit" title="Set Result Date" onClick={() => { setResultDateValue(toLocalInputDate(ex.resultDate)); setDeleteConfirm({ type: 'resultDate', id: ex._id, name: ex.subjectName }); }}>📅</button>
                               <button className="btn-icon btn-notify" title="Send Email Reminder" onClick={async () => { try { const { data } = await API.post(`/notifications/send-reminder/${ex._id}`); toast.success(data.message); } catch (e) { const msg = e.response?.data?.message || 'Failed to send reminder'; toast.error(msg); } }}>📧</button>
                               <button className="btn-icon btn-notify" title="Notify Results" onClick={async () => { try { const { data } = await API.post(`/notifications/send-results/${ex._id}`); toast.success(data.message); } catch (e) { const msg = e.response?.data?.message || 'Failed to send results'; toast.error(msg); } }}>📊</button>
                               {ex.examType === 'practical' && (
