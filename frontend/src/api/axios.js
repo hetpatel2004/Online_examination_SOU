@@ -26,11 +26,12 @@
 
 import axios from 'axios';
 
-// Create axios instance pointed at the Render backend.
+// Create axios instance.
 // Backend mounts ALL routes under /api/ prefix (e.g. /api/auth/login, /api/admin/users).
-// If VITE_API_URL is set (Cloudflare Pages), it MUST include /api at the end.
+// VITE_API_URL must include /api at the end. In dev, defaults to local backend.
+// In production build (no VITE_API_URL), uses the deployed Render backend.
 const API = axios.create({
-  baseURL: 'https://online-examination-sou.onrender.com/api'
+  baseURL: import.meta.env.VITE_API_URL || 'https://online-examination-sou.onrender.com/api'
 });
 
 // Request interceptor - adds JWT token to every request automatically
