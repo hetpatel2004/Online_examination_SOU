@@ -205,6 +205,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Step 4.5: Reject blocked accounts
+    if (user.isBlocked) {
+      return res.status(403).json({ message: 'Your account has been blocked. Please contact the administrator.' });
+    }
+
     // Step 5: Create JWT token
     const token = jwt.sign(
       { userId: user._id },

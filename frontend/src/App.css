@@ -1364,6 +1364,36 @@ body {
   background: rgba(220, 53, 69, 0.1);
 }
 
+.btn-block:hover {
+  background: rgba(214, 69, 69, 0.15);
+}
+
+.btn-unblock:hover {
+  background: rgba(23, 107, 58, 0.1);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.status-blocked-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #d64545;
+  border-radius: 10px;
+  vertical-align: middle;
+}
+
+.section-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .btn-notify:hover {
   background: rgba(23, 107, 58, 0.1);
 }

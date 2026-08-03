@@ -300,6 +300,182 @@ router.delete('/users/:id', auth, adminOnly, async (req, res) => {
   }
 });
 
+/**
+ * PUT /api/admin/users/:id/block
+ * 
+ * Purpose: Toggle whether a student account is blocked.
+ * Blocked students cannot log in or access the system
+ * (enforced in the auth middleware and login route).
+ * 
+ * URL: /api/admin/users/64f5a1b2c3d4e5f6a7b8c9d0/block
+ * Response: { user: { name, enrollmentNumber, isBlocked, ... } }
+ */
+router.put('/users/:id/block', auth, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Toggle the block status (unless an explicit value is provided)
+    const isBlocked = typeof req.body.isBlocked === 'boolean' ? req.body.isBlocked : !user.isBlocked;
+    user.isBlocked = isBlocked;
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({
+      message: isBlocked ? `${user.name} has been blocked` : `${user.name} has been unblocked`,
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Error toggling user block:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/admin/users/bulk
+ * 
+ * Purpose: Bulk register students from a JSON array or CSV text.
+ * 
+ * JSON format:
+ *   { users: [{ name, enrollmentNumber, email, phone, course, semester, aadharNumber, password? }, ...] }
+ *   OR just a JSON array in the body: [{ name, ... }, ...]
+ * 
+ * CSV format (header optional, detected if first row contains "name"/"enrollment"):
+ *   name, enrollmentNumber, email, phone, course, semester, aadharNumber[, password]
+ * 
+ * If password is omitted it defaults to the aadharNumber (same as normal registration).
+ * Rows that already exist (duplicate enrollment/email) are skipped and reported.
+ * Response: { inserted, skipped, errors: [...] }
+ */
+router.post('/users/bulk', auth, adminOnly, async (req, res) => {
+  try {
+    let studentRows = [];
+
+    // ---- CSV text parsing ----
+    if (req.body.csvText && typeof req.body.csvText === 'string' && req.body.csvText.trim()) {
+      const raw = req.body.csvText.trim();
+      const lines = raw.split(/\r?\n/).filter(l => l.trim());
+
+      if (lines.length === 0) {
+        return res.status(400).json({ message: 'CSV is empty' });
+      }
+
+      // Detect if first line is a header
+      const firstLineLower = lines[0].toLowerCase();
+      const hasHeader = firstLineLower.includes('name') && (firstLineLower.includes('enrollment') || firstLineLower.includes('email'));
+      const dataLines = hasHeader ? lines.slice(1) : lines;
+
+      for (let i = 0; i < dataLines.length; i++) {
+        const cols = parseCSVLine(dataLines[i]);
+        if (cols.length < 7) continue; // need at least: name,enrollment,email,phone,course,semester,aadhar
+
+        const row = {
+          name: cols[0],
+          enrollmentNumber: cols[1],
+          email: cols[2],
+          phone: cols[3],
+          course: cols[4],
+          semester: cols[5],
+          aadharNumber: cols[6],
+          password: cols[7] || cols[6]
+        };
+
+        if (row.name && row.enrollmentNumber && row.email && row.phone && row.course && row.semester && row.aadharNumber) {
+          studentRows.push(row);
+        }
+      }
+    }
+
+    // ---- JSON array parsing ----
+    if (req.body.users && Array.isArray(req.body.users)) {
+      studentRows = req.body.users;
+    } else if (Array.isArray(req.body)) {
+      studentRows = req.body;
+    }
+
+    if (studentRows.length === 0) {
+      return res.status(400).json({
+        message: 'No valid students found. CSV format: name, enrollmentNumber, email, phone, course, semester, aadharNumber[, password]'
+      });
+    }
+
+    // Validate and build documents
+    const errors = [];
+    const docs = [];
+    const docSourceIndexes = [];
+    for (let i = 0; i < studentRows.length; i++) {
+      const r = studentRows[i];
+      const name = (r.name || '').trim();
+      const enrollmentNumber = (r.enrollmentNumber || '').trim();
+      const email = (r.email || '').trim();
+      const phone = (r.phone || '').trim();
+      const course = (r.course || '').trim();
+      const semester = (r.semester || '').trim();
+      const aadharNumber = (r.aadharNumber || '').trim();
+      const password = (r.password || aadharNumber || '').trim();
+
+      if (!name || !enrollmentNumber || !email || !phone || !course || !semester || !aadharNumber || !password) {
+        errors.push({ row: i + 1, reason: 'Missing required fields', data: r });
+        continue;
+      }
+
+      const role = enrollmentNumber.toUpperCase().startsWith('ADMIN') ? 'admin' : 'user';
+
+      docs.push({
+        name,
+        enrollmentNumber,
+        email,
+        phone,
+        course,
+        semester,
+        aadharNumber,
+        role,
+        password
+      });
+      docSourceIndexes.push(i);
+    }
+
+    // Hash all passwords
+    const salt = await bcrypt.genSalt(10);
+    const hashedDocs = await Promise.all(docs.map(async (d) => ({
+      ...d,
+      password: await bcrypt.hash(d.password, salt)
+    })));
+
+    // Insert skipping duplicate rows (unique enrollment/email)
+    let inserted = 0;
+    if (hashedDocs.length > 0) {
+      try {
+        const result = await User.insertMany(hashedDocs, { ordered: false });
+        inserted = result.length;
+      } catch (insertErr) {
+        // Count what actually got inserted despite duplicate key errors
+        inserted = hashedDocs.length - (insertErr.writeErrors ? insertErr.writeErrors.length : 0);
+        if (Array.isArray(insertErr.writeErrors)) {
+          for (const we of insertErr.writeErrors) {
+            const srcIndex = docSourceIndexes[we.index];
+            errors.push({ row: srcIndex + 1, reason: 'Duplicate enrollment number or email', data: hashedDocs[we.index] ? hashedDocs[we.index].enrollmentNumber : undefined });
+          }
+        }
+      }
+    }
+
+    res.status(201).json({
+      message: `${inserted} students registered, ${errors.length} skipped`,
+      inserted,
+      skipped: errors.length,
+      errors
+    });
+  } catch (error) {
+    console.error('Error bulk registering students:', error.message);
+    res.status(500).json({ message: 'Server error: ' + error.message });
+  }
+});
+
 // ============================================================
 // SUBJECT MANAGEMENT ROUTES
 // ============================================================

@@ -101,6 +101,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin', 'superadmin'],
     default: 'user'
+  },
+
+  // Block status - when true, the student cannot log in or access the system.
+  // Toggled by admins from the Manage Students page.
+  isBlocked: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true }); // Adds createdAt and updatedAt fields automatically
 

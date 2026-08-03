@@ -124,6 +124,12 @@ const AdminDashboard = () => {
   const [resultDateValue, setResultDateValue] = useState('');
   const [settingResultDate, setSettingResultDate] = useState(false);
 
+  // ========== STUDENT BLOCK / BULK UPLOAD STATE ==========
+  const [blockingUserId, setBlockingUserId] = useState(null);
+  const [showStudentBulkModal, setShowStudentBulkModal] = useState(false);
+  const [studentBulkText, setStudentBulkText] = useState('');
+  const [studentBulkUploading, setStudentBulkUploading] = useState(false);
+
   // ========== SUBMISSIONS VIEW STATE ==========
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
   const [submissionsExam, setSubmissionsExam] = useState(null);
@@ -183,6 +189,52 @@ const AdminDashboard = () => {
       const msg = error.response?.data?.message || 'Failed to delete user';
       setUserError(msg);
       toast.error(msg);
+    }
+  };
+
+  // Toggle block/unblock for a student account
+  const handleToggleBlockStudent = async (student) => {
+    setBlockingUserId(student._id);
+    try {
+      const { data } = await API.put(`/admin/users/${student._id}/block`);
+      toast.success(data.message || 'Status updated');
+      fetchUsers();
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to update block status';
+      toast.error(msg);
+    } finally {
+      setBlockingUserId(null);
+    }
+  };
+
+  // ========== STUDENT BULK UPLOAD ==========
+  const handleStudentBulkUpload = async () => {
+    if (!studentBulkText.trim()) {
+      toast.warning('Please paste your students data or upload a CSV/JSON file first');
+      return;
+    }
+    setStudentBulkUploading(true);
+    try {
+      // Try parsing as JSON first
+      let payload;
+      try {
+        const jsonData = JSON.parse(studentBulkText);
+        payload = { users: Array.isArray(jsonData) ? jsonData : [jsonData] };
+      } catch {
+        // Not JSON — treat as CSV
+        payload = { csvText: studentBulkText };
+      }
+
+      const { data } = await API.post('/admin/users/bulk', payload);
+      toast.success(data.message || 'Students uploaded!');
+      setStudentBulkText('');
+      setShowStudentBulkModal(false);
+      fetchUsers();
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Bulk upload failed';
+      toast.error(msg);
+    } finally {
+      setStudentBulkUploading(false);
     }
   };
 
@@ -603,7 +655,10 @@ const AdminDashboard = () => {
                 <h2>Manage Students</h2>
                 <p>Create, update, and remove student accounts</p>
               </div>
-              <button className="btn btn-primary" onClick={() => openAddModal('student')}>+ Add Student</button>
+              <div className="section-header-actions">
+                <button className="btn btn-secondary" onClick={() => setShowStudentBulkModal(true)}>📦 Bulk Upload</button>
+                <button className="btn btn-primary" onClick={() => openAddModal('student')}>+ Add Student</button>
+              </div>
             </div>
             <div className="stats-row">
               <div className="stat-card stat-blue"><span className="stat-number">{totalStudents}</span><span className="stat-label">Students</span></div>
@@ -621,10 +676,18 @@ const AdminDashboard = () => {
                     {filteredUsers.length === 0 ? <tr><td colSpan="8" className="no-data">{searchTerm ? 'No students match' : 'No students yet'}</td></tr> :
                       filteredUsers.map((u, i) => (
                         <tr key={u._id}>
-                          <td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell">{u.name}</td><td data-label="Enrollment" className="enrollment-cell">{u.enrollmentNumber}</td>
+                          <td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell">{u.name}{u.isBlocked && <span className="status-blocked-badge">Blocked</span>}</td><td data-label="Enrollment" className="enrollment-cell">{u.enrollmentNumber}</td>
                           <td data-label="Email">{u.email}</td><td data-label="Phone">{u.phone}</td><td data-label="Program">{u.course}</td><td data-label="Sem">{u.semester}</td>
                           <td data-label="Actions" className="actions-cell">
                             <button className="btn-icon btn-edit" onClick={() => openEditModal('student', u)}>✏️</button>
+                            <button
+                              className={`btn-icon ${u.isBlocked ? 'btn-unblock' : 'btn-block'}`}
+                              title={u.isBlocked ? 'Unblock student' : 'Block student'}
+                              disabled={blockingUserId === u._id}
+                              onClick={() => handleToggleBlockStudent(u)}
+                            >
+                              {blockingUserId === u._id ? '⏳' : (u.isBlocked ? '✅' : '🚫')}
+                            </button>
                             <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'student', id: u._id, name: u.name })}>🗑️</button>
                           </td>
                         </tr>
@@ -1043,6 +1106,92 @@ const AdminDashboard = () => {
                 else if (deleteConfirm.type === 'subject') handleDeleteSubject(deleteConfirm.id);
                 else if (deleteConfirm.type === 'exam') handleDeleteExam(deleteConfirm.id);
               }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========== STUDENT BULK UPLOAD MODAL ========== */}
+      {showStudentBulkModal && (
+        <div className="modal-overlay" onClick={() => setShowStudentBulkModal(false)}>
+          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📦 Bulk Upload Students</h3>
+              <button className="modal-close" onClick={() => setShowStudentBulkModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {/* File Upload */}
+              <div style={{ marginBottom: '14px', padding: '14px', background: 'white', borderRadius: '8px', border: '1px solid #ffe0b2' }}>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#555' }}>
+                  📁 Upload CSV / JSON File
+                </label>
+                <input
+                  type="file"
+                  accept=".csv,.txt,.json"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      setStudentBulkText(ev.target.result);
+                      toast.success(`Loaded ${file.name} (${ev.target.result.split(/\r?\n/).filter(l => l.trim()).length} lines)`);
+                    };
+                    reader.readAsText(file);
+                    e.target.value = '';
+                  }}
+                  style={{ fontSize: '13px' }}
+                />
+                <span style={{ fontSize: '11px', color: '#999', marginTop: '4px', display: 'block' }}>
+                  Select a .csv, .txt, or .json file — content will appear in the text area below
+                </span>
+              </div>
+
+              {/* Format Guide */}
+              <div style={{ marginBottom: '12px', padding: '10px 14px', background: 'white', borderRadius: '8px', border: '1px solid #ffe0b2', fontSize: '12px', color: '#666', lineHeight: '1.6' }}>
+                <strong style={{ color: '#D89B00' }}>CSV Format (header optional):</strong><br/>
+                <code style={{ background: '#f5f5f5', padding: '2px 6px', borderRadius: '3px' }}>
+                  name, enrollmentNumber, email, phone, course, semester, aadharNumber[, password]
+                </code><br/>
+                <span style={{ color: '#888' }}>
+                  Example:<br/>
+                  <code>"Het Patel","2504070200101","het@example.com","7383539000","MCA","3","123456789012"</code><br/>
+                </span>
+                <span style={{ color: '#888' }}>Password is optional — defaults to the Aadhar number. Duplicate enrollment/email rows are skipped and reported.</span>
+              </div>
+
+              {/* Or paste JSON */}
+              <details style={{ marginBottom: '12px' }}>
+                <summary style={{ fontSize: '12px', color: '#888', cursor: 'pointer', marginBottom: '6px' }}>
+                  Or paste JSON array instead of CSV
+                </summary>
+                <div style={{ fontSize: '11px', color: '#888', marginBottom: '6px', lineHeight: '1.5' }}>
+                  {'[{"name":"Het Patel","enrollmentNumber":"2504070200101","email":"het@example.com","phone":"7383539000","course":"MCA","semester":"3","aadharNumber":"123456789012"}]'}
+                </div>
+              </details>
+
+              {/* Text Area */}
+              <textarea
+                value={studentBulkText}
+                onChange={(e) => setStudentBulkText(e.target.value)}
+                placeholder={'Paste CSV here or use file upload above...\n\nname,enrollmentNumber,email,phone,course,semester,aadharNumber\n"Het Patel","2504070200101","het@example.com","7383539000","MCA","3","123456789012"'}
+                rows="10"
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontFamily: 'monospace', fontSize: '13px', resize: 'vertical' }}
+              />
+
+              {studentBulkText.trim() && (
+                <p style={{ fontSize: '11px', color: '#888', marginTop: '6px' }}>
+                  {studentBulkText.split(/\r?\n/).filter(l => l.trim()).length} lines ready to upload
+                </p>
+              )}
+
+              <button
+                className="btn btn-primary"
+                onClick={handleStudentBulkUpload}
+                disabled={studentBulkUploading || !studentBulkText.trim()}
+                style={{ marginTop: '10px' }}
+              >
+                {studentBulkUploading ? 'Uploading...' : 'Upload Students'}
+              </button>
             </div>
           </div>
         </div>

@@ -45,11 +45,16 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ message: 'Token is not valid, user not found' });
     }
 
-    // Step 4: Attach user to request object
+    // Step 4: Reject blocked accounts
+    if (user.isBlocked) {
+      return res.status(403).json({ message: 'Your account has been blocked. Please contact the administrator.' });
+    }
+
+    // Step 5: Attach user to request object
     // Now any route using this middleware can access req.user
     req.user = user;
     
-    // Step 5: Continue to the actual route handler
+    // Step 6: Continue to the actual route handler
     next();
   } catch (error) {
     res.status(401).json({ message: 'Token is not valid' });
