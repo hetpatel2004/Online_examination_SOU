@@ -28,6 +28,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+// Load secrets/config from backend/.env: MONGODB_URI, JWT_SECRET,
+// OPENAI_API_KEY (AI eval), EMAIL_*/FAST2SMS_* (notifications), FRONTEND_URL
 require('dotenv').config();
 
 // Import route handlers

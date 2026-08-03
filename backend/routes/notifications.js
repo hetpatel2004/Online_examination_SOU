@@ -1,3 +1,5 @@
+// Email/SMS notification endpoints (admin only) — call the notificationService
+// to remind students about an exam, publish results, or send a test email.
 const express = require('express');
 const Exam = require('../models/Exam');
 const auth = require('../middleware/auth');
@@ -12,6 +14,7 @@ function adminOnly(req, res, next) {
   next();
 }
 
+// Send exam-reminder emails/SMS to all eligible students of an exam
 router.post('/send-reminder/:examId', auth, adminOnly, async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.examId);
@@ -30,6 +33,7 @@ router.post('/send-reminder/:examId', auth, adminOnly, async (req, res) => {
   }
 });
 
+// Send result-published emails/SMS to every student who submitted the exam
 router.post('/send-results/:examId', auth, adminOnly, async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.examId);
@@ -48,6 +52,7 @@ router.post('/send-results/:examId', auth, adminOnly, async (req, res) => {
   }
 });
 
+// Send a plain test email to a given address to verify SMTP/.env config
 router.post('/test-email', auth, adminOnly, async (req, res) => {
   try {
     const { email } = req.body;

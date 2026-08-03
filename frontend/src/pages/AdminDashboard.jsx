@@ -656,6 +656,7 @@ const AdminDashboard = () => {
                 <p>Create, update, and remove student accounts</p>
               </div>
               <div className="section-header-actions">
+                {/* Bulk register students from a CSV or JSON file */}
                 <button className="btn btn-secondary" onClick={() => setShowStudentBulkModal(true)}>📦 Bulk Upload</button>
                 <button className="btn btn-primary" onClick={() => openAddModal('student')}>+ Add Student</button>
               </div>
@@ -680,6 +681,7 @@ const AdminDashboard = () => {
                           <td data-label="Email">{u.email}</td><td data-label="Phone">{u.phone}</td><td data-label="Program">{u.course}</td><td data-label="Sem">{u.semester}</td>
                           <td data-label="Actions" className="actions-cell">
                             <button className="btn-icon btn-edit" onClick={() => openEditModal('student', u)}>✏️</button>
+                            {/* Block/unblock the student's account (blocked users can't log in) */}
                             <button
                               className={`btn-icon ${u.isBlocked ? 'btn-unblock' : 'btn-block'}`}
                               title={u.isBlocked ? 'Unblock student' : 'Block student'}

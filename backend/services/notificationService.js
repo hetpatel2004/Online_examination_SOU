@@ -1,3 +1,10 @@
+/**
+ * Notification Service — emails students (nodemailer/SMTP) and sends SMS
+ * (Fast2SMS API) for exam reminders and published results.
+ * .env keys: EMAIL_HOST, EMAIL_PORT, EMAIL_SECURE, EMAIL_USER, EMAIL_PASS,
+ * EMAIL_FROM, FAST2SMS_API_KEY, FAST2SMS_SENDER_ID, FRONTEND_URL.
+ * If no SMTP keys are set, emails fall back to an Ethereal test inbox.
+ */
 const nodemailer = require('nodemailer');
 const https = require('https');
 const Exam = require('../models/Exam');
@@ -7,6 +14,8 @@ const Submission = require('../models/Submission');
 let transporter = null;
 let transporterResolve = null;
 
+// Reuse a single transporter. Prefers real SMTP from .env; otherwise creates
+// a throwaway Ethereal test account so emails can be previewed during dev.
 async function getTransporter() {
   if (transporter) return transporter;
   if (transporterResolve) return transporterResolve;
@@ -54,6 +63,7 @@ function formatTime(timeStr) {
   return `${hr > 12 ? hr - 12 : hr}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
 }
 
+// Send one HTML email via the configured transporter (real SMTP or Ethereal)
 async function sendEmail({ to, subject, html }) {
   const transport = await getTransporter();
   if (!transport) {
@@ -76,6 +86,7 @@ async function sendEmail({ to, subject, html }) {
   }
 }
 
+// Send one SMS through the Fast2SMS bulk API using FAST2SMS_API_KEY from .env
 async function sendSMS({ to, message }) {
   const apiKey = process.env.FAST2SMS_API_KEY;
   if (!apiKey) {
@@ -127,6 +138,7 @@ async function sendSMS({ to, message }) {
   });
 }
 
+// Email + SMS every eligible student (same course & semester) about an upcoming exam
 async function notifyExamReminder(exam) {
   if (!exam || !exam._id) return { sent: 0, total: 0, error: 'Invalid exam', smsSent: 0 };
   try {
@@ -182,6 +194,7 @@ async function notifyExamReminder(exam) {
   }
 }
 
+// Email + SMS every student who submitted, once the exam results are published
 async function notifyResultPublished(exam) {
   if (!exam || !exam._id) return { sent: 0, total: 0, error: 'Invalid exam', smsSent: 0 };
   try {
@@ -236,6 +249,32 @@ async function notifyResultPublished(exam) {
   }
 }
 
+// Email new admin their login credentials (ID, password, role) right after
+// the super admin creates the account. Never blocks admin creation if email fails.
+async function notifyAdminCredentials({ to, name, enrollmentNumber, password, role }) {
+  return sendEmail({
+    to,
+    subject: '🎉 Your SOU Examination System Login Credentials',
+    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f8faf9;border-radius:12px">
+      <div style="text-align:center;margin-bottom:24px">
+        <h2 style="color:#176B3A;margin:0">Silver Oak University</h2>
+        <p style="color:#667085;margin:4px 0 0">Online Examination System — Account Created</p>
+      </div>
+      <div style="background:white;padding:24px;border-radius:12px;border:1px solid #D9E2DC">
+        <h3 style="color:#176B3A;margin:0 0 16px">Dear <strong>${name}</strong>,</h3>
+        <p style="color:#1F2933;margin:8px 0">An admin account has been created for you. Use the details below to log in:</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px 12px;border:1px solid #D9E2DC;background:#E8F3EC;font-weight:600;color:#176B3A">Login ID (Enrollment)</td><td style="padding:8px 12px;border:1px solid #D9E2DC">${enrollmentNumber}</td></tr>
+          <tr><td style="padding:8px 12px;border:1px solid #D9E2DC;background:#E8F3EC;font-weight:600;color:#176B3A">Password</td><td style="padding:8px 12px;border:1px solid #D9E2DC">${password}</td></tr>
+          <tr><td style="padding:8px 12px;border:1px solid #D9E2DC;background:#E8F3EC;font-weight:600;color:#176B3A">Role</td><td style="padding:8px 12px;border:1px solid #D9E2DC">${role}</td></tr>
+        </table>
+        <p style="color:#667085;font-size:13px;margin:16px 0 0">Please log in at the administration portal and change your password for security. Do not share these credentials with anyone.</p>
+      </div>
+      <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — Online Examination System</p>
+    </div>`
+  });
+}
+
 async function sendTestEmail(to) {
   return sendEmail({
     to,
@@ -244,4 +283,4 @@ async function sendTestEmail(to) {
   });
 }
 
-module.exports = { notifyExamReminder, notifyResultPublished, sendTestEmail };
+module.exports = { notifyExamReminder, notifyResultPublished, notifyAdminCredentials, sendTestEmail };

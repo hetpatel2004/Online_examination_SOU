@@ -522,6 +522,7 @@ const Dashboard = () => {
         </div>
         <div className="submission-result">
           <div className="result-card">
+            {/* Score/result card shown only after the admin's result date has passed */}
             {resultPublished ? (
               <>
                 <span className="result-icon">{submission.passed ? '🎉' : submission.score > 0 ? '📊' : '📝'}</span>
@@ -629,6 +630,7 @@ const Dashboard = () => {
                     Results will be announced on the scheduled result date by the admin.
                   </p>
                 )}
+                {/* Lock note: answer review & marks stay hidden until the result date */}
                 {takingExam?.resultDate && (
                   <div className="result-locked-box" style={{ marginTop: '14px', padding: '10px 14px', background: '#FFF7E6', border: '1px solid #FFD08A', borderRadius: '8px', color: '#8A5A00', fontSize: '13px' }}>
                     🔒 Answer review and marks will be visible on{' '}
@@ -637,6 +639,7 @@ const Dashboard = () => {
                 )}
               </>
             )}
+            {/* Per-question answer review — revealed only once results are published */}
             {resultPublished && ((submission.answers && submission.answers.length > 0) || (submission.submittedCode && submission.submittedCode.length > 0)) ? (
               <div className="result-answers-section">
                 <h4>Answer Review</h4>

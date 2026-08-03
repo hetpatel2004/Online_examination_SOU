@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Subject = require('../models/Subject');
 const Course = require('../models/Course');
+const { notifyAdminCredentials } = require('../services/notificationService');
 
 const router = express.Router();
 
@@ -99,8 +100,28 @@ router.post('/admins', auth, superAdminOnly, async (req, res) => {
 
     await admin.save();
 
+    // Email the new admin their login credentials (ID, password, role).
+    // Mail failure never blocks the account creation — it's reported in the response.
+    let emailStatus = null;
+    try {
+      emailStatus = await notifyAdminCredentials({
+        to: admin.email,
+        name: admin.name,
+        enrollmentNumber: admin.enrollmentNumber,
+        password,
+        role: 'Admin'
+      });
+    } catch (emailErr) {
+      console.error('[CREDS-EMAIL] Failed:', emailErr.message);
+      emailStatus = { sent: false, reason: emailErr.message };
+    }
+
     res.status(201).json({
-      message: 'Admin created successfully',
+      message: emailStatus?.sent
+        ? 'Admin created successfully and login credentials emailed'
+        : 'Admin created successfully (email could not be sent)',
+      emailSent: emailStatus?.sent || false,
+      emailReason: emailStatus?.reason || null,
       admin: {
         _id: admin._id, name: admin.name, enrollmentNumber: admin.enrollmentNumber,
         email: admin.email, phone: admin.phone, course: admin.course,

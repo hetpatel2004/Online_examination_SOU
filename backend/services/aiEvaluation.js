@@ -1,6 +1,14 @@
+/**
+ * AI Evaluation Service — auto-grades practical (code) submissions.
+ * Pipeline (3-tier):
+ *   1. Execute code & compare against the model answer (output + similarity)
+ *   2. OpenAI review (gpt-4o-mini) when OPENAI_API_KEY is set in .env
+ *   3. Local heuristic/pattern analysis as fallback (never fails a submission)
+ */
 const { executeCode } = require('./codeExecution');
 const { compareOutputs, calcCodeSimilarity, isNonExecutable } = require('./codeComparisonService');
 
+// Frontend/static languages can't run in the sandbox — scored by similarity/AI only
 const NON_EXECUTABLE_LANGUAGES = new Set([
   'react', 'jsx', 'tsx', 'vue', 'svelte',
   'html', 'css', 'scss', 'sass', 'less',
@@ -11,6 +19,7 @@ function isNonExecutableLanguage(lang) {
   return NON_EXECUTABLE_LANGUAGES.has((lang || '').toLowerCase());
 }
 
+// True only when a real OpenAI key is configured (not a placeholder)
 function hasOpenAIKey() {
   const key = process.env.OPENAI_API_KEY;
   return key && key.length > 10 && !key.startsWith('your_');
@@ -20,6 +29,8 @@ function isOpenAIAvailable() {
   try { return hasOpenAIKey() && typeof fetch === 'function'; } catch { return false; }
 }
 
+// Per-language regex patterns for the heuristic scorer (functions, loops,
+// OOP, imports...). Weights decide each category's contribution to the score.
 const LANG_PROFILES = {
   jsx: {
     patterns: {
@@ -179,6 +190,9 @@ LANG_PROFILES.ruby = LANG_PROFILES.python;
 LANG_PROFILES.php = LANG_PROFILES.javascript;
 LANG_PROFILES.swift = LANG_PROFILES.java;
 
+// Heuristic scorer: keyword relevance to the question, code length, language
+// patterns, vocabulary richness, line count → 0-50 (the other 50% comes from
+// AI or model-answer comparison).
 function analyzeCode(code, language, questionText) {
   if (!code || !code.trim()) return { score: 0, feedback: 'No code submitted' };
   const lang = (language || '').toLowerCase();
@@ -259,6 +273,7 @@ function analyzeCode(code, language, questionText) {
   return { score: final, feedback: feedback.join(', ') };
 }
 
+// Calls OpenAI chat completions (gpt-4o-mini) using OPENAI_API_KEY from .env
 async function callOpenAI(messages) {
   const apiKey = process.env.OPENAI_API_KEY;
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -277,6 +292,8 @@ async function callOpenAI(messages) {
   return data.choices[0].message.content.trim();
 }
 
+// Sends question + model answer + student code to OpenAI and asks for
+// JSON { score, feedback }. Strips ```json code fences before parsing.
 async function aiEvaluate(studentCode, questionText, language, strictness, marks, modelAnswer) {
   const strictNote = strictness === 'hard'
     ? '\n\nHARD MODE: Be extremely strict. Only give high scores if code correctly solves the problem.'
@@ -311,6 +328,9 @@ function looksLikeFrontendCode(code) {
   ].some(p => p.test(code));
 }
 
+// Main entry point used by routes/exams.js after a practical exam is submitted.
+// Runs the full 3-tier pipeline; on any unexpected error it falls back to
+// heuristic-only scoring so a submission is never lost.
 async function evaluateSubmission({ questions, answers, language, strictness = 'medium' }) {
   const isNonExec = isNonExecutableLanguage(language);
   const useAI = isOpenAIAvailable();
@@ -484,6 +504,7 @@ async function _evaluate(questions, answers, language, strictness, isNonExec, us
   };
 }
 
+// Last-resort scoring when the AI pipeline throws — heuristic analysis only
 function _fallbackEvaluate(questions, answers, language) {
   let totalScore = 0;
   let totalPossible = 0;
