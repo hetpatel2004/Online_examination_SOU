@@ -318,7 +318,7 @@ router.put('/users/:id/block', auth, adminOnly, async (req, res) => {
     }
 
     // Toggle the block status (unless an explicit value is provided)
-    const isBlocked = typeof req.body.isBlocked === 'boolean' ? req.body.isBlocked : !user.isBlocked;
+    const isBlocked = req.body && typeof req.body.isBlocked === 'boolean' ? req.body.isBlocked : !user.isBlocked;
     user.isBlocked = isBlocked;
     await user.save();
 

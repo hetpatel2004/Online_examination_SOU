@@ -196,7 +196,7 @@ const AdminDashboard = () => {
   const handleToggleBlockStudent = async (student) => {
     setBlockingUserId(student._id);
     try {
-      const { data } = await API.put(`/admin/users/${student._id}/block`);
+      const { data } = await API.put(`/admin/users/${student._id}/block`, {});
       toast.success(data.message || 'Status updated');
       fetchUsers();
     } catch (error) {

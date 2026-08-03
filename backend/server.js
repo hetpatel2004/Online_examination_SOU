@@ -46,6 +46,14 @@ app.use(cors());
 // Middleware: Parse JSON request bodies (req.body)
 app.use(express.json({ limit: '10mb' }));
 
+// Express 5 leaves req.body as undefined when a request has no body/content-type
+// (e.g. a bodyless PUT from the frontend). Default it to {} so route handlers
+// never crash on `req.body.someField`.
+app.use((req, res, next) => {
+  if (req.body === undefined) req.body = {};
+  next();
+});
+
 // Connect to MongoDB Atlas using connection string from .env
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
