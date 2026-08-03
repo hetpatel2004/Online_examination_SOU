@@ -21,6 +21,12 @@ async function getTransporter() {
   if (transporterResolve) return transporterResolve;
 
   if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    // Detect leftover placeholder values from .env.example so mail silently "not
+    // sending" is impossible to miss (Gmail rejects these with 535 BadCredentials).
+    if (process.env.EMAIL_USER.includes('your_') || process.env.EMAIL_PASS.includes('your_')) {
+      console.warn('[NOTIFICATION] ⚠️ EMAIL_USER / EMAIL_PASS in .env are still PLACEHOLDERS — no emails will be delivered!');
+      console.warn('[NOTIFICATION] Fix: put your real Gmail address + a 16-char App Password in backend/.env');
+    }
     transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT) || 587,
