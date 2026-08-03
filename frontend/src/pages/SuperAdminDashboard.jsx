@@ -132,14 +132,8 @@ const SuperAdminDashboard = () => {
         if (editingItem) {
           toast.success('Admin updated!');
         } else {
-          const { data } = await API.post('/superadmin/admins', formData);
-          if (data.emailSent) {
-            toast.success('Admin created — login credentials emailed!');
-          } else if (data.emailReason) {
-            toast.warning(`Admin created, but email failed: ${data.emailReason}`);
-          } else {
-            toast.success('Admin created!');
-          }
+          await API.post('/superadmin/admins', formData);
+          toast.success(`Admin created! Credentials being emailed to ${formData.email}`);
         }
         closeModal();
         fetchAdmins();
@@ -441,7 +435,7 @@ const SuperAdminDashboard = () => {
                   <>
                     <div className="form-row">
                       <div className="form-group"><label>Full Name</label><input type="text" name="name" value={formData.name || ''} onChange={handleInputChange} required placeholder="Dr. John Doe" /></div>
-                      <div className="form-group"><label>Admin Login ID</label><input type="text" name="enrollmentNumber" value={formData.enrollmentNumber || ''} onChange={handleInputChange} required placeholder="ADMIN004" disabled={!!editingItem} /><span className="field-hint">Must start with ADMIN</span></div>
+                      <div className="form-group"><label>Admin Login ID</label><input type="text" name="enrollmentNumber" value={formData.enrollmentNumber || ''} onChange={handleInputChange} required placeholder="ADMIN004" disabled={!!editingItem} /><span className="field-hint"></span></div>
                     </div>
                     <div className="form-row">
                       <div className="form-group"><label>Email</label><input type="email" name="email" value={formData.email || ''} onChange={handleInputChange} required placeholder="admin4@sou.edu" /></div>

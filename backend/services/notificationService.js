@@ -26,6 +26,10 @@ async function getTransporter() {
       port: Number(process.env.EMAIL_PORT) || 587,
       secure: process.env.EMAIL_SECURE === 'true',
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+      // Timeouts so a misconfigured/unreachable SMTP server can never hang a request
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
     transporterResolve = transporter;
     console.log('[NOTIFICATION] Email transporter configured with', process.env.EMAIL_HOST);
@@ -39,6 +43,9 @@ async function getTransporter() {
       port: 587,
       secure: false,
       auth: { user: testAccount.user, pass: testAccount.pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
     transporterResolve = transporter;
     console.log('[NOTIFICATION] Using Ethereal test account:', testAccount.user);
@@ -72,7 +79,12 @@ async function sendEmail({ to, subject, html }) {
   }
   try {
     const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';
-    const info = await transport.sendMail({ from: `"SOU Examination" <${from}>`, to, subject, html });
+    const info = await transport.sendMail({
+      from: `"SOU Examination" <${from}>`,
+      to, subject, html,
+      // Hard cap per message so a stuck SMTP server can't block callers for long
+      timeout: 15000,
+    });
     const isEthereal = transport.options?.host === 'smtp.ethereal.email';
     if (isEthereal && info.messageId) {
       const previewUrl = nodemailer.getTestMessageUrl(info);
