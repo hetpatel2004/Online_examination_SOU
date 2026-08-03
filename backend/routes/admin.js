@@ -375,7 +375,7 @@ router.post('/exams', auth, adminOnly, async (req, res) => {
     const { subjectId, date, time, duration, semester, course, totalMarks, totalQuestions, examType, questionsPerStudent, resultDate, evaluationMethod, evaluationStrictness } = req.body;
 
     if (!subjectId || !date || !time || !duration || !semester || !course) {
-      return res.status(400).json({ message: 'Subject, date, time, duration, semester, and course are required' });
+      return res.status(400).json({ message: 'Subject, date, time, duration, semester, and program are required' });
     }
 
     const subject = await Subject.findById(subjectId);

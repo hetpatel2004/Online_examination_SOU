@@ -70,7 +70,7 @@ const SuperAdminDashboard = () => {
   };
   const fetchCourses = async () => {
     setLoadingCourses(true);
-    try { const { data } = await API.get('/superadmin/courses'); setCourses(data.courses || []); } catch { toast.error('Failed to load courses'); }
+    try { const { data } = await API.get('/superadmin/courses'); setCourses(data.courses || []); } catch { toast.error('Failed to load programs'); }
     setLoadingCourses(false);
   };
   const fetchSubjects = async () => {
@@ -140,10 +140,10 @@ const SuperAdminDashboard = () => {
       } else if (modalType === 'course') {
         if (editingItem) {
           await API.put(`/superadmin/courses/${editingItem._id}`, formData);
-          toast.success('Course updated!');
+          toast.success('Program updated!');
         } else {
           await API.post('/superadmin/courses', formData);
-          toast.success('Course created!');
+          toast.success('Program created!');
         }
         closeModal();
         fetchCourses();
@@ -174,7 +174,7 @@ const SuperAdminDashboard = () => {
         fetchAdmins();
       } else if (deleteConfirm.type === 'course') {
         await API.delete(`/superadmin/courses/${deleteConfirm.id}`);
-        toast.success('Course deleted');
+        toast.success('Program deleted');
         fetchCourses();
       } else if (deleteConfirm.type === 'subject') {
         await API.delete(`/superadmin/subjects/${deleteConfirm.id}`);
@@ -217,7 +217,7 @@ const SuperAdminDashboard = () => {
       <div className="stats-row">
         <div className="stat-card stat-blue"><span className="stat-number">{stats.totalAdmins}</span><span className="stat-label">Admins</span></div>
         <div className="stat-card stat-green"><span className="stat-number">{stats.totalStudents}</span><span className="stat-label">Students</span></div>
-        <div className="stat-card stat-purple"><span className="stat-number">{stats.totalCourses}</span><span className="stat-label">Courses</span></div>
+        <div className="stat-card stat-purple"><span className="stat-number">{stats.totalCourses}</span><span className="stat-label">Programs</span></div>
         <div className="stat-card stat-orange"><span className="stat-number">{stats.totalSubjects}</span><span className="stat-label">Subjects</span></div>
         <div className="stat-card stat-blue"><span className="stat-number">{stats.assignedSubjects}</span><span className="stat-label">Assigned</span></div>
       </div>
@@ -237,7 +237,7 @@ const SuperAdminDashboard = () => {
             <div className="subject-icon">👤</div><h3>Manage Admins</h3><p>Create, view, and remove admin accounts</p>
           </div>
           <div className="subject-card admin-card clickable" onClick={() => setActivePage('courses')}>
-            <div className="subject-icon">🎓</div><h3>Manage Courses</h3><p>Add, edit, or remove courses</p>
+            <div className="subject-icon">🎓</div><h3>Manage Programs</h3><p>Add, edit, or remove programs</p>
           </div>
           <div className="subject-card admin-card clickable" onClick={() => setActivePage('subjects')}>
             <div className="subject-icon">📚</div><h3>Manage Subjects</h3><p>Add, edit, or remove subjects by semester</p>
@@ -265,8 +265,8 @@ const SuperAdminDashboard = () => {
       {loadingAdmins ? <div className="loading">Loading admins...</div> : admins.length === 0 ? (
         <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">👤</span><h3>No Admins</h3><p>Create your first admin account.</p></div>
       ) : (
-        <div className="table-container"><table className="users-table"><thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Course</th><th>Actions</th></tr></thead><tbody>
-          {admins.map((a, i) => (<tr key={a._id}><td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell"><strong>{a.name}</strong></td><td data-label="Enrollment" className="enrollment-cell"><code>{a.enrollmentNumber}</code></td><td data-label="Email">{a.email}</td><td data-label="Phone">{a.phone}</td><td data-label="Course">{a.course}</td><td data-label="Actions" className="actions-cell"><button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button></td></tr>))}
+        <div className="table-container"><table className="users-table"><thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Program</th><th>Actions</th></tr></thead><tbody>
+          {admins.map((a, i) => (<tr key={a._id}><td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell"><strong>{a.name}</strong></td><td data-label="Enrollment" className="enrollment-cell"><code>{a.enrollmentNumber}</code></td><td data-label="Email">{a.email}</td><td data-label="Phone">{a.phone}</td><td data-label="Program">{a.course}</td><td data-label="Actions" className="actions-cell"><button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button></td></tr>))}
         </tbody></table></div>
       )}
     </div>
@@ -276,16 +276,16 @@ const SuperAdminDashboard = () => {
     <div className="admin-section">
       <div className="section-header-row">
         <div>
-          <h2>Manage Courses</h2>
-          <p>Add, edit, and remove courses</p>
+          <h2>Manage Programs</h2>
+          <p>Add, edit, and remove programs</p>
         </div>
-        <button className="btn btn-primary" onClick={() => openModal('course')}>+ Add Course</button>
+        <button className="btn btn-primary" onClick={() => openModal('course')}>+ Add Program</button>
       </div>
       <div className="stats-row">
-        <div className="stat-card stat-purple"><span className="stat-number">{courses.length}</span><span className="stat-label">Courses</span></div>
+        <div className="stat-card stat-purple"><span className="stat-number">{courses.length}</span><span className="stat-label">Programs</span></div>
       </div>
-      {loadingCourses ? <div className="loading">Loading courses...</div> : courses.length === 0 ? (
-        <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">🎓</span><h3>No Courses</h3><p>Add your first course.</p></div>
+      {loadingCourses ? <div className="loading">Loading programs...</div> : courses.length === 0 ? (
+        <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">🎓</span><h3>No Programs</h3><p>Add your first program.</p></div>
       ) : (
         <div className="table-container"><table className="users-table"><thead><tr><th>#</th><th>Code</th><th>Name</th><th>Description</th><th>Actions</th></tr></thead><tbody>
           {courses.map((c, i) => (<tr key={c._id}><td>{i + 1}</td><td className="enrollment-cell"><code>{c.code}</code></td><td className="name-cell"><strong>{c.name}</strong></td><td>{c.description || '—'}</td><td className="actions-cell">
@@ -323,7 +323,7 @@ const SuperAdminDashboard = () => {
         {loadingSubjects ? <div className="loading">Loading subjects...</div> : filteredSubjects.length === 0 ? (
           <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">📚</span><h3>No Subjects</h3><p>Add your first subject.</p></div>
         ) : (
-          <div className="table-container"><table className="users-table subject-table"><thead><tr><th>#</th><th>Code</th><th>Name</th><th>Course</th><th>Sem</th><th>Assigned To</th><th>Actions</th></tr></thead><tbody>
+          <div className="table-container"><table className="users-table subject-table"><thead><tr><th>#</th><th>Code</th><th>Name</th><th>Program</th><th>Sem</th><th>Assigned To</th><th>Actions</th></tr></thead><tbody>
             {filteredSubjects.map((s, i) => {
               const assignedList = Array.isArray(s.assignedTo) ? s.assignedTo : (s.assignedTo ? [s.assignedTo] : []);
               return (<tr key={s._id}><td>{i + 1}</td><td className="enrollment-cell"><code>{s.code}</code></td><td className="name-cell"><strong>{s.name}</strong></td><td>{s.course}</td><td><span className="semester-tag">Sem {s.semester}</span></td><td><div className="faculty-tags-wrap">{assignedList.length > 0 ? assignedList.map(a => <span key={a._id} className="assigned-faculty">{a.name}</span>) : <span className="unassigned-tag">Unassigned</span>}</div></td><td className="actions-cell">
@@ -356,7 +356,7 @@ const SuperAdminDashboard = () => {
         </div>
         {courses.length > 0 && (
           <div className="filter-row">
-            <button className={`filter-btn ${assignCourseFilter === '' ? 'active' : ''}`} onClick={() => setAssignCourseFilter('')}>All Courses</button>
+            <button className={`filter-btn ${assignCourseFilter === '' ? 'active' : ''}`} onClick={() => setAssignCourseFilter('')}>All Programs</button>
             {courses.map(c => (
               <button key={c._id} className={`filter-btn ${assignCourseFilter === c.code ? 'active' : ''}`} onClick={() => setAssignCourseFilter(c.code)}>{c.code}</button>
             ))}
@@ -442,7 +442,7 @@ const SuperAdminDashboard = () => {
                       <div className="form-group"><label>Phone</label><input type="text" name="phone" value={formData.phone || ''} onChange={handleInputChange} required placeholder="9876543210" /></div>
                     </div>
                     <div className="form-row">
-                      <div className="form-group"><label>Course</label><select name="course" value={formData.course || 'MCA'} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}<option value="Administration">Administration</option></select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || 'MCA'} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}<option value="Administration">Administration</option></select></div>
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || 'N/A'} onChange={handleInputChange} required><option value="N/A">All Semesters</option>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                     </div>
                     {!editingItem && <div className="form-group"><label>Password</label><input type="password" name="password" value={formData.password || ''} onChange={handleInputChange} required minLength="6" placeholder="Min 6 characters" /></div>}
@@ -454,8 +454,8 @@ const SuperAdminDashboard = () => {
                 {modalType === 'course' && (
                   <>
                     <div className="form-row">
-                      <div className="form-group"><label>Course Name</label><input type="text" name="name" value={formData.name || ''} onChange={handleInputChange} required placeholder="Master of Computer Applications" /></div>
-                      <div className="form-group"><label>Course Code</label><input type="text" name="code" value={formData.code || ''} onChange={handleInputChange} required placeholder="MCA" disabled={!!editingItem} /></div>
+                      <div className="form-group"><label>Program Name</label><input type="text" name="name" value={formData.name || ''} onChange={handleInputChange} required placeholder="Master of Computer Applications" /></div>
+                      <div className="form-group"><label>Program Code</label><input type="text" name="code" value={formData.code || ''} onChange={handleInputChange} required placeholder="MCA" disabled={!!editingItem} /></div>
                     </div>
                     <div className="form-row">
                       <div className="form-group">
@@ -483,7 +483,7 @@ const SuperAdminDashboard = () => {
                       <div className="form-group"><label>Subject Code</label><input type="text" name="code" value={formData.code || ''} onChange={handleInputChange} required placeholder="MCA401" disabled={!!editingItem} /></div>
                     </div>
                     <div className="form-row">
-                      <div className="form-group"><label>Course</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.length > 0 ? courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>) : <option value="">Loading courses...</option>}</select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.length > 0 ? courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>) : <option value="">Loading programs...</option>}</select></div>
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleInputChange} required>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                     </div>
                     <div className="form-group"><label>Description</label><input type="text" name="description" value={formData.description || ''} onChange={handleInputChange} placeholder="Optional description" /></div>

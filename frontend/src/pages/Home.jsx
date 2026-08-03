@@ -79,7 +79,7 @@ const Home = () => {
             </div>
             <div className="stat-item">
               <span className="stat-number">150+</span>
-              <span className="stat-label">Courses</span>
+              <span className="stat-label">Programs</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">500+</span>
@@ -123,7 +123,7 @@ const Home = () => {
         </div>
         <div className="stat-item">
           <span className="stat-number">150+</span>
-          <span className="stat-label">Courses</span>
+          <span className="stat-label">Programs</span>
         </div>
         <div className="stat-item">
           <span className="stat-number">1000+</span>
@@ -271,7 +271,7 @@ const Home = () => {
       <section className="cta-section">
         <div className="cta-content">
           <h2>Want to Know More About Silver Oak University?</h2>
-          <p>Visit our official website for complete information about admissions, courses, campus life, and more.</p>
+          <p>Visit our official website for complete information about admissions, programs, campus life, and more.</p>
           <div className="cta-buttons">
             <a href="https://silveroakuni.ac.in" target="_blank" rel="noopener noreferrer" className="btn-primary">
               Visit SOU Website &rarr;

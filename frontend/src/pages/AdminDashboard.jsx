@@ -611,18 +611,18 @@ const AdminDashboard = () => {
               <div className="stat-card stat-purple"><span className="stat-number">{totalExams}</span><span className="stat-label">Exams</span></div>
             </div>
             <div className="search-bar">
-              <input type="text" placeholder="Search by name, enrollment, email, or course..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+              <input type="text" placeholder="Search by name, enrollment, email, or program..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
             </div>
             {loadingUsers ? <div className="loading">Loading students...</div> : userError ? <div className="error-msg">{userError}</div> : (
               <div className="table-container">
                 <table className="users-table">
-                  <thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Course</th><th>Sem</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Program</th><th>Sem</th><th>Actions</th></tr></thead>
                   <tbody>
                     {filteredUsers.length === 0 ? <tr><td colSpan="8" className="no-data">{searchTerm ? 'No students match' : 'No students yet'}</td></tr> :
                       filteredUsers.map((u, i) => (
                         <tr key={u._id}>
                           <td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell">{u.name}</td><td data-label="Enrollment" className="enrollment-cell">{u.enrollmentNumber}</td>
-                          <td data-label="Email">{u.email}</td><td data-label="Phone">{u.phone}</td><td data-label="Course">{u.course}</td><td data-label="Sem">{u.semester}</td>
+                          <td data-label="Email">{u.email}</td><td data-label="Phone">{u.phone}</td><td data-label="Program">{u.course}</td><td data-label="Sem">{u.semester}</td>
                           <td data-label="Actions" className="actions-cell">
                             <button className="btn-icon btn-edit" onClick={() => openEditModal('student', u)}>✏️</button>
                             <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'student', id: u._id, name: u.name })}>🗑️</button>
@@ -668,7 +668,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="table-container">
                   <table className="users-table subject-table">
-                    <thead><tr><th>#</th><th>Subject Name</th><th>Code</th><th>Semester</th><th>Course</th><th>Description</th></tr></thead>
+                    <thead><tr><th>#</th><th>Subject Name</th><th>Code</th><th>Semester</th><th>Program</th><th>Description</th></tr></thead>
                     <tbody>
                       {filteredSubjects.length === 0 ? (
                         <tr><td colSpan="6" className="no-data">No subjects found for Semester {semesterFilter}</td></tr>
@@ -768,7 +768,7 @@ const AdminDashboard = () => {
                 <table className="users-table">
                   <thead>
                     <tr>
-                      <th>#</th><th>Subject</th><th>Code</th><th>Type</th><th>Date</th><th>Time</th><th>Duration</th><th>Sem</th><th>Course</th><th>Status</th><th>Actions</th>
+                      <th>#</th><th>Subject</th><th>Code</th><th>Type</th><th>Date</th><th>Time</th><th>Duration</th><th>Sem</th><th>Program</th><th>Status</th><th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -787,7 +787,7 @@ const AdminDashboard = () => {
                             <td data-label="Time">{ex.time}</td>
                             <td data-label="Duration">{ex.duration} min</td>
                             <td data-label="Sem"><span className="semester-tag">Sem {ex.semester}</span></td>
-                            <td data-label="Course">{ex.course}</td>
+                            <td data-label="Program">{ex.course}</td>
                             <td data-label="Status">
                               <span className={`exam-status ${status === 'upcoming' ? 'status-upcoming' : status === 'ongoing' ? 'status-ongoing' : 'status-completed'}`}>
                                 {status === 'upcoming' ? 'Upcoming' : status === 'ongoing' ? 'LIVE' : 'Completed'}
@@ -901,7 +901,7 @@ const AdminDashboard = () => {
                     <div className="form-group"><label>Email</label><input type="email" name="email" value={formData.email || ''} onChange={handleInputChange} placeholder="student@email.com" required /></div>
                     <div className="form-group"><label>Phone</label><input type="text" name="phone" value={formData.phone || ''} onChange={handleInputChange} placeholder="10-digit phone" required /></div>
                     <div className="form-row">
-                      <div className="form-group"><label>Course</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}</select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}</select></div>
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleInputChange}>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
                     </div>
                     {!editingItem && (
@@ -925,7 +925,7 @@ const AdminDashboard = () => {
                     )}
                     <div className="form-row">
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleInputChange}>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
-                      <div className="form-group"><label>Course</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}</select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}</select></div>
                     </div>
                     <div className="form-group"><label>Description (optional)</label><input type="text" name="description" value={formData.description || ''} onChange={handleInputChange} placeholder="Brief description" /></div>
                   </>
@@ -936,7 +936,7 @@ const AdminDashboard = () => {
                   <>
                     <div className="form-row">
                       <div className="form-group">
-                        <label>Course</label>
+                        <label>Program</label>
                         <select name="course" value={formData.course || ''} onChange={handleInputChange} required>
                           {courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}
                         </select>
@@ -959,7 +959,7 @@ const AdminDashboard = () => {
                           ))}
                       </select>
                       {subjects.filter(s => s.semester === Number(formData.semester || '1') && s.course === (formData.course || 'MCA')).length === 0 && (
-                        <span className="field-hint" style={{color:'#D64545'}}>No assigned subjects for this semester & course.</span>
+                            <span className="field-hint" style={{color:'#D64545'}}>No assigned subjects for this semester & program.</span>
                       )}
                     </div>
                     <div className="form-group">
@@ -1445,7 +1445,7 @@ const AdminDashboard = () => {
                             <div className="sub-detail-student">
                               <div className="sub-detail-item"><label>Email</label><span>{student?.email || '—'}</span></div>
                               <div className="sub-detail-item"><label>Phone</label><span>{student?.phone || '—'}</span></div>
-                              <div className="sub-detail-item"><label>Course</label><span>{student?.course}</span></div>
+                              <div className="sub-detail-item"><label>Program</label><span>{student?.course}</span></div>
                               <div className="sub-detail-item"><label>Semester</label><span>{student?.semester}</span></div>
                             </div>
 

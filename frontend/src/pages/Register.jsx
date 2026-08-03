@@ -218,11 +218,11 @@ const Register = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Course</label>
+                <label>Program</label>
                 <select name="course" value={formData.course} onChange={handleChange} required>
                   {courses.length > 0 ? courses.map(c => (
                     <option key={c._id} value={c.code}>{c.name}</option>
-                  )) : <option value="">Loading courses...</option>}
+                  )) : <option value="">Loading programs...</option>}
                 </select>
               </div>
               <div className="form-group">

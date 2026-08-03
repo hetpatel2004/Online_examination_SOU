@@ -150,7 +150,7 @@ router.post('/courses', auth, superAdminOnly, async (req, res) => {
 
     const existing = await Course.findOne({ code: code.toUpperCase() });
     if (existing) {
-      return res.status(400).json({ message: 'Course code already exists' });
+      return res.status(400).json({ message: 'Program code already exists' });
     }
 
     const course = new Course({
@@ -159,7 +159,7 @@ router.post('/courses', auth, superAdminOnly, async (req, res) => {
       totalSemesters: level === 'graduation' ? 6 : (totalSemesters || 4)
     });
     await course.save();
-    res.status(201).json({ message: 'Course created', course });
+    res.status(201).json({ message: 'Program created', course });
   } catch (error) {
     console.error('Error creating course:', error.message);
     res.status(500).json({ message: 'Server error' });
@@ -170,7 +170,7 @@ router.put('/courses/:id', auth, superAdminOnly, async (req, res) => {
   try {
     const { name, code, description, level, totalSemesters } = req.body;
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ message: 'Course not found' });
+    if (!course) return res.status(404).json({ message: 'Program not found' });
 
     if (code && code.toUpperCase() !== course.code) {
       const existing = await Course.findOne({ code: code.toUpperCase() });
@@ -187,7 +187,7 @@ router.put('/courses/:id', auth, superAdminOnly, async (req, res) => {
     }
 
     await course.save();
-    res.json({ message: 'Course updated', course });
+    res.json({ message: 'Program updated', course });
   } catch (error) {
     console.error('Error updating course:', error.message);
     res.status(500).json({ message: 'Server error' });
@@ -197,10 +197,10 @@ router.put('/courses/:id', auth, superAdminOnly, async (req, res) => {
 router.delete('/courses/:id', auth, superAdminOnly, async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).json({ message: 'Course not found' });
+    if (!course) return res.status(404).json({ message: 'Program not found' });
 
     await Course.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Course deleted' });
+    res.json({ message: 'Program deleted' });
   } catch (error) {
     console.error('Error deleting course:', error.message);
     res.status(500).json({ message: 'Server error' });
@@ -226,7 +226,7 @@ router.post('/subjects', auth, superAdminOnly, async (req, res) => {
   try {
     const { name, code, semester, course, description } = req.body;
     if (!name || !code || !semester || !course) {
-      return res.status(400).json({ message: 'Name, code, semester, and course are required' });
+      return res.status(400).json({ message: 'Name, code, semester, and program are required' });
     }
 
     const existing = await Subject.findOne({ code });

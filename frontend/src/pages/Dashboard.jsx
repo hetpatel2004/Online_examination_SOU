@@ -1002,7 +1002,7 @@ const Dashboard = () => {
                 <div className="info-item"><label>Enrollment No</label><span>{user?.enrollmentNumber}</span></div>
                 <div className="info-item"><label>Email</label><span>{user?.email}</span></div>
                 <div className="info-item"><label>Phone</label><span>{user?.phone}</span></div>
-                <div className="info-item"><label>Course</label><span>{user?.course}</span></div>
+                <div className="info-item"><label>Program</label><span>{user?.course}</span></div>
                 <div className="info-item"><label>Semester</label><span className="semester-highlight">{user?.semester}</span></div>
               </div>
             </div>
