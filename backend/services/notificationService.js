@@ -7,6 +7,10 @@
  */
 const nodemailer = require('nodemailer');
 const https = require('https');
+const dns = require('dns');
+// Some hosts (e.g. Render) can't reach Gmail's IPv6 address and fail with
+// ENETUNREACH. Force DNS to resolve IPv4 addresses first so SMTP connects.
+dns.setDefaultResultOrder('ipv4first');
 const Exam = require('../models/Exam');
 const User = require('../models/User');
 const Submission = require('../models/Submission');
