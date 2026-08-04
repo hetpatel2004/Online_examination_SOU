@@ -1,6 +1,7 @@
 // Email/SMS notification endpoints (admin only) — call the notificationService
 // to remind students about an exam, publish results, or send a test email.
 const express = require('express');
+const net = require('net');
 const Exam = require('../models/Exam');
 const auth = require('../middleware/auth');
 const { notifyExamReminder, notifyResultPublished, sendTestEmail } = require('../services/notificationService');
@@ -13,6 +14,26 @@ function adminOnly(req, res, next) {
   }
   next();
 }
+
+// TCP connectivity probe — used to find which SMTP host/port this server can
+// actually reach (Render sometimes blocks outbound SMTP entirely).
+router.get('/diag', auth, adminOnly, async (req, res) => {
+  const targets = [
+    ['smtp.gmail.com', 587],
+    ['smtp.gmail.com', 465],
+    ['smtp.ethereal.email', 587],
+    ['smtp-relay.brevo.com', 587],
+    ['smtp.sendgrid.net', 587],
+    ['www.google.com', 443],
+  ];
+  const results = await Promise.all(targets.map(([host, port]) => new Promise((resolve) => {
+    const sock = net.connect({ host, port, timeout: 5000 });
+    sock.on('connect', () => { sock.destroy(); resolve({ host, port, reachable: true }); });
+    sock.on('timeout', () => { sock.destroy(); resolve({ host, port, reachable: false, error: 'timeout' }); });
+    sock.on('error', (err) => { sock.destroy(); resolve({ host, port, reachable: false, error: err.code }); });
+  })));
+  res.json({ results });
+});
 
 // Send exam-reminder emails/SMS to all eligible students of an exam
 router.post('/send-reminder/:examId', auth, adminOnly, async (req, res) => {
