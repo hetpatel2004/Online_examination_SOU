@@ -101,6 +101,33 @@ function formatTime(timeStr) {
 // Send one HTML email via the configured transporter (real SMTP or Ethereal).
 // On a connection-level failure with real SMTP, retries once on the alternate
 // port (587 <-> 465) — some hosts (e.g. Render) only allow one of them.
+// Send via Resend's HTTPS API (port 443). Render's free tier blocks outbound
+// SMTP (587/465) but allows HTTPS, so an API is the reliable path there.
+// Requires .env: RESEND_API_KEY + RESEND_FROM (defaults to onboarding@resend.dev,
+// which only delivers to the account owner's own inbox — verify a domain for real sends).
+async function sendEmailViaResend({ to, subject, html }) {
+  try {
+    const from = process.env.RESEND_FROM || 'SOU Examination <onboarding@resend.dev>';
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({ from, to: [to], subject, html }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text();
+      return { sent: false, reason: `Resend ${resp.status}: ${body.substring(0, 200)}`, source: 'resend-api', host: 'api.resend.com' };
+    }
+    console.log(`[NOTIFICATION] Email sent to ${to} via Resend API: ${subject}`);
+    return { sent: true, source: 'resend-api', host: 'api.resend.com' };
+  } catch (err) {
+    console.error('[NOTIFICATION] Resend API send failed:', err.message);
+    return { sent: false, reason: err.message, source: 'resend-api', host: 'api.resend.com' };
+  }
+}
+
 // Send via Brevo's HTTP API (port 443). Render's free tier blocks outbound SMTP
 // (ports 587/465 time out) but allows HTTPS, so an API is the reliable path there.
 // Requires .env: BREVO_API_KEY + EMAIL_FROM (a Brevo-verified sender address).
@@ -135,6 +162,9 @@ async function sendEmailViaBrevo({ to, subject, html }) {
 async function sendEmail({ to, subject, html }) {
   // Prefer the HTTPS email API when configured (works on Render); SMTP below is
   // used for local dev or when no API key is set.
+  if (process.env.RESEND_API_KEY) {
+    return sendEmailViaResend({ to, subject, html });
+  }
   if (process.env.BREVO_API_KEY) {
     return sendEmailViaBrevo({ to, subject, html });
   }
