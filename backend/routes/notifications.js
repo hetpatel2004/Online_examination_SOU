@@ -38,6 +38,7 @@ router.get('/diag', auth, adminOnly, async (req, res) => {
     // env vars vs local .env) — values are masked, presence only.
     config: {
       resendApiKey: !!process.env.RESEND_API_KEY,
+      gmailApi: !!(process.env.GOOGLE_REFRESH_TOKEN && process.env.GOOGLE_CLIENT_ID),
       smtpConfigured: !!(process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS),
     },
     codeVersion: 'resend-priority',

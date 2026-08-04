@@ -101,6 +101,63 @@ function formatTime(timeStr) {
 // Send one HTML email via the configured transporter (real SMTP or Ethereal).
 // On a connection-level failure with real SMTP, retries once on the alternate
 // port (587 <-> 465) — some hosts (e.g. Render) only allow one of them.
+
+// Send via Gmail's REST API (HTTPS port 443). Works on Render (SMTP is blocked)
+// and — unlike Resend's free sender — can email ANY recipient without owning a
+// domain. Requires .env: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
+// GOOGLE_REFRESH_TOKEN, and GOOGLE_USER_EMAIL (the Gmail account that owns the
+// refresh token, used as the From address). Generate the refresh token with:
+//   node scripts/gmail-oauth.js
+async function sendEmailViaGmail({ to, subject, html }) {
+  try {
+    const tokenResp = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+        grant_type: 'refresh_token',
+      }),
+    });
+    if (!tokenResp.ok) {
+      const body = await tokenResp.text();
+      return { sent: false, reason: `Gmail token ${tokenResp.status}: ${body.substring(0, 200)}`, source: 'gmail-api', host: 'gmail.googleapis.com' };
+    }
+    const { access_token } = await tokenResp.json();
+
+    const from = process.env.GOOGLE_USER_EMAIL;
+    const rawMessage = [
+      `From: "SOU Examination" <${from}>`,
+      `To: ${to}`,
+      `Subject: =?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/html; charset=UTF-8',
+      'Content-Transfer-Encoding: base64',
+      '',
+      Buffer.from(html, 'utf8').toString('base64'),
+    ].join('\r\n');
+
+    const sendResp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ raw: Buffer.from(rawMessage, 'utf8').toString('base64url') }),
+    });
+    if (!sendResp.ok) {
+      const body = await sendResp.text();
+      return { sent: false, reason: `Gmail send ${sendResp.status}: ${body.substring(0, 200)}`, source: 'gmail-api', host: 'gmail.googleapis.com' };
+    }
+    console.log(`[NOTIFICATION] Email sent to ${to} via Gmail API: ${subject}`);
+    return { sent: true, source: 'gmail-api', host: 'gmail.googleapis.com' };
+  } catch (err) {
+    console.error('[NOTIFICATION] Gmail API send failed:', err.message);
+    return { sent: false, reason: err.message, source: 'gmail-api', host: 'gmail.googleapis.com' };
+  }
+}
+
 // Send via Resend's HTTPS API (port 443). Render's free tier blocks outbound
 // SMTP (587/465) but allows HTTPS, so an API is the reliable path there.
 // Requires .env: RESEND_API_KEY + RESEND_FROM (defaults to onboarding@resend.dev,
@@ -130,7 +187,12 @@ async function sendEmailViaResend({ to, subject, html }) {
 
 async function sendEmail({ to, subject, html }) {
   // Prefer the HTTPS email API when configured (works on Render); SMTP below is
-  // used for local dev or when no API key is set.
+  // used for local dev or when no API key is set. Gmail API can reach any
+  // recipient, so it takes priority over Resend (which needs a verified domain
+  // to send beyond your own inbox).
+  if (process.env.GOOGLE_REFRESH_TOKEN && process.env.GOOGLE_CLIENT_ID) {
+    return sendEmailViaGmail({ to, subject, html });
+  }
   if (process.env.RESEND_API_KEY) {
     return sendEmailViaResend({ to, subject, html });
   }
