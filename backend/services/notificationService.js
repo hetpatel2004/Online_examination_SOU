@@ -128,45 +128,11 @@ async function sendEmailViaResend({ to, subject, html }) {
   }
 }
 
-// Send via Brevo's HTTP API (port 443). Render's free tier blocks outbound SMTP
-// (ports 587/465 time out) but allows HTTPS, so an API is the reliable path there.
-// Requires .env: BREVO_API_KEY + EMAIL_FROM (a Brevo-verified sender address).
-async function sendEmailViaBrevo({ to, subject, html }) {
-  try {
-    const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';
-    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': process.env.BREVO_API_KEY,
-      },
-      body: JSON.stringify({
-        sender: { name: 'SOU Examination', email: from },
-        to: [{ email: to }],
-        subject,
-        htmlContent: html,
-      }),
-    });
-    if (!resp.ok) {
-      const body = await resp.text();
-      return { sent: false, reason: `Brevo ${resp.status}: ${body.substring(0, 200)}`, source: 'brevo-api', host: 'api.brevo.com' };
-    }
-    console.log(`[NOTIFICATION] Email sent to ${to} via Brevo API: ${subject}`);
-    return { sent: true, source: 'brevo-api', host: 'api.brevo.com' };
-  } catch (err) {
-    console.error('[NOTIFICATION] Brevo API send failed:', err.message);
-    return { sent: false, reason: err.message, source: 'brevo-api', host: 'api.brevo.com' };
-  }
-}
-
 async function sendEmail({ to, subject, html }) {
   // Prefer the HTTPS email API when configured (works on Render); SMTP below is
   // used for local dev or when no API key is set.
   if (process.env.RESEND_API_KEY) {
     return sendEmailViaResend({ to, subject, html });
-  }
-  if (process.env.BREVO_API_KEY) {
-    return sendEmailViaBrevo({ to, subject, html });
   }
 
   const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';

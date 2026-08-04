@@ -38,7 +38,6 @@ router.get('/diag', auth, adminOnly, async (req, res) => {
     // env vars vs local .env) — values are masked, presence only.
     config: {
       resendApiKey: !!process.env.RESEND_API_KEY,
-      brevoApiKey: !!process.env.BREVO_API_KEY,
       smtpConfigured: !!(process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS),
     },
     codeVersion: 'resend-priority',
