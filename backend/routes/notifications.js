@@ -32,7 +32,17 @@ router.get('/diag', auth, adminOnly, async (req, res) => {
     sock.on('timeout', () => { sock.destroy(); resolve({ host, port, reachable: false, error: 'timeout' }); });
     sock.on('error', (err) => { sock.destroy(); resolve({ host, port, reachable: false, error: err.code }); });
   })));
-  res.json({ results });
+  res.json({
+    results,
+    // Reveal which mail provider is actually configured on THIS server (Render
+    // env vars vs local .env) — values are masked, presence only.
+    config: {
+      resendApiKey: !!process.env.RESEND_API_KEY,
+      brevoApiKey: !!process.env.BREVO_API_KEY,
+      smtpConfigured: !!(process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS),
+    },
+    codeVersion: 'resend-priority',
+  });
 });
 
 // Send exam-reminder emails/SMS to all eligible students of an exam
