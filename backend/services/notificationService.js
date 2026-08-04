@@ -19,6 +19,27 @@ let transporter = null;
 let transporterResolve = null;
 let transporterSource = null; // 'smtp' (real SMTP from .env) or 'ethereal' (test inbox)
 
+// Build a Gmail/SMTP transporter with safe timeouts. Used for the main config
+// and for the automatic port failover (587 STARTTLS <-> 465 implicit TLS).
+function createSmtpTransporter(port, secure) {
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port,
+    secure,
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
+}
+
+// True when the SMTP connection itself failed (as opposed to a bad-credential
+// 535) — the case where a port failover is worth trying.
+function isConnectError(err) {
+  const msg = (err && (err.code || err.message)) || '';
+  return /(ETIMEDOUT|ENETUNREACH|ECONNREFUSED|ECONNRESET|ESOCKET|socket hang up|connect)/i.test(String(msg));
+}
+
 // Reuse a single transporter. Prefers real SMTP from .env; otherwise creates
 // a throwaway Ethereal test account so emails can be previewed during dev.
 async function getTransporter() {
@@ -32,16 +53,10 @@ async function getTransporter() {
       console.warn('[NOTIFICATION] ⚠️ EMAIL_USER / EMAIL_PASS in .env are still PLACEHOLDERS — no emails will be delivered!');
       console.warn('[NOTIFICATION] Fix: put your real Gmail address + a 16-char App Password in backend/.env');
     }
-    transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT) || 587,
-      secure: process.env.EMAIL_SECURE === 'true',
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-      // Timeouts so a misconfigured/unreachable SMTP server can never hang a request
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
+    transporter = createSmtpTransporter(
+      Number(process.env.EMAIL_PORT) || 587,
+      process.env.EMAIL_SECURE === 'true'
+    );
     transporterResolve = transporter;
     transporterSource = 'smtp';
     console.log('[NOTIFICATION] Email transporter configured with', process.env.EMAIL_HOST);
@@ -83,32 +98,62 @@ function formatTime(timeStr) {
   return `${hr > 12 ? hr - 12 : hr}:${m} ${hr >= 12 ? 'PM' : 'AM'}`;
 }
 
-// Send one HTML email via the configured transporter (real SMTP or Ethereal)
+// Send one HTML email via the configured transporter (real SMTP or Ethereal).
+// On a connection-level failure with real SMTP, retries once on the alternate
+// port (587 <-> 465) — some hosts (e.g. Render) only allow one of them.
 async function sendEmail({ to, subject, html }) {
-  const transport = await getTransporter();
+  const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';
+  const mailOpts = {
+    from: `"SOU Examination" <${from}>`,
+    to, subject, html,
+    // Hard cap per message so a stuck SMTP server can't block callers for long
+    timeout: 15000,
+  };
+
+  let transport = await getTransporter();
   if (!transport) {
     console.log(`[NOTIFICATION] Skipping email to ${to} — no transporter configured`);
     return { sent: false, reason: 'no_transporter', source: transporterSource, host: null };
   }
-  try {
-    const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';
-    const info = await transport.sendMail({
-      from: `"SOU Examination" <${from}>`,
-      to, subject, html,
-      // Hard cap per message so a stuck SMTP server can't block callers for long
-      timeout: 15000,
-    });
-    const isEthereal = transport.options?.host === 'smtp.ethereal.email';
-    if (isEthereal && info.messageId) {
-      const previewUrl = nodemailer.getTestMessageUrl(info);
-      if (previewUrl) console.log('[NOTIFICATION] Ethereal preview:', previewUrl);
+
+  const trySend = async (t) => {
+    try {
+      const info = await t.sendMail(mailOpts);
+      const isEthereal = t.options?.host === 'smtp.ethereal.email';
+      if (isEthereal && info.messageId) {
+        const previewUrl = nodemailer.getTestMessageUrl(info);
+        if (previewUrl) console.log('[NOTIFICATION] Ethereal preview:', previewUrl);
+      }
+      console.log(`[NOTIFICATION] Email sent to ${to}: ${subject}`);
+      return { sent: true, source: transporterSource, host: t.options?.host };
+    } catch (err) {
+      return { sent: false, reason: err.message, source: transporterSource, host: t.options?.host, code: err.code };
     }
-    console.log(`[NOTIFICATION] Email sent to ${to}: ${subject}`);
-    return { sent: true, source: transporterSource, host: transport.options?.host };
-  } catch (err) {
-    console.error(`[NOTIFICATION] Failed to send email to ${to}:`, err.message);
-    return { sent: false, reason: err.message, source: transporterSource, host: transport.options?.host };
+  };
+
+  let result = await trySend(transport);
+
+  // Failover: real SMTP connection problem → try the opposite port once
+  if (!result.sent && transporterSource === 'smtp' && isConnectError(result)) {
+    const currentPort = Number(process.env.EMAIL_PORT) || 587;
+    const altPort = currentPort === 465 ? 587 : 465;
+    const altSecure = altPort === 465;
+    console.log(`[NOTIFICATION] Retrying ${process.env.EMAIL_HOST} on port ${altPort} (secure=${altSecure})`);
+    try {
+      const alt = createSmtpTransporter(altPort, altSecure);
+      result = await trySend(alt);
+      if (result.sent) {
+        // Cache the working transporter for future sends
+        transporter = alt;
+        transporterResolve = alt;
+      }
+    } catch (failoverErr) {
+      result = { sent: false, reason: failoverErr.message, source: 'smtp', host: process.env.EMAIL_HOST };
+    }
   }
+
+  if (!result.sent) console.error(`[NOTIFICATION] Failed to send email to ${to}:`, result.reason);
+  return result;
 }
 
 // Send one SMS through the Fast2SMS bulk API using FAST2SMS_API_KEY from .env
