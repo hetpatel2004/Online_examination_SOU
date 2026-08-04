@@ -17,6 +17,7 @@ const Submission = require('../models/Submission');
 
 let transporter = null;
 let transporterResolve = null;
+let transporterSource = null; // 'smtp' (real SMTP from .env) or 'ethereal' (test inbox)
 
 // Reuse a single transporter. Prefers real SMTP from .env; otherwise creates
 // a throwaway Ethereal test account so emails can be previewed during dev.
@@ -42,6 +43,7 @@ async function getTransporter() {
       socketTimeout: 15000,
     });
     transporterResolve = transporter;
+    transporterSource = 'smtp';
     console.log('[NOTIFICATION] Email transporter configured with', process.env.EMAIL_HOST);
     return transporter;
   }
@@ -58,6 +60,7 @@ async function getTransporter() {
       socketTimeout: 15000,
     });
     transporterResolve = transporter;
+    transporterSource = 'ethereal';
     console.log('[NOTIFICATION] Using Ethereal test account:', testAccount.user);
     console.log('[NOTIFICATION] View captured emails at https://ethereal.email/login');
     return transporter;
@@ -85,7 +88,7 @@ async function sendEmail({ to, subject, html }) {
   const transport = await getTransporter();
   if (!transport) {
     console.log(`[NOTIFICATION] Skipping email to ${to} — no transporter configured`);
-    return { sent: false, reason: 'no_transporter' };
+    return { sent: false, reason: 'no_transporter', source: transporterSource, host: null };
   }
   try {
     const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';
@@ -101,10 +104,10 @@ async function sendEmail({ to, subject, html }) {
       if (previewUrl) console.log('[NOTIFICATION] Ethereal preview:', previewUrl);
     }
     console.log(`[NOTIFICATION] Email sent to ${to}: ${subject}`);
-    return { sent: true };
+    return { sent: true, source: transporterSource, host: transport.options?.host };
   } catch (err) {
     console.error(`[NOTIFICATION] Failed to send email to ${to}:`, err.message);
-    return { sent: false, reason: err.message };
+    return { sent: false, reason: err.message, source: transporterSource, host: transport.options?.host };
   }
 }
 
