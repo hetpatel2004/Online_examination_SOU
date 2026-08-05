@@ -133,7 +133,7 @@ const SuperAdminDashboard = () => {
           toast.success('Admin updated!');
         } else {
           await API.post('/superadmin/admins', formData);
-          toast.success(`Admin created! Credentials being emailed to ${formData.email}`);
+          toast.success(`Admin created! Credentials being emailed to ${formData.credentialsEmail || formData.email}`);
         }
         closeModal();
         fetchAdmins();
@@ -446,6 +446,7 @@ const SuperAdminDashboard = () => {
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || 'N/A'} onChange={handleInputChange} required><option value="N/A">All Semesters</option>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                     </div>
                     {!editingItem && <div className="form-group"><label>Password</label><input type="password" name="password" value={formData.password || ''} onChange={handleInputChange} required minLength="6" placeholder="Min 6 characters" /></div>}
+                    {!editingItem && <div className="form-group"><label>Credentials Email (login ID &amp; password are mailed here)</label><input type="email" name="credentialsEmail" value={formData.credentialsEmail || ''} onChange={handleInputChange} placeholder="e.g. admin4@sou.edu — blank sends to the Email above" /></div>}
                     {editingItem && <div className="form-group"><label>New Password (leave blank to keep)</label><input type="password" name="password" value={formData.password || ''} onChange={handleInputChange} placeholder="Optional" /></div>}
                   </>
                 )}

@@ -63,7 +63,7 @@ router.get('/admins', auth, superAdminOnly, async (req, res) => {
 
 router.post('/admins', auth, superAdminOnly, async (req, res) => {
   try {
-    const { name, enrollmentNumber, email, phone, course, semester, password } = req.body;
+    const { name, enrollmentNumber, email, phone, course, semester, password, credentialsEmail } = req.body;
 
     if (!name || !enrollmentNumber || !email || !phone || !course || !semester || !password) {
       return res.status(400).json({ message: 'All fields are required' });
@@ -104,13 +104,13 @@ router.post('/admins', auth, superAdminOnly, async (req, res) => {
     // Fire-and-forget: SMTP can be slow/hang, so never block the response on it.
     // The admin is already saved, so a mail failure cannot lose the account.
     notifyAdminCredentials({
-      to: admin.email,
+      to: credentialsEmail || admin.email,
       name: admin.name,
       enrollmentNumber: admin.enrollmentNumber,
       password,
       role: 'Admin'
     }).then((emailStatus) => {
-      console.log(`[CREDS-EMAIL] ${emailStatus.sent ? 'SENT' : 'FAILED'} to ${admin.email}: ${emailStatus.sent ? '' : emailStatus.reason}`);
+      console.log(`[CREDS-EMAIL] ${emailStatus.sent ? 'SENT' : 'FAILED'} to ${credentialsEmail || admin.email}: ${emailStatus.sent ? '' : emailStatus.reason}`);
     }).catch((emailErr) => {
       console.error('[CREDS-EMAIL] Failed:', emailErr.message);
     });
