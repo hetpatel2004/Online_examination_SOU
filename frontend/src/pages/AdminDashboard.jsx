@@ -862,6 +862,7 @@ const AdminDashboard = () => {
                               <button className="btn-icon btn-edit" title="View Submissions" onClick={() => openSubmissionsModal(ex)}>📋</button>
                               <button className="btn-icon btn-edit" title="Manage Questions" onClick={() => openQuestionManager(ex)}>❓</button>
                               <button className="btn-icon btn-edit" title="Set Result Date" onClick={() => { setResultDateValue(toLocalInputDate(ex.resultDate)); setDeleteConfirm({ type: 'resultDate', id: ex._id, name: ex.subjectName }); }}>📅</button>
+                              <button className="btn-icon btn-edit" title="Download Submissions (CSV)" onClick={async () => { try { const res = await API.get(`/admin/exams/${ex._id}/export-csv`, { responseType: 'blob' }); const url = window.URL.createObjectURL(new Blob([res.data])); const a = document.createElement('a'); a.href = url; const cd = res.headers?.['content-disposition'] || ''; const m = cd.match(/filename="([^"]+)"/); a.download = m ? m[1] : 'submissions.csv'; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url); } catch (e) { toast.error('Failed to download submissions'); } }}>⬇️</button>
                               <button className="btn-icon btn-edit" onClick={() => openEditModal('exam', ex)}>✏️</button>
                               <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'exam', id: ex._id, name: ex.subjectName })}>🗑️</button>
                             </td>

@@ -1067,6 +1067,96 @@ router.get('/exams/:examId/submissions', auth, adminOnly, async (req, res) => {
 });
 
 // ============================================================
+// GET /api/admin/exams/:examId/export-csv
+// Downloads all student submissions for an exam as a CSV file.
+// Filename includes the subject code, subject name, and exam date.
+// ============================================================
+router.get('/exams/:examId/export-csv', auth, adminOnly, async (req, res) => {
+  try {
+    const check = await verifyExamOwnership(req.params.examId, req.user.id);
+    if (check.error) return res.status(check.status).json({ message: check.error });
+
+    const Submission = require('../models/Submission');
+    const exam = await Exam.findById(req.params.examId);
+    if (!exam) return res.status(404).json({ message: 'Exam not found' });
+
+    const submissions = await Submission.find({ examId: req.params.examId })
+      .populate('studentId', 'name enrollmentNumber email phone course semester')
+      .sort({ submittedAt: 1 });
+
+    // Build question-text lookup for answer details
+    const qMap = {};
+    if (submissions.length > 0) {
+      const qIds = [...new Set(submissions.flatMap((s) =>
+        [...(s.answers || []), ...(s.submittedCode || [])].map((a) => a.questionId).filter(Boolean)
+      ))];
+      const questions = await Question.find({ _id: { $in: qIds } });
+      questions.forEach((q) => { qMap[q._id.toString()] = q; });
+    }
+
+    const esc = (v) => {
+      if (v === null || v === undefined) return '';
+      return `"${String(v).replace(/"/g, '""')}"`;
+    };
+
+    const header = ['Sr No', 'Student Name', 'Enrollment Number', 'Email', 'Phone', 'Course', 'Semester', 'Exam Type', 'Status', 'Score', 'Total Marks', 'Percentage', 'Result', 'Submitted At', 'Answer File', 'AI Feedback', 'Answers', 'Submitted Code'];
+    const rows = [header.join(',')];
+
+    submissions.forEach((sub, i) => {
+      const s = sub.toObject();
+      const student = s.studentId || {};
+      const total = Number(s.totalMarks) || 0;
+      const score = Number(s.score) || 0;
+      const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+      const passed = total > 0 && (score / total) >= 0.5;
+
+      const answers = (s.answers || []).map((a) => {
+        const q = qMap[a.questionId?.toString()];
+        const qText = q ? q.questionText : 'Question deleted';
+        let out = `${qText} => ${a.answer || ''}`;
+        if (exam.examType === 'mcq' && q) {
+          const ok = String(a.answer || '').trim().toLowerCase() === String(q.correctAnswer || '').trim().toLowerCase() && String(a.answer || '').trim() !== '';
+          out += ok ? ' [Correct]' : ' [Wrong]';
+        }
+        return out;
+      }).join(' | ');
+      const code = (s.submittedCode || []).map((c) => c.code || '').join('\n---\n');
+
+      rows.push([
+        i + 1,
+        student.name || '',
+        student.enrollmentNumber || '',
+        student.email || '',
+        student.phone || '',
+        student.course || '',
+        student.semester || '',
+        exam.examType,
+        s.status || '',
+        score,
+        total,
+        `${pct}%`,
+        passed ? 'Pass' : 'Fail',
+        s.submittedAt ? new Date(s.submittedAt).toISOString() : '',
+        s.answerFile || '',
+        (s.aiFeedback || '').replace(/[\r\n]+/g, ' '),
+        answers.replace(/[\r\n]+/g, ' '),
+        code.replace(/[\r\n]+/g, ' '),
+      ].map(esc).join(','));
+    });
+
+    const safe = (name) => String(name || '').replace(/[^A-Za-z0-9 _-]/g, '').replace(/\s+/g, '_');
+    const filename = `${safe(exam.subjectCode)}_${safe(exam.subjectName)}_${exam.date}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + rows.join('\r\n'));
+  } catch (error) {
+    console.error('Error exporting submissions CSV:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ============================================================
 // GRADE A SUBMISSION (Admin)
 // PUT /api/admin/exams/:examId/submissions/:studentId/grade
 // Admin assigns per-question marks + feedback for practical exams
