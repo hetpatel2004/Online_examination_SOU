@@ -862,11 +862,6 @@ const AdminDashboard = () => {
                               <button className="btn-icon btn-edit" title="View Submissions" onClick={() => openSubmissionsModal(ex)}>📋</button>
                               <button className="btn-icon btn-edit" title="Manage Questions" onClick={() => openQuestionManager(ex)}>❓</button>
                               <button className="btn-icon btn-edit" title="Set Result Date" onClick={() => { setResultDateValue(toLocalInputDate(ex.resultDate)); setDeleteConfirm({ type: 'resultDate', id: ex._id, name: ex.subjectName }); }}>📅</button>
-                              <button className="btn-icon btn-notify" title="Send Email Reminder" onClick={async () => { try { const { data } = await API.post(`/notifications/send-reminder/${ex._id}`); toast.success(data.message); } catch (e) { const msg = e.response?.data?.message || 'Failed to send reminder'; toast.error(msg); } }}>📧</button>
-                              <button className="btn-icon btn-notify" title="Notify Results" onClick={async () => { try { const { data } = await API.post(`/notifications/send-results/${ex._id}`); toast.success(data.message); } catch (e) { const msg = e.response?.data?.message || 'Failed to send results'; toast.error(msg); } }}>📊</button>
-                              {ex.examType === 'practical' && (
-                                <button className="btn-icon btn-edit" title="Check Plagiarism" onClick={async () => { try { const { data } = await API.get(`/admin/exams/${ex._id}/plagiarism`); const flagged = data.pairs?.filter(p => p.flagged)?.length || 0; toast.info(`Plagiarism check complete: ${flagged} flagged pairs out of ${data.summary?.comparisons || 0} comparisons`); } catch (e) { toast.error('Failed to check plagiarism'); } }}>🔍</button>
-                              )}
                               <button className="btn-icon btn-edit" onClick={() => openEditModal('exam', ex)}>✏️</button>
                               <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'exam', id: ex._id, name: ex.subjectName })}>🗑️</button>
                             </td>
