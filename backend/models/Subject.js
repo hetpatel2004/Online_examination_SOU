@@ -72,4 +72,8 @@ const subjectSchema = new mongoose.Schema({
   }],
 }, { timestamps: true }); // Adds createdAt and updatedAt automatically
 
+// Indexes for the common subject lookups: by semester/course, by assigned admin.
+subjectSchema.index({ semester: 1, course: 1 });
+subjectSchema.index({ assignedTo: 1, semester: 1, code: 1 });
+
 module.exports = mongoose.model('Subject', subjectSchema);

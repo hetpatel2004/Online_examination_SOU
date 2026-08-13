@@ -35,6 +35,9 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Simple in-memory TTL cache for the near-static subjects list (see GET / below)
+const subjectCache = new Map();
+
 /**
  * GET /api/subjects
  * 
@@ -69,8 +72,22 @@ router.get('/', auth, async (req, res) => {
       filter.course = req.query.course;
     }
 
+    // Subjects are near-static data — serve from a short-lived in-memory cache
+    // keyed by filter, so thousands of students loading their dashboard don't
+    // each hit MongoDB. Invalidated implicitly by the 30s TTL.
+    const cacheKey = JSON.stringify(filter);
+    const cached = subjectCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < 30000) {
+      return res.json({ subjects: cached.data });
+    }
+
     // Fetch subjects sorted by semester (1, 2, 3...) then by code
-    const subjects = await Subject.find(filter).sort({ semester: 1, code: 1 });
+    const subjects = await Subject.find(filter).sort({ semester: 1, code: 1 }).lean();
+    subjectCache.set(cacheKey, { at: Date.now(), data: subjects });
+    if (subjectCache.size > 100) {
+      const oldest = subjectCache.keys().next().value;
+      subjectCache.delete(oldest);
+    }
 
     res.json({ subjects });
   } catch (error) {

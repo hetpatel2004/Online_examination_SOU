@@ -152,4 +152,10 @@ const examSchema = new mongoose.Schema({
   }
 }, { timestamps: true }); // Adds createdAt and updatedAt automatically
 
+// Indexes for the two hot queries: student exam list (semester+course+date) and
+// admin exam list (subjectId). Sorted scans are avoided entirely.
+examSchema.index({ semester: 1, course: 1, date: 1, time: 1 });
+examSchema.index({ subjectId: 1, semester: 1 });
+examSchema.index({ date: 1, time: 1 });
+
 module.exports = mongoose.model('Exam', examSchema);

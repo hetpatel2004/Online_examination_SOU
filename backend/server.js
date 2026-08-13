@@ -27,6 +27,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 // Load secrets/config from backend/.env: MONGODB_URI, JWT_SECRET,
 // OPENAI_API_KEY (AI eval), EMAIL_*/FAST2SMS_* (notifications), FRONTEND_URL
@@ -45,6 +46,10 @@ const app = express();
 // Middleware: Enable CORS so frontend can call this API
 app.use(cors());
 
+// Middleware: Gzip-compress responses (~70% smaller payloads, faster loads).
+// Skipped automatically for tiny responses and content that is already encoded.
+app.use(compression());
+
 // Middleware: Parse JSON request bodies (req.body)
 app.use(express.json({ limit: '10mb' }));
 
@@ -57,7 +62,13 @@ app.use((req, res, next) => {
 });
 
 // Connect to MongoDB Atlas using connection string from .env
-mongoose.connect(process.env.MONGODB_URI)
+// maxPoolSize allows many simultaneous students to share the connection pool
+// instead of opening a new socket per request (faster + lighter under load).
+mongoose.connect(process.env.MONGODB_URI, {
+  maxPoolSize: 50,
+  minPoolSize: 2,
+  serverSelectionTimeoutMS: 15000,
+})
   .then(() => console.log('MongoDB connected'))
   .catch(err => {
     console.error('MongoDB connection error:', err.message);

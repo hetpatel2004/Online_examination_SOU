@@ -179,12 +179,13 @@ router.post('/:examId/submit', auth, async (req, res) => {
     // Fetch all questions referenced in the answers
     const questionIds = answers.map(a => a.questionId);
     const questions = await Question.find({ _id: { $in: questionIds } });
+    const qById = new Map(questions.map(q => [q._id.toString(), q]));
 
     let score = 0;
     let totalMarks = 0;
 
     for (const ans of answers) {
-      const question = questions.find(q => q._id.toString() === ans.questionId);
+      const question = qById.get(ans.questionId);
       if (question) {
         totalMarks += question.marks;
         if (exam.examType === 'mcq') {

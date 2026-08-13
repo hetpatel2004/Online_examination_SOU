@@ -176,4 +176,9 @@ const submissionSchema = new mongoose.Schema({
 // One submission per student per exam
 submissionSchema.index({ examId: 1, studentId: 1 }, { unique: true });
 
+// Hot queries: a student's full submission history (dashboard) and per-exam
+// admin listing sorted by submission time.
+submissionSchema.index({ studentId: 1, submittedAt: -1 });
+submissionSchema.index({ examId: 1, submittedAt: -1 });
+
 module.exports = mongoose.model('Submission', submissionSchema);

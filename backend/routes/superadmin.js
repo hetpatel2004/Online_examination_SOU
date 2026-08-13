@@ -8,6 +8,10 @@ const { notifyAdminCredentials } = require('../services/notificationService');
 
 const router = express.Router();
 
+// Simple in-memory TTL cache for the public course list (near-static data, hit
+// on every registration page load). 30s TTL keeps it fresh enough.
+const courseCache = { at: 0, data: null };
+
 const superAdminOnly = (req, res, next) => {
   if (req.user.role !== 'superadmin') {
     return res.status(403).json({ message: 'Access denied. Super Admin only.' });
@@ -20,7 +24,12 @@ const superAdminOnly = (req, res, next) => {
 // ============================================================
 router.get('/courses/public', async (req, res) => {
   try {
-    const courses = await Course.find().sort({ code: 1 });
+    if (courseCache.data && Date.now() - courseCache.at < 30000) {
+      return res.json({ courses: courseCache.data });
+    }
+    const courses = await Course.find().sort({ code: 1 }).lean();
+    courseCache.at = Date.now();
+    courseCache.data = courses;
     res.json({ courses });
   } catch (error) {
     console.error('Error fetching public courses:', error.message);
@@ -33,11 +42,14 @@ router.get('/courses/public', async (req, res) => {
 // ============================================================
 router.get('/stats', auth, superAdminOnly, async (req, res) => {
   try {
-    const totalAdmins = await User.countDocuments({ role: 'admin' });
-    const totalStudents = await User.countDocuments({ role: 'user' });
-    const totalSubjects = await Subject.countDocuments();
-    const assignedSubjects = await Subject.countDocuments({ assignedTo: { $exists: true, $ne: [] } });
-    const totalCourses = await Course.countDocuments();
+    // Run all counts in parallel (single round-trip each) instead of sequentially
+    const [totalAdmins, totalStudents, totalSubjects, assignedSubjects, totalCourses] = await Promise.all([
+      User.countDocuments({ role: 'admin' }),
+      User.countDocuments({ role: 'user' }),
+      Subject.countDocuments(),
+      Subject.countDocuments({ assignedTo: { $exists: true, $ne: [] } }),
+      Course.countDocuments(),
+    ]);
 
     res.json({ totalAdmins, totalStudents, totalSubjects, assignedSubjects, totalCourses });
   } catch (error) {
@@ -53,7 +65,8 @@ router.get('/admins', auth, superAdminOnly, async (req, res) => {
   try {
     const admins = await User.find({ role: 'admin' })
       .select('-password -aadharNumber')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json({ admins });
   } catch (error) {
     console.error('Error fetching admins:', error.message);

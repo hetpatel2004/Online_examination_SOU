@@ -65,5 +65,6 @@ const questionSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 questionSchema.index({ examId: 1 });
+questionSchema.index({ examId: 1, order: 1 });
 
 module.exports = mongoose.model('Question', questionSchema);

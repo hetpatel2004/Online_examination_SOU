@@ -137,11 +137,32 @@ router.get('/users', auth, adminOnly, async (req, res) => {
     if (req.query.role) {
       filter.role = req.query.role;
     }
+    if (req.query.course) filter.course = req.query.course;
+    if (req.query.semester) filter.semester = req.query.semester;
 
-    // Fetch users, exclude password field, sort by newest first
-    const users = await User.find(filter).select('-password').sort({ createdAt: -1 });
+    // Optional search across name/enrollment/email
+    const search = (req.query.search || '').trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { enrollmentNumber: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
 
-    res.json({ users });
+    // Optional pagination: ?page=1&limit=50 (defaults to returning everything,
+    // so existing clients keep working unchanged).
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(500, parseInt(req.query.limit, 10) || 0));
+
+    const query = User.find(filter).select('-password -aadharNumber').sort({ createdAt: -1 });
+    if (limit > 0) query.skip((page - 1) * limit).limit(limit);
+
+    // lean() skips Mongoose document overhead — much faster for read-only lists
+    const users = await query.lean();
+    const total = limit > 0 ? await User.countDocuments(filter) : users.length;
+
+    res.json({ users, total, page, limit });
   } catch (error) {
     console.error('Error fetching users:', error.message);
     res.status(500).json({ message: 'Server error' });
@@ -490,7 +511,7 @@ router.get('/subjects', auth, adminOnly, async (req, res) => {
     if (req.query.semester) filter.semester = Number(req.query.semester);
     if (req.query.course) filter.course = req.query.course;
 
-    const subjects = await Subject.find(filter).sort({ semester: 1, code: 1 });
+    const subjects = await Subject.find(filter).sort({ semester: 1, code: 1 }).lean();
     res.json({ subjects });
   } catch (error) {
     console.error('Error fetching subjects:', error.message);
@@ -525,7 +546,7 @@ router.get('/exams', auth, adminOnly, async (req, res) => {
     if (req.query.semester) filter.semester = Number(req.query.semester);
     if (req.query.course) filter.course = req.query.course;
 
-    const exams = await Exam.find(filter).sort({ date: 1, time: 1 });
+    const exams = await Exam.find(filter).sort({ date: 1, time: 1 }).lean();
     res.json({ exams });
   } catch (error) {
     console.error('Error fetching exams:', error.message);
@@ -1013,41 +1034,34 @@ router.get('/exams/:examId/submissions', auth, adminOnly, async (req, res) => {
 
     const submissions = await Submission.find({ examId: req.params.examId })
       .populate('studentId', 'name enrollmentNumber email phone course semester')
-      .sort({ submittedAt: -1 });
+      .sort({ submittedAt: -1 })
+      .lean();
 
-    // For MCQ exams, enrich answers with question text + correct answer + isCorrect
+    // Batch all question lookups into ONE query instead of one query per
+    // submission (was N+1 → now always a single round-trip).
     const exam = await Exam.findById(req.params.examId);
-    const enriched = await Promise.all(submissions.map(async (sub) => {
-      const obj = sub.toObject();
+    const allQIds = [...new Set(submissions.flatMap((s) => (s.answers || []).map((a) => a.questionId)).filter(Boolean))];
+    const qMap = {};
+    if (allQIds.length > 0) {
+      const questions = await Question.find({ _id: { $in: allQIds } }).lean();
+      questions.forEach((q) => { qMap[q._id.toString()] = q; });
+    }
 
-      if (exam && exam.examType === 'mcq' && obj.answers && obj.answers.length > 0) {
-        const questionIds = obj.answers.map(a => a.questionId);
-        const questions = await Question.find({ _id: { $in: questionIds } });
-        const qMap = {};
-        questions.forEach(q => { qMap[q._id.toString()] = q; });
-
-        obj.answers = obj.answers.map(a => {
+    const enriched = submissions.map((obj) => {
+      if (obj.answers && obj.answers.length > 0) {
+        obj.answers = obj.answers.map((a) => {
           const q = qMap[a.questionId?.toString()];
-          const studentAns = (a.answer || '').trim().toLowerCase();
-          const correctAns = (q ? q.correctAnswer : '').trim().toLowerCase();
-          return {
-            ...a,
-            questionText: q ? q.questionText : 'Question deleted',
-            correctAnswer: q ? q.correctAnswer : '',
-            marks: q ? q.marks : 0,
-            isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
-          };
-        });
-      }
-
-      if (exam && exam.examType === 'practical' && obj.answers && obj.answers.length > 0) {
-        const questionIds = obj.answers.map(a => a.questionId);
-        const questions = await Question.find({ _id: { $in: questionIds } });
-        const qMap = {};
-        questions.forEach(q => { qMap[q._id.toString()] = q; });
-
-        obj.answers = obj.answers.map(a => {
-          const q = qMap[a.questionId?.toString()];
+          if (exam && exam.examType === 'mcq') {
+            const studentAns = (a.answer || '').trim().toLowerCase();
+            const correctAns = (q ? q.correctAnswer : '').trim().toLowerCase();
+            return {
+              ...a,
+              questionText: q ? q.questionText : 'Question deleted',
+              correctAnswer: q ? q.correctAnswer : '',
+              marks: q ? q.marks : 0,
+              isCorrect: q ? (studentAns === correctAns && studentAns !== '') : false
+            };
+          }
           return {
             ...a,
             questionText: q ? q.questionText : 'Question deleted',
@@ -1055,9 +1069,8 @@ router.get('/exams/:examId/submissions', auth, adminOnly, async (req, res) => {
           };
         });
       }
-
       return obj;
-    }));
+    });
 
     res.json({ submissions: enriched, examType: exam ? exam.examType : null, totalMarks: exam ? exam.totalMarks : 0 });
   } catch (error) {

@@ -111,4 +111,10 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true }); // Adds createdAt and updatedAt fields automatically
 
+// Indexes for fast lookups/filters: role lists, per course+semester counting,
+// and block-status queries. enrollmentNumber/email already have unique indexes.
+userSchema.index({ role: 1, createdAt: -1 });
+userSchema.index({ course: 1, semester: 1, role: 1 });
+userSchema.index({ isBlocked: 1 });
+
 module.exports = mongoose.model('User', userSchema);
