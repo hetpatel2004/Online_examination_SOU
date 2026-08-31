@@ -31,6 +31,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');        // For hashing and comparing passwords
 const jwt = require('jsonwebtoken');       // For creating authentication tokens
 const User = require('../models/User');    // User model to interact with database
+const auth = require('../middleware/auth'); // Auth middleware for route protection
 
 const router = express.Router();
 
