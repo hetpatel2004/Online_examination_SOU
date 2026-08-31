@@ -127,6 +127,8 @@ async function verifyExamOwnership(examId, adminId) {
  * Query params (optional):
  * - ?role=user → only students
  * - ?role=admin → only admins
+ * - ?program=<code> → filter by program
+ * - ?semester=<num> → filter by semester
  * 
  * Response: { users: [{ name, enrollmentNumber, email, ... }, ...] }
  */
@@ -139,6 +141,7 @@ router.get('/users', auth, adminOnly, async (req, res) => {
     }
     if (req.query.course) filter.course = req.query.course;
     if (req.query.semester) filter.semester = req.query.semester;
+    if (req.query.program) filter.course = req.query.program;
 
     // Optional search across name/enrollment/email
     const search = (req.query.search || '').trim();
@@ -1208,6 +1211,21 @@ router.put('/exams/:examId/submissions/:studentId/grade', auth, adminOnly, async
     res.json({ message: 'Grading saved successfully', submission });
   } catch (error) {
     console.error('Error grading submission:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ============================================================
+// GET AVAILABLE PROGRAMS FOR FILTERS
+// GET /api/admin/programs
+// Admin can see all programs to filter students
+// ============================================================
+router.get('/programs', auth, adminOnly, async (req, res) => {
+  try {
+    const courses = await Course.find().sort({ code: 1 }).lean();
+    res.json({ courses });
+  } catch (error) {
+    console.error('Error fetching courses:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

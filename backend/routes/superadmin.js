@@ -40,6 +40,25 @@ router.get('/courses/public', async (req, res) => {
 // ============================================================
 // DASHBOARD STATS
 // ============================================================
+router.get('/students', auth, superAdminOnly, async (req, res) => {
+  try {
+    const { program, semester } = req.query;
+    const filter = {};
+    if (program) filter.course = program;
+    if (semester) filter.semester = semester;
+    
+    const users = await User.find(filter)
+      .select('-password -aadharNumber')
+      .sort({ course: 1, semester: 1, name: 1 })
+      .lean();
+    
+    res.json({ users });
+  } catch (error) {
+    console.error('Error fetching students:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.get('/stats', auth, superAdminOnly, async (req, res) => {
   try {
     // Run all counts in parallel (single round-trip each) instead of sequentially

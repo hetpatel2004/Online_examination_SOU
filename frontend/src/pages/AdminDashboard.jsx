@@ -69,6 +69,8 @@ const AdminDashboard = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [userError, setUserError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [programFilter, setProgramFilter] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState('');
 
   // ========== SUBJECT MANAGEMENT STATE ==========
   const [subjects, setSubjects] = useState([]);
@@ -147,8 +149,14 @@ const AdminDashboard = () => {
     setLoadingUsers(true);
     setUserError('');
     try {
-      const { data } = await API.get('/admin/users');
+      const { data } = await API.get('/admin/users', {
+        params: { role: 'user', program: programFilter, semester: semesterFilter }
+      });
       setUsers(data.users);
+      
+      // Compute semesters based on filtered users
+      const allSemesters = [...new Set(users.map((u) => u.semester).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
+      setSemesterOptions(allSemesters);
     } catch (error) {
       setUserError(error.response?.data?.message || 'Failed to fetch users');
     } finally {
@@ -606,18 +614,18 @@ const AdminDashboard = () => {
       fetchExams();
       fetchSubjects(); // Need subjects for the dropdown
     }
-  }, [activePage]);
+  }, [activePage, programFilter, semesterFilter]);
 
   // ========== FILTERED DATA ==========
-  const filteredUsers = users.filter(
-    (u) =>
-      (u.role === 'user') && (
-        u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.enrollmentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.course?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  );
+const filteredUsers = users.filter(
+      (u) =>
+        (u.role === 'user') && (
+          u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          u.enrollmentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          u.course?.toLowerCase().includes(searchTerm.toLowerCase())
+        ) && (!programFilter || u.course === programFilter) && (!semesterFilter || u.semester === semesterFilter)
+    );
 
   const filteredSubjects = semesterFilter
     ? subjects.filter((s) => s.semester === Number(semesterFilter))
@@ -627,9 +635,10 @@ const AdminDashboard = () => {
     ? exams.filter((e) => e.semester === Number(examSemesterFilter))
     : exams;
 
-  const totalStudents = users.filter((u) => u.role === 'user').length;
+  const totalStudents = filteredUsers.length;
   const totalSubjects = subjects.length;
   const totalExams = exams.length;
+  const semesters = programFilter ? [...new Set(users.filter((u) => u.course === programFilter).map((u) => u.semester))].sort((a, b) => Number(a) - Number(b)) : [];
 
   // Helper: determine exam status (upcoming vs ongoing vs completed)
   const getExamStatus = (exam) => {
@@ -665,6 +674,28 @@ const AdminDashboard = () => {
               <div className="stat-card stat-blue"><span className="stat-number">{totalStudents}</span><span className="stat-label">Students</span></div>
               <div className="stat-card stat-green"><span className="stat-number">{totalSubjects}</span><span className="stat-label">Subjects</span></div>
               <div className="stat-card stat-purple"><span className="stat-number">{totalExams}</span><span className="stat-label">Exams</span></div>
+            </div>
+            <div className="program-filter-row">
+              <span className="filter-label">Filter by Program:</span>
+              <button className={`filter-btn ${programFilter === '' ? 'active' : ''}`} onClick={() => setProgramFilter('')}>All Programs</button>
+              {courses.length > 0 ? (
+                courses.map((c) => (
+                  <button key={c._id} className={`filter-btn ${programFilter === c.code ? 'active' : ''}`} onClick={() => setProgramFilter(c.code)}>{c.name}</button>
+                ))
+              ) : (
+                <span className="filter-loading">Loading programs...</span>
+              )}
+            </div>
+            <div className="semester-filter-row" style={{display: programFilter ? 'block' : 'none'}}>
+              <span className="filter-label">Filter by Semester:</span>
+              <button className={`filter-btn ${semesterFilter === '' ? 'active' : ''}`} onClick={() => setSemesterFilter('')}>All Semesters</button>
+              {programFilter && semesters.length > 0 ? (
+                semesters.map((sem) => (
+                  <button key={sem} className={`filter-btn ${semesterFilter === String(sem) ? 'active' : ''}`} onClick={() => setSemesterFilter(String(sem))}>Sem {sem}</button>
+                ))
+              ) : (
+                <span className="filter-loading">Select program first</span>
+              )}
             </div>
             <div className="search-bar">
               <input type="text" placeholder="Search by name, enrollment, email, or program..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />

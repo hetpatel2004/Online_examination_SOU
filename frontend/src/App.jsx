@@ -13,6 +13,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import PasswordChange from './pages/PasswordChange';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -44,6 +45,16 @@ function App() {
             <Route path="/superadmin-dashboard" element={
               <ProtectedRoute>
                 <SuperAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/superadmin/students" element={
+              <ProtectedRoute>
+                <SuperAdminStudents />
+              </ProtectedRoute>
+            } />
+            <Route path="/change-password" element={
+              <ProtectedRoute>
+                <PasswordChange />
               </ProtectedRoute>
             } />
             <Route path="*" element={<Navigate to="/" />} />
