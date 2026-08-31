@@ -254,4 +254,58 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/auth/change-password
+ * 
+ * Purpose: Allow admin or superadmin to change their password
+ * 
+ * What happens:
+ * 1. auth middleware verifies JWT token
+ * 2. Checks user role is 'admin' or 'superadmin'
+ * 3. Receives oldPassword and newPassword from body
+ * 4. Verifies old password matches stored password
+ * 5. Hashes new password and updates user
+ * 6. Returns success message
+ * 
+ * Body: { oldPassword, newPassword }
+ * Response: { message: 'Password changed successfully' }
+ */
+router.post('/change-password', auth, async (req, res) => {
+  try {
+    // Check role - allow both admin and superadmin
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ message: 'Access denied. Admin or Super Admin only.' });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'Old and new passwords are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    }
+
+    // Verify old password matches stored password
+    const isMatch = await bcrypt.compare(oldPassword, req.user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Old password is incorrect' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user password
+    req.user.password = hashedNewPassword;
+    await req.user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
