@@ -70,7 +70,6 @@ const AdminDashboard = () => {
   const [userError, setUserError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [programFilter, setProgramFilter] = useState('');
-  const [semesterFilter, setSemesterFilter] = useState('');
 
   // ========== SUBJECT MANAGEMENT STATE ==========
   const [subjects, setSubjects] = useState([]);
