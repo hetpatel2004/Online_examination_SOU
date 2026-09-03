@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import PasswordChange from './pages/PasswordChange';
+import SuperAdminStudents from './pages/SuperAdminStudents';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -47,9 +48,11 @@ function App() {
                 <SuperAdminDashboard />
               </ProtectedRoute>
             } />
-            <Route path="/superadmin/students" element={
+<Route path="/superadmin/students" element={
               <ProtectedRoute>
-                <SuperAdminStudents />
+                <Suspense fallback={<div>Loading...</div>}>
+                  <SuperAdminStudents />
+                </Suspense>
               </ProtectedRoute>
             } />
             <Route path="/change-password" element={

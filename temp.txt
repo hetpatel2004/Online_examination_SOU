@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
@@ -127,7 +127,7 @@ const SuperAdminStudents = () => {
           <div className="error-msg">{error}</div>
         ) : users.length === 0 ? (
           <div className="no-students">
-            <span className="coming-icon">📊</span>
+            <span className="coming-icon">ðŸ“Š</span>
             <h3>No Students Found</h3>
             <p>No students match the current filters.</p>
           </div>
@@ -164,16 +164,16 @@ const SuperAdminStudents = () => {
                         {u.enrollmentNumber}
                       </td>
                       <td data-label="Program">
-                        {u.course || '—'}
+                        {u.course || 'â€”'}
                       </td>
                       <td data-label="Semester">
-                        {u.semester || '—'}
+                        {u.semester || 'â€”'}
                       </td>
-                      <td data-label="Email">{u.email || '—'}</td>
+                      <td data-label="Email">{u.email || 'â€”'}</td>
                       <td data-label="Actions" className="actions-cell">
-                        <button className="btn-icon btn-view" title="View Details">👁️</button>
+                        <button className="btn-icon btn-view" title="View Details">ðŸ‘ï¸</button>
                         <button className="btn-icon btn-block" title={u.isBlocked ? 'Unblock' : 'Block'}>
-                          {u.isBlocked ? '✅' : '🚫'}
+                          {u.isBlocked ? 'âœ…' : 'ðŸš«'}
                         </button>
                       </td>
                     </tr>
