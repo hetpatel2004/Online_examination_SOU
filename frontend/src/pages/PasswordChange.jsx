@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import 'lazysizes';
+import 'lazysizes/plugins/parent-fit/parent-fit';
 
 const PasswordChange = () => {
   const { user } = useAuth();
@@ -83,3 +85,95 @@ const PasswordChange = () => {
 };
 
 export default PasswordChange;
+
+// Simple inline styles for the password change page
+const passwordChangeStyles = `
+  .password-change-page {
+    min-height: 100vh;
+    background: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .password-change-card {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 420px;
+  }
+  
+  .password-change-card h2 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  .password-change-card p {
+    color: #666;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+    font-size: 14px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: #764ba2;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .btn-primary {
+    flex: 1;
+    padding: 12px 24px;
+    background: #764ba2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .btn-primary:hover {
+    background: #6a3d95;
+  }
+  
+  .btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+console.log('PasswordChange styles loaded');
+`;

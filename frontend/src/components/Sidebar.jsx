@@ -23,6 +23,8 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'students', icon: '👥', label: 'Students' },
     { id: 'exams', icon: '📝', label: 'Exams' },
     { id: 'timetable', icon: '📅', label: 'Timetable' },
+    { id: 'change-password', icon: '🔐', label: 'Change Password' },
+    { id: 'superadmin-students', icon: '👥', label: 'All Students' },
   ];
 
   const studentMenu = [
