@@ -20,7 +20,6 @@ const SuperAdminStudents = () => {
   const [semesters, setSemesters] = useState([]);
   const navigate = useNavigate();
 
-  // Fetch all courses/programs
   const fetchCourses = async () => {
     setLoading(true);
     setError('');
@@ -35,7 +34,6 @@ const SuperAdminStudents = () => {
     }
   };
 
-  // Fetch students with filters
   const fetchStudents = async () => {
     setLoading(true);
     setError('');
@@ -44,12 +42,16 @@ const SuperAdminStudents = () => {
         params: { program: selectedProgram, semester: semesterFilter }
       });
       setUsers(data.users || []);
-      
-      // Compute semesters based on filtered students
+
       if (selectedProgram) {
         const programStudents = data.users || [];
-        const semesters = [...new Set(programStudents.map((u) => u.semester).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
-        setSemesters(semesters);
+        const semesterList = [
+          ...new Set(
+            programStudents.map((u) => u.semester).filter(Boolean)
+          )
+        ].sort((a, b) => Number(a) - Number(b));
+
+        setSemesters(semesterList);
       } else {
         setSemesters([]);
       }
@@ -67,7 +69,7 @@ const SuperAdminStudents = () => {
 
   const handleProgramChange = (programCode) => {
     setSelectedProgram(programCode);
-    setSemesterFilter(''); // Reset semester when program changes
+    setSemesterFilter('');
     fetchStudents();
   };
 
@@ -75,6 +77,15 @@ const SuperAdminStudents = () => {
     setSemesterFilter(semester);
     fetchStudents();
   };
+
+  const filteredUsers = users.filter(
+    (u) =>
+      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.enrollmentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalStudentsInProgram = filteredUsers.length;
 
   return (
     <div className="superadmin-students-page">
@@ -86,10 +97,24 @@ const SuperAdminStudents = () => {
       <div className="filters-section">
         <div className="program-filter">
           <span>Program:</span>
-          <button className={`filter-btn ${selectedProgram === '' ? 'active' : ''}`} onClick={() => handleProgramChange('')}>All Programs</button>
+          <button
+            className={`filter-btn ${selectedProgram === '' ? 'active' : ''}`}
+            onClick={() => handleProgramChange('')}
+          >
+            All Programs
+          </button>
+
           {programs.length > 0 ? (
             programs.map((c) => (
-              <button key={c._id} className={`filter-btn ${selectedProgram === c.code ? 'active' : ''}`} onClick={() => handleProgramChange(c.code)}>{c.name}</button>
+              <button
+                key={c._id}
+                className={`filter-btn ${
+                  selectedProgram === c.code ? 'active' : ''
+                }`}
+                onClick={() => handleProgramChange(c.code)}
+              >
+                {c.name}
+              </button>
             ))
           ) : (
             <span className="filter-loading">Loading programs...</span>
@@ -99,10 +124,26 @@ const SuperAdminStudents = () => {
         {selectedProgram && (
           <div className="semester-filter">
             <span>Semester:</span>
-            <button className={`filter-btn ${semesterFilter === '' ? 'active' : ''}`} onClick={() => handleSemesterChange('')}>All Semesters</button>
+            <button
+              className={`filter-btn ${
+                semesterFilter === '' ? 'active' : ''
+              }`}
+              onClick={() => handleSemesterChange('')}
+            >
+              All Semesters
+            </button>
+
             {semesters.length > 0 ? (
               semesters.map((sem) => (
-                <button key={sem} className={`filter-btn ${semesterFilter === String(sem) ? 'active' : ''}`} onClick={() => handleSemesterChange(String(sem))}>Sem {sem}</button>
+                <button
+                  key={sem}
+                  className={`filter-btn ${
+                    semesterFilter === String(sem) ? 'active' : ''
+                  }`}
+                  onClick={() => handleSemesterChange(String(sem))}
+                >
+                  Sem {sem}
+                </button>
               ))
             ) : (
               <span className="filter-loading">Loading semesters...</span>
@@ -145,11 +186,14 @@ const SuperAdminStudents = () => {
                   <th>Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="no-data">
-                      {searchTerm ? 'No students match your search' : 'No students yet'}
+                      {searchTerm
+                        ? 'No students match your search'
+                        : 'No students yet'}
                     </td>
                   </tr>
                 ) : (
@@ -158,7 +202,11 @@ const SuperAdminStudents = () => {
                       <td data-label="#">{i + 1}</td>
                       <td data-label="Name" className="name-cell">
                         {u.name}
-                        {u.isBlocked && <span className="status-blocked-badge">Blocked</span>}
+                        {u.isBlocked && (
+                          <span className="status-blocked-badge">
+                            Blocked
+                          </span>
+                        )}
                       </td>
                       <td data-label="Enrollment" className="enrollment-cell">
                         {u.enrollmentNumber}
@@ -171,14 +219,22 @@ const SuperAdminStudents = () => {
                       </td>
                       <td data-label="Email">{u.email || '—'}</td>
                       <td data-label="Actions" className="actions-cell">
-                        <button className="btn-icon btn-view" title="View Details">👁️</button>
-                        <button className="btn-icon btn-block" title={u.isBlocked ? 'Unblock' : 'Block'}>
+                        <button
+                          className="btn-icon btn-view"
+                          title="View Details"
+                        >
+                          👁️
+                        </button>
+                        <button
+                          className="btn-icon btn-block"
+                          title={u.isBlocked ? 'Unblock' : 'Block'}
+                        >
                           {u.isBlocked ? '✅' : '🚫'}
                         </button>
                       </td>
                     </tr>
                   ))
-                )
+                )}
               </tbody>
             </table>
           </div>
@@ -190,6 +246,7 @@ const SuperAdminStudents = () => {
           <span className="stat-number">{totalStudentsInProgram}</span>
           <span className="stat-label">Total Students</span>
         </div>
+
         {selectedProgram && (
           <div className="stat-card stat-green">
             <span className="stat-number">{semesters.length}</span>
@@ -199,17 +256,6 @@ const SuperAdminStudents = () => {
       </div>
     </div>
   );
-
-  // Computed values
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.enrollmentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (!selectedProgram || u.course === selectedProgram)
-  );
-
-  const totalStudentsInProgram = filteredUsers.length;
 };
 
 export default SuperAdminStudents;
