@@ -10,6 +10,7 @@ import Sidebar from '../components/Sidebar';
 const SuperAdminStudents = () => {
   const { user } = useAuth();
   const [activePage, setActivePage] = useState('all-students');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [programs, setPrograms] = useState([]);
   const [courses, setCourses] = useState([]);
   const [selectedProgram, setSelectedProgram] = useState('');
@@ -73,12 +74,10 @@ const SuperAdminStudents = () => {
   const handleProgramChange = (programCode) => {
     setSelectedProgram(programCode);
     setSemesterFilter('');
-    fetchStudents();
   };
 
   const handleSemesterChange = (semester) => {
     setSemesterFilter(semester);
-    fetchStudents();
   };
 
   const filteredUsers = users.filter(
@@ -93,6 +92,7 @@ const SuperAdminStudents = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-layout">
+        <Sidebar role="superadmin" activePage={activePage} onNavigate={() => {}} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
         <div className="dashboard-main">
           <nav className="dashboard-nav">
             <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">

@@ -288,8 +288,11 @@ router.post('/change-password', auth, async (req, res) => {
       return res.status(400).json({ message: 'New password must be at least 6 characters' });
     }
 
+    // Fetch user with password to verify old password
+    const user = await User.findById(req.user._id).select('+password');
+    
     // Verify old password matches stored password
-    const isMatch = await bcrypt.compare(oldPassword, req.user.password);
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Old password is incorrect' });
     }
@@ -299,8 +302,8 @@ router.post('/change-password', auth, async (req, res) => {
     const hashedNewPassword = await bcrypt.hash(newPassword, salt);
 
     // Update user password
-    req.user.password = hashedNewPassword;
-    await req.user.save();
+    user.password = hashedNewPassword;
+    await user.save();
 
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
