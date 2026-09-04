@@ -96,11 +96,6 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
               🔐 Change Password
             </button>
           )}
-          {role === 'superadmin' && (
-            <button className="sidebar-item" onClick={() => navigate('/superadmin/students')}>
-              👥 All Students
-            </button>
-          )}
         </div>
       </aside>
     </>
