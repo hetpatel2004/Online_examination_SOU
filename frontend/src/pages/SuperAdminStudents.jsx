@@ -29,7 +29,7 @@ const SuperAdminStudents = () => {
     try {
       const { data } = await API.get('/superadmin/courses');
       setCourses(data.courses || []);
-      setPrograms(data.courses || [];
+      setPrograms(data.courses || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load courses');
     } finally {
