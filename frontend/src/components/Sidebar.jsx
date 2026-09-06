@@ -65,8 +65,11 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
           {menuItems.map((item) => (
             <button
               key={item.id}
+              type="button"
               className={`sidebar-item ${activePage === item.id ? 'active' : ''}`}
-              onClick={() => {
+              style={{ pointerEvents: 'auto' }}
+              onClick={(e) => {
+                e.stopPropagation();
                 if (item.id === 'edit-profile') {
                   navigate('/superadmin/edit-profile');
                   if (onToggle) onToggle();
