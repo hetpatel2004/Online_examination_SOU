@@ -48,8 +48,8 @@ const AdminDashboard = () => {
     try {
       const [studentsRes, subjectsRes, examsRes] = await Promise.all([
         API.get('/admin/users', { params: { role: 'user' } }),
-        API.get(`/subjects?semester=${user?.semester}&course=${user?.course}`),
-        API.get(`/exams?semester=${user?.semester}&course=${user?.course}`)
+        API.get('/admin/subjects'),
+        API.get('/admin/exams')
       ]);
       setStats({
         totalStudents: studentsRes.data.users?.length || 0,
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
 
   const fetchCourses = async () => {
     try {
-      const { data } = await API.get('/admin/courses');
+      const { data } = await API.get('/superadmin/courses');
       setCourses(data.courses || []);
     } catch (err) {
       console.error('Failed to fetch courses:', err);
