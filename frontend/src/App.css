@@ -1221,6 +1221,334 @@ body {
   padding: 8px 12px;
 }
 
+/* ============ STUDENTS FLOW UI (Program -> Semester -> Students) ============ */
+.students-flow {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.flow-header {
+  margin-bottom: 24px;
+}
+
+.flow-header .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #667085;
+  cursor: pointer;
+}
+
+.flow-header .breadcrumb-item {
+  transition: color 0.2s;
+}
+
+.flow-header .breadcrumb-item:hover {
+  color: #176B3A;
+}
+
+.flow-header .breadcrumb-item.breadcrumb-current {
+  color: #176B3A;
+  font-weight: 600;
+  cursor: default;
+}
+
+.flow-header .breadcrumb-separator {
+  color: #ccc;
+}
+
+.flow-header h2 {
+  font-size: 24px;
+  color: #176B3A;
+  margin-bottom: 4px;
+}
+
+.flow-header p {
+  color: #667085;
+  font-size: 14px;
+}
+
+.step3-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.step3-header h2 {
+  font-size: 24px;
+  color: #176B3A;
+  margin-bottom: 4px;
+}
+
+.step3-header p {
+  color: #667085;
+  font-size: 14px;
+}
+
+/* Program Grid */
+.program-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.program-card {
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.program-card:hover {
+  border-color: #176B3A;
+  box-shadow: 0 8px 24px rgba(23, 107, 58, 0.12);
+  transform: translateY(-2px);
+}
+
+.program-card-icon {
+  font-size: 48px;
+}
+
+.program-card-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #176B3A;
+}
+
+.program-card-code {
+  font-size: 14px;
+  color: #667085;
+  background: #f0f2f5;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.program-card-semesters {
+  font-size: 13px;
+  color: #888;
+  margin-top: auto;
+}
+
+/* Semester Grid */
+.semester-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.semester-card {
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 32px 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.semester-card:hover {
+  border-color: #176B3A;
+  box-shadow: 0 8px 24px rgba(23, 107, 58, 0.12);
+  transform: translateY(-2px);
+}
+
+.semester-card-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: #176B3A;
+}
+
+.semester-card-label {
+  font-size: 13px;
+  color: #888;
+}
+
+/* Students Table Wrapper */
+.students-table-wrapper {
+  overflow-x: auto;
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.students-table th {
+  background: #f0f2f5;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F4D2C;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.students-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.students-table tbody tr:hover {
+  background: #f8f9ff;
+}
+
+.name-cell {
+  font-weight: 600;
+  color: #176B3A;
+}
+
+.enrollment-cell {
+  white-space: nowrap;
+}
+
+.enrollment-cell code {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  background: #E8F3EC;
+  color: #176B3A;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  border: 1px solid #D9E2DC;
+  letter-spacing: 0.5px;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: rgba(23, 107, 58, 0.1);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.active {
+  background: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.status-badge.blocked {
+  background: rgba(214, 69, 69, 0.1);
+  color: #D64545;
+}
+
+.status-blocked-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #d64545;
+  border-radius: 10px;
+  vertical-align: middle;
+}
+
+.no-data-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-data-state .coming-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.no-data-state h3 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.no-data-state p {
+  font-size: 14px;
+  color: #888;
+}
+
+/* Search input in step 3 */
+.search-input {
+  width: 300px;
+  max-width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #176B3A;
+  box-shadow: 0 0 0 3px rgba(23, 107, 58, 0.1);
+}
+
+.search-input::placeholder {
+  color: #aaa;
+}
+
+/* Loading state */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+.error-msg {
+  background: rgba(220, 53, 69, 0.1);
+  color: #D64545;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
 /* ============ SIDEBAR ============ */
 /* Fixed sidebar - stays in place when scrolling */
 .sidebar {
