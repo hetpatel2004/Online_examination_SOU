@@ -39,7 +39,7 @@ const AdminStudents = () => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await API.get('/superadmin/courses');
+      const { data } = await API.get('/admin/programs');
       setCourses(data.courses || []);
       setPrograms(data.courses || []);
     } catch (err) {

@@ -64,7 +64,7 @@ const AdminDashboard = () => {
 
   const fetchCourses = async () => {
     try {
-      const { data } = await API.get('/superadmin/courses');
+      const { data } = await API.get('/admin/programs');
       setCourses(data.courses || []);
     } catch (err) {
       console.error('Failed to fetch courses:', err);
