@@ -18,6 +18,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import PasswordChange from './pages/PasswordChange';
 import SuperAdminStudents from './pages/SuperAdminStudents';
 import AdminStudents from './pages/AdminStudents';
+import SuperAdminEditProfile from './pages/SuperAdminEditProfile';
 
 import './App.css';
 
@@ -106,6 +107,15 @@ function App() {
                     <Suspense fallback={<div>Loading...</div>}>
                       <AdminStudents />
                     </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/superadmin/edit-profile"
+                element={
+                  <ProtectedRoute>
+                    <SuperAdminEditProfile />
                   </ProtectedRoute>
                 }
               />
