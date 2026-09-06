@@ -24,7 +24,6 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'exams', icon: '📝', label: 'Exams' },
     { id: 'timetable', icon: '📅', label: 'Timetable' },
     { id: 'change-password', icon: '🔐', label: 'Change Password' },
-    { id: 'superadmin-students', icon: '👥', label: 'All Students' },
   ];
 
   const studentMenu = [
@@ -39,6 +38,8 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'courses', icon: '🎓', label: 'Manage Programs' },
     { id: 'subjects', icon: '📚', label: 'Manage Subjects' },
     { id: 'assignment', icon: '🔗', label: 'Assign Faculty' },
+    { id: 'edit-profile', icon: '✏️', label: 'Edit Profile' },
+    { id: 'all-students', icon: '👥', label: 'All Students' },
   ];
 
   const menuItems = role === 'superadmin' ? superAdminMenu : role === 'admin' ? adminMenu : studentMenu;
@@ -64,7 +65,23 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
             <button
               key={item.id}
               className={`sidebar-item ${activePage === item.id ? 'active' : ''}`}
-              onClick={() => handleNav(item.id)}
+              onClick={() => {
+                if (item.id === 'edit-profile') {
+                  navigate('/superadmin/edit-profile');
+                  if (onToggle) onToggle();
+                } else if (item.id === 'all-students') {
+                  navigate('/superadmin/students');
+                  if (onToggle) onToggle();
+                } else if (item.id === 'students' && role === 'admin') {
+                  navigate('/admin/students');
+                  if (onToggle) onToggle();
+                } else if (item.id === 'change-password') {
+                  navigate('/change-password');
+                  if (onToggle) onToggle();
+                } else {
+                  handleNav(item.id);
+                }
+              }}
             >
               <span className="sidebar-icon">{item.icon}</span>
               <span className="sidebar-label">{item.label}</span>
@@ -91,11 +108,6 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
             {theme === 'light' ? '🌙' : '☀️'}
             <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
           </button>
-          {['admin', 'superadmin'].includes(role) && (
-            <button className="sidebar-item" onClick={() => navigate('/change-password')}>
-              🔐 Change Password
-            </button>
-          )}
         </div>
       </aside>
     </>

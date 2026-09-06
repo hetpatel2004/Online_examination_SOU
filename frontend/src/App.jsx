@@ -17,6 +17,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import PasswordChange from './pages/PasswordChange';
 import SuperAdminStudents from './pages/SuperAdminStudents';
+import AdminStudents from './pages/AdminStudents';
 
 import './App.css';
 
@@ -94,6 +95,17 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <PasswordChange />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin/students"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <AdminStudents />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />

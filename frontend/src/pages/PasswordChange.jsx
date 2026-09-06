@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Sidebar from '../components/Sidebar';
 
 const PasswordChange = () => {
   const { user } = useAuth();
+  const [activePage, setActivePage] = useState('change-password');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,7 +46,15 @@ const PasswordChange = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-layout">
+        <Sidebar role={user?.role} activePage={activePage} onNavigate={setActivePage} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
         <div className="dashboard-main">
+          <nav className="dashboard-nav">
+            <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
+              <span></span><span></span><span></span>
+            </button>
+            <div className="nav-brand"><span className="admin-badge">{user?.role === 'superadmin' ? 'SUPER ADMIN PANEL' : 'ADMIN PANEL'}</span></div>
+            <div className="nav-welcome">Welcome, {user?.name}</div>
+          </nav>
           <div className="dashboard-content">
             <div className="page-header">
               <h2>Change Password</h2>
