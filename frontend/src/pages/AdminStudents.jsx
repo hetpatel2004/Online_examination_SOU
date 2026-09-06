@@ -8,7 +8,7 @@ import Sidebar from '../components/Sidebar';
 
 const AdminStudents = () => {
   const { user } = useAuth();
-  const [activePage, setActivePage] = useState('all-students');
+  const [activePage, setActivePage] = useState('students');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [programs, setPrograms] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -19,8 +19,20 @@ const AdminStudents = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [semesters, setSemesters] = useState([]);
-  const [step, setStep] = useState(1); // 1: programs, 2: semesters, 3: students
+  const [step, setStep] = useState(1);
   const navigate = useNavigate();
+
+  const handleSidebarNavigate = (page) => {
+    if (page === 'students') {
+      return;
+    }
+    if (page === 'change-password') {
+      navigate('/change-password');
+    } else {
+      navigate('/admin-dashboard');
+    }
+    if (sidebarOpen) setSidebarOpen(false);
+  };
 
   // Fetch all courses/programs
   const fetchCourses = async () => {
@@ -288,7 +300,7 @@ const AdminStudents = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-layout">
-        <Sidebar role="admin" activePage={activePage} onNavigate={() => {}} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+        <Sidebar role="admin" activePage={activePage} onNavigate={handleSidebarNavigate} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
         <div className="dashboard-main">
           <nav className="dashboard-nav">
             <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">

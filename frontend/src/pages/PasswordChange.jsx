@@ -15,6 +15,18 @@ const PasswordChange = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleSidebarNavigate = (page) => {
+    if (page === 'change-password') {
+      return;
+    }
+    if (user?.role === 'superadmin') {
+      navigate('/superadmin-dashboard');
+    } else {
+      navigate('/admin-dashboard');
+    }
+    if (sidebarOpen) setSidebarOpen(false);
+  };
+
   const changePassword = async () => {
     if (!oldPassword || !newPassword) {
       toast.warning('Please enter both old and new passwords');
@@ -46,7 +58,7 @@ const PasswordChange = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-layout">
-        <Sidebar role={user?.role} activePage={activePage} onNavigate={setActivePage} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
+        <Sidebar role={user?.role} activePage={activePage} onNavigate={handleSidebarNavigate} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(false)} />
         <div className="dashboard-main">
           <nav className="dashboard-nav">
             <button className="hamburger dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
