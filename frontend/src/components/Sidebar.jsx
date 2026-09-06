@@ -40,6 +40,7 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'assignment', icon: '🔗', label: 'Assign Faculty' },
     { id: 'edit-profile', icon: '✏️', label: 'Edit Profile' },
     { id: 'all-students', icon: '👥', label: 'All Students' },
+    { id: 'change-password', icon: '🔐', label: 'Change Password' },
   ];
 
   const menuItems = role === 'superadmin' ? superAdminMenu : role === 'admin' ? adminMenu : studentMenu;
