@@ -20,11 +20,8 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
   const adminMenu = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { id: 'subjects', icon: '📚', label: 'My Subjects' },
-    { id: 'students', icon: '👥', label: 'Students' },
     { id: 'exams', icon: '📝', label: 'Exams' },
     { id: 'timetable', icon: '📅', label: 'Timetable' },
-    { id: 'change-password', icon: '🔐', label: 'Change Password' },
-    { id: 'superadmin-students', icon: '👥', label: 'All Students' },
   ];
 
   const studentMenu = [
@@ -39,6 +36,9 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'courses', icon: '🎓', label: 'Manage Programs' },
     { id: 'subjects', icon: '📚', label: 'Manage Subjects' },
     { id: 'assignment', icon: '🔗', label: 'Assign Faculty' },
+    { id: 'edit-profile', icon: '✏️', label: 'Edit Profile' },
+    { id: 'all-students', icon: '👥', label: 'All Students' },
+    { id: 'change-password', icon: '🔐', label: 'Change Password' },
   ];
 
   const menuItems = role === 'superadmin' ? superAdminMenu : role === 'admin' ? adminMenu : studentMenu;
@@ -63,8 +63,24 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
           {menuItems.map((item) => (
             <button
               key={item.id}
+              type="button"
               className={`sidebar-item ${activePage === item.id ? 'active' : ''}`}
-              onClick={() => handleNav(item.id)}
+              style={{ pointerEvents: 'auto' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (item.id === 'edit-profile') {
+                  navigate('/superadmin/edit-profile');
+                  if (onToggle) onToggle();
+                } else if (item.id === 'all-students') {
+                  navigate('/superadmin/students');
+                  if (onToggle) onToggle();
+                } else if (item.id === 'change-password') {
+                  navigate('/change-password');
+                  if (onToggle) onToggle();
+                } else {
+                  handleNav(item.id);
+                }
+              }}
             >
               <span className="sidebar-icon">{item.icon}</span>
               <span className="sidebar-label">{item.label}</span>
@@ -91,16 +107,6 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
             {theme === 'light' ? '🌙' : '☀️'}
             <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
           </button>
-          {role === 'admin' || role === 'superadmin' && (
-            <button className="sidebar-item" onClick={() => navigate('/change-password')}>
-              🔐 Change Password
-            </button>
-          )}
-          {role === 'superadmin' && (
-            <button className="sidebar-item" onClick={() => navigate('/superadmin/students')}>
-              👥 All Students
-            </button>
-          )}
         </div>
       </aside>
     </>
