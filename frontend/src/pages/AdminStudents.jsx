@@ -11,7 +11,6 @@ const AdminStudents = () => {
   const [activePage, setActivePage] = useState('students');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [programs, setPrograms] = useState([]);
-  const [courses, setCourses] = useState([]);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,9 +22,7 @@ const AdminStudents = () => {
   const navigate = useNavigate();
 
   const handleSidebarNavigate = (page) => {
-    if (page === 'students') {
-      return;
-    }
+    if (page === 'students') return;
     if (page === 'change-password') {
       navigate('/change-password');
     } else {
@@ -34,13 +31,11 @@ const AdminStudents = () => {
     if (sidebarOpen) setSidebarOpen(false);
   };
 
-  // Fetch all courses/programs
   const fetchCourses = async () => {
     setLoading(true);
     setError('');
     try {
       const { data } = await API.get('/admin/programs');
-      setCourses(data.courses || []);
       setPrograms(data.courses || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load programs');
@@ -49,7 +44,6 @@ const AdminStudents = () => {
     }
   };
 
-  // Fetch semesters for selected program
   const fetchSemesters = async (programCode) => {
     setLoading(true);
     setError('');
@@ -71,7 +65,6 @@ const AdminStudents = () => {
     }
   };
 
-  // Fetch students for selected program + semester
   const fetchStudents = async (programCode, semester) => {
     setLoading(true);
     setError('');
