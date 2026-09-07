@@ -1,4 +1,0 @@
-[build]
-command = "npm run build"
-cwd = "frontend"
-destination = "dist"

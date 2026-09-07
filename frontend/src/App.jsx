@@ -15,8 +15,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import PasswordChange from './pages/PasswordChange';
 import SuperAdminStudents from './pages/SuperAdminStudents';
-import SuperAdminEditProfile from './pages/SuperAdminEditProfile';
 
 import './App.css';
 
@@ -90,10 +90,10 @@ function App() {
               />
 
               <Route
-                path="/superadmin/edit-profile"
+                path="/change-password"
                 element={
                   <ProtectedRoute>
-                    <SuperAdminEditProfile />
+                    <PasswordChange />
                   </ProtectedRoute>
                 }
               />
