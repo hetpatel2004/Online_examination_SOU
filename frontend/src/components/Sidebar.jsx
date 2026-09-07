@@ -20,10 +20,8 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
   const adminMenu = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { id: 'subjects', icon: '📚', label: 'My Subjects' },
-    { id: 'students', icon: '👥', label: 'Students' },
     { id: 'exams', icon: '📝', label: 'Exams' },
     { id: 'timetable', icon: '📅', label: 'Timetable' },
-    { id: 'change-password', icon: '🔐', label: 'Change Password' },
   ];
 
   const studentMenu = [
@@ -75,9 +73,6 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
                   if (onToggle) onToggle();
                 } else if (item.id === 'all-students') {
                   navigate('/superadmin/students');
-                  if (onToggle) onToggle();
-                } else if (item.id === 'students' && role === 'admin') {
-                  navigate('/admin/students');
                   if (onToggle) onToggle();
                 } else if (item.id === 'change-password') {
                   navigate('/change-password');
