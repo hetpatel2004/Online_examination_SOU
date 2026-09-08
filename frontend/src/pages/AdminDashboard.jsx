@@ -157,7 +157,9 @@ const AdminDashboard = () => {
       const allSemesters = [...new Set(users.map((u) => u.semester).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
       setSemesterOptions(allSemesters);
     } catch (error) {
-      setUserError(error.response?.data?.message || 'Failed to fetch users');
+      const msg = error.response?.data?.message || error.message || 'Failed to fetch users';
+      setUserError(msg);
+      console.error('fetchUsers error:', error);
     } finally {
       setLoadingUsers(false);
     }
