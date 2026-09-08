@@ -657,75 +657,175 @@ const filteredUsers = users.filter(
       // ==========================================
       case 'students':
         return (
-          <div className="admin-section">
+          <div className="admin-section students-page">
             <div className="section-header-row">
               <div>
                 <h2>Manage Students</h2>
                 <p>Create, update, and remove student accounts</p>
               </div>
               <div className="section-header-actions">
-                {/* Bulk register students from a CSV or JSON file */}
                 <button className="btn btn-secondary" onClick={() => setShowStudentBulkModal(true)}>📦 Bulk Upload</button>
                 <button className="btn btn-primary" onClick={() => openAddModal('student')}>+ Add Student</button>
               </div>
             </div>
+
             <div className="stats-row">
               <div className="stat-card stat-blue"><span className="stat-number">{totalStudents}</span><span className="stat-label">Students</span></div>
               <div className="stat-card stat-green"><span className="stat-number">{totalSubjects}</span><span className="stat-label">Subjects</span></div>
               <div className="stat-card stat-purple"><span className="stat-number">{totalExams}</span><span className="stat-label">Exams</span></div>
             </div>
-            <div className="program-filter-row">
-              <span className="filter-label">Filter by Program:</span>
-              <button className={`filter-btn ${programFilter === '' ? 'active' : ''}`} onClick={() => setProgramFilter('')}>All Programs</button>
-              {courses.length > 0 ? (
-                courses.map((c) => (
-                  <button key={c._id} className={`filter-btn ${programFilter === c.code ? 'active' : ''}`} onClick={() => setProgramFilter(c.code)}>{c.name}</button>
-                ))
-              ) : (
-                <span className="filter-loading">Loading programs...</span>
-              )}
+
+            <div className="filters-panel">
+              <div className="filter-group">
+                <label className="filter-label" htmlFor="program-filter">Program</label>
+                <select
+                  id="program-filter"
+                  className="filter-select"
+                  value={programFilter}
+                  onChange={(e) => {
+                    setProgramFilter(e.target.value);
+                    setSemesterFilter('');
+                  }}
+                >
+                  <option value="">All Programs</option>
+                  {courses.map((c) => (
+                    <option key={c._id} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label className="filter-label" htmlFor="semester-filter">Semester</label>
+                <select
+                  id="semester-filter"
+                  className="filter-select"
+                  value={semesterFilter}
+                  onChange={(e) => setSemesterFilter(e.target.value)}
+                  disabled={!programFilter || semesters.length === 0}
+                >
+                  <option value="">All Semesters</option>
+                  {semesters.map((sem) => (
+                    <option key={sem} value={sem}>Semester {sem}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group search-group">
+                <label className="filter-label" htmlFor="student-search">Search</label>
+                <div className="search-wrapper">
+                  <span className="search-icon">🔍</span>
+                  <input
+                    id="student-search"
+                    type="text"
+                    className="filter-select search-input"
+                    placeholder="Search by name, enrollment, email, phone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="semester-filter-row" style={{display: programFilter ? 'block' : 'none'}}>
-              <span className="filter-label">Filter by Semester:</span>
-              <button className={`filter-btn ${semesterFilter === '' ? 'active' : ''}`} onClick={() => setSemesterFilter('')}>All Semesters</button>
-              {programFilter && semesters.length > 0 ? (
-                semesters.map((sem) => (
-                  <button key={sem} className={`filter-btn ${semesterFilter === String(sem) ? 'active' : ''}`} onClick={() => setSemesterFilter(String(sem))}>Sem {sem}</button>
-                ))
-              ) : (
-                <span className="filter-loading">Select program first</span>
-              )}
-            </div>
-            <div className="search-bar">
-              <input type="text" placeholder="Search by name, enrollment, email, or program..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
-            </div>
-            {loadingUsers ? <div className="loading">Loading students...</div> : userError ? <div className="error-msg">{userError}</div> : (
-              <div className="table-container">
-                <table className="users-table">
-                  <thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Program</th><th>Sem</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {filteredUsers.length === 0 ? <tr><td colSpan="8" className="no-data">{searchTerm ? 'No students match' : 'No students yet'}</td></tr> :
-                      filteredUsers.map((u, i) => (
-                        <tr key={u._id}>
-                          <td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell">{u.name}{u.isBlocked && <span className="status-blocked-badge">Blocked</span>}</td><td data-label="Enrollment" className="enrollment-cell">{u.enrollmentNumber}</td>
-                          <td data-label="Email">{u.email}</td><td data-label="Phone">{u.phone}</td><td data-label="Program">{u.course}</td><td data-label="Sem">{u.semester}</td>
-                          <td data-label="Actions" className="actions-cell">
-                            <button className="btn-icon btn-edit" onClick={() => openEditModal('student', u)}>✏️</button>
-                            {/* Block/unblock the student's account (blocked users can't log in) */}
-                            <button
-                              className={`btn-icon ${u.isBlocked ? 'btn-unblock' : 'btn-block'}`}
-                              title={u.isBlocked ? 'Unblock student' : 'Block student'}
-                              disabled={blockingUserId === u._id}
-                              onClick={() => handleToggleBlockStudent(u)}
-                            >
-                              {blockingUserId === u._id ? '⏳' : (u.isBlocked ? '✅' : '🚫')}
-                            </button>
-                            <button className="btn-icon btn-delete" onClick={() => setDeleteConfirm({ type: 'student', id: u._id, name: u.name })}>🗑️</button>
+
+            {loadingUsers ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading students...</p>
+              </div>
+            ) : userError ? (
+              <div className="error-state">
+                <span className="error-icon">⚠️</span>
+                <p>{userError}</p>
+                <button className="btn btn-primary" onClick={() => fetchUsers()}>Retry</button>
+              </div>
+            ) : (
+              <div className="table-wrapper">
+                <div className="table-container">
+                  <table className="users-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Enrollment</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Program</th>
+                        <th>Sem</th>
+                        <th>Status</th>
+                        <th className="actions-header">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan="9" className="no-data-row">
+                            <div className="empty-state">
+                              <span className="empty-icon">👥</span>
+                              <h3>{searchTerm ? 'No Matching Students' : 'No Students Found'}</h3>
+                              <p>{searchTerm ? 'Try adjusting your search or filters' : 'Add students using the button above'}</p>
+                            </div>
                           </td>
                         </tr>
-                      ))}
-                  </tbody>
-                </table>
+                      ) : (
+                        filteredUsers.map((u, i) => (
+                          <tr key={u._id}>
+                            <td data-label="#" className="serial-col">{i + 1}</td>
+                            <td data-label="Name" className="name-col">
+                              <div className="student-info">
+                                <span className="student-name">{u.name}</span>
+                                {u.isBlocked && <span className="status-badge blocked">Blocked</span>}
+                              </div>
+                            </td>
+                            <td data-label="Enrollment" className="enrollment-col">
+                              <code>{u.enrollmentNumber}</code>
+                            </td>
+                            <td data-label="Email" className="email-col">{u.email || '—'}</td>
+                            <td data-label="Phone" className="phone-col">{u.phone || '—'}</td>
+                            <td data-label="Program" className="program-col">
+                              <span className="program-badge">{u.course || '—'}</span>
+                            </td>
+                            <td data-label="Sem" className="sem-col">
+                              <span className="semester-badge">Sem {u.semester || '—'}</span>
+                            </td>
+                            <td data-label="Status" className="status-col">
+                              <span className={`status-badge ${u.isBlocked ? 'blocked' : 'active'}`}>
+                                {u.isBlocked ? 'Blocked' : 'Active'}
+                              </span>
+                            </td>
+                            <td data-label="Actions" className="actions-col">
+                              <div className="action-buttons">
+                                <button
+                                  className="action-btn edit"
+                                  onClick={() => openEditModal('student', u)}
+                                  title="Edit Student"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  className={`action-btn ${u.isBlocked ? 'unblock' : 'block'}`}
+                                  title={u.isBlocked ? 'Unblock Student' : 'Block Student'}
+                                  disabled={blockingUserId === u._id}
+                                  onClick={() => handleToggleBlockStudent(u)}
+                                >
+                                  {blockingUserId === u._id ? '⏳' : (u.isBlocked ? '✅' : '🚫')}
+                                </button>
+                                <button
+                                  className="action-btn delete"
+                                  onClick={() => setDeleteConfirm({ type: 'student', id: u._id, name: u.name })}
+                                  title="Delete Student"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-footer">
+                  <span className="results-count">Showing {filteredUsers.length} of {users.length} students</span>
+                </div>
               </div>
             )}
           </div>
