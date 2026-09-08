@@ -152,10 +152,11 @@ const AdminDashboard = () => {
       const { data } = await API.get('/admin/users', {
         params: { role: 'user', program: programFilter, semester: semesterFilter }
       });
-      setUsers(data.users);
+      const fetchedUsers = data.users || [];
+      setUsers(fetchedUsers);
       
-      // Compute semesters based on filtered users
-      const allSemesters = [...new Set(users.map((u) => u.semester).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
+      // Compute semesters based on fetched users
+      const allSemesters = [...new Set(fetchedUsers.map((u) => u.semester).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
       setSemesters(allSemesters);
     } catch (error) {
       const msg = error.response?.data?.message || error.message || 'Failed to fetch users';
@@ -640,7 +641,7 @@ const filteredUsers = users.filter(
   const totalStudents = filteredUsers.length;
   const totalSubjects = subjects.length;
   const totalExams = exams.length;
-  const filteredSemesters = programFilter ? [...new Set(users.filter((u) => u.course === programFilter).map((u) => u.semester))].sort((a, b) => Number(a) - Number(b)) : [];
+  const filteredSemesters = semesters.length > 0 ? semesters : (programFilter ? [...new Set(users.filter((u) => u.course === programFilter).map((u) => u.semester))].sort((a, b) => Number(a) - Number(b)) : []);
 
   // Helper: determine exam status (upcoming vs ongoing vs completed)
   const getExamStatus = (exam) => {
