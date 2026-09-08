@@ -70,6 +70,7 @@ const AdminDashboard = () => {
   const [userError, setUserError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [programFilter, setProgramFilter] = useState('');
+  const [semesters, setSemesters] = useState([]);
 
   // ========== SUBJECT MANAGEMENT STATE ==========
   const [subjects, setSubjects] = useState([]);
@@ -155,7 +156,7 @@ const AdminDashboard = () => {
       
       // Compute semesters based on filtered users
       const allSemesters = [...new Set(users.map((u) => u.semester).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
-      setSemesterOptions(allSemesters);
+      setSemesters(allSemesters);
     } catch (error) {
       const msg = error.response?.data?.message || error.message || 'Failed to fetch users';
       setUserError(msg);
@@ -639,7 +640,7 @@ const filteredUsers = users.filter(
   const totalStudents = filteredUsers.length;
   const totalSubjects = subjects.length;
   const totalExams = exams.length;
-  const semesters = programFilter ? [...new Set(users.filter((u) => u.course === programFilter).map((u) => u.semester))].sort((a, b) => Number(a) - Number(b)) : [];
+  const filteredSemesters = programFilter ? [...new Set(users.filter((u) => u.course === programFilter).map((u) => u.semester))].sort((a, b) => Number(a) - Number(b)) : [];
 
   // Helper: determine exam status (upcoming vs ongoing vs completed)
   const getExamStatus = (exam) => {
@@ -703,10 +704,10 @@ const filteredUsers = users.filter(
                   className="filter-select"
                   value={semesterFilter}
                   onChange={(e) => setSemesterFilter(e.target.value)}
-                  disabled={!programFilter || semesters.length === 0}
+                  disabled={!programFilter || filteredSemesters.length === 0}
                 >
                   <option value="">All Semesters</option>
-                  {semesters.map((sem) => (
+                  {filteredSemesters.map((sem) => (
                     <option key={sem} value={sem}>Semester {sem}</option>
                   ))}
                 </select>
