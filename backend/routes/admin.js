@@ -139,9 +139,16 @@ router.get('/users', auth, adminOnly, async (req, res) => {
     if (req.query.role) {
       filter.role = req.query.role;
     }
-    if (req.query.course) filter.course = req.query.course;
-    if (req.query.semester) filter.semester = req.query.semester;
-    if (req.query.program) filter.course = req.query.program;
+    // Only add course filter if value is provided and not empty
+    if (req.query.course && req.query.course.trim()) {
+      filter.course = req.query.course.trim();
+    }
+    if (req.query.semester && req.query.semester.trim()) {
+      filter.semester = req.query.semester.trim();
+    }
+    if (req.query.program && req.query.program.trim()) {
+      filter.course = req.query.program.trim();
+    }
 
     // Optional search across name/enrollment/email
     const search = (req.query.search || '').trim();
