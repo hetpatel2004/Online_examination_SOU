@@ -112,16 +112,8 @@ app.get('/api/test', (req, res) => {
 // Serve uploaded answer files (for both dev and production)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Production: serve frontend build as static files
-if (process.env.NODE_ENV === 'production') {
-  const frontendBuild = path.join(__dirname, '..', 'frontend', 'dist');
-  app.use(express.static(frontendBuild));
-
-  // SPA fallback: return index.html for all non-API routes
-  app.get('/{*path}', (req, res) => {
-    res.sendFile(path.join(frontendBuild, 'index.html'));
-  });
-}
+// NOTE: Frontend is deployed separately on Cloudflare Pages
+// Backend only serves API routes - no static frontend files
 
 // Start server on configured port
 const PORT = process.env.PORT || 5000;
