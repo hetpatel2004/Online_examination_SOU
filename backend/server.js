@@ -43,8 +43,26 @@ const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
-// Middleware: Enable CORS so frontend can call this API
-app.use(cors());
+// CORS Configuration - allow frontend domain
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://online-examination-sou.pages.dev',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Middleware: Gzip-compress responses (~70% smaller payloads, faster loads).
 // Skipped automatically for tiny responses and content that is already encoded.
