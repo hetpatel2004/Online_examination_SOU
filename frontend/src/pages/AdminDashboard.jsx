@@ -149,9 +149,11 @@ const AdminDashboard = () => {
     setLoadingUsers(true);
     setUserError('');
     try {
+      console.log('Fetching users with params:', { role: 'user', program: programFilter, semester: semesterFilter });
       const { data } = await API.get('/admin/users', {
         params: { role: 'user', program: programFilter, semester: semesterFilter }
       });
+      console.log('API response:', data);
       const fetchedUsers = data.users || [];
       setUsers(fetchedUsers);
       
@@ -162,6 +164,7 @@ const AdminDashboard = () => {
       const msg = error.response?.data?.message || error.message || 'Failed to fetch users';
       setUserError(msg);
       console.error('fetchUsers error:', error);
+      console.error('Error response:', error.response);
     } finally {
       setLoadingUsers(false);
     }
