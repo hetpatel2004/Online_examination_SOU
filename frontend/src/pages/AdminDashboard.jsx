@@ -149,9 +149,9 @@ const AdminDashboard = () => {
     setLoadingUsers(true);
     setUserError('');
     try {
-      console.log('Fetching users with params:', { role: 'user', program: programFilter, semester: semesterFilter });
+      console.log('Fetching all users (no filters)');
       const { data } = await API.get('/admin/users', {
-        params: { role: 'user', program: programFilter, semester: semesterFilter }
+        params: { role: 'user' }
       });
       console.log('API response:', data);
       const fetchedUsers = data.users || [];
@@ -620,7 +620,7 @@ const AdminDashboard = () => {
       fetchExams();
       fetchSubjects(); // Need subjects for the dropdown
     }
-  }, [activePage, programFilter, semesterFilter]);
+  }, [activePage]);
 
   // ========== FILTERED DATA ==========
 const filteredUsers = users.filter(
