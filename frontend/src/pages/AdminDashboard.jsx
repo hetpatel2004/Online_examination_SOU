@@ -624,6 +624,9 @@ const AdminDashboard = () => {
   }, [activePage]);
 
   // ========== FILTERED DATA ==========
+  // Helper: case-insensitive string equality (handles null/undefined safely)
+  const ciEq = (a, b) => (a || '').toLowerCase().trim() === (b || '').toLowerCase().trim();
+
   const filteredUsers = users.filter((u) => {
     if (u.role && u.role !== 'user') return false;
 
@@ -639,12 +642,14 @@ const AdminDashboard = () => {
     }
 
     if (programFilter) {
+      // programFilter = course code from dropdown
+      // student's u.course may be stored as course name OR code — check both, case-insensitively
       const selectedCourse = courses.find(
-        (c) => c.code === programFilter || c.name === programFilter
+        (c) => ciEq(c.code, programFilter) || ciEq(c.name, programFilter)
       );
       const matchProgram =
-        u.course === programFilter ||
-        (selectedCourse && (u.course === selectedCourse.name || u.course === selectedCourse.code));
+        ciEq(u.course, programFilter) ||
+        (selectedCourse && (ciEq(u.course, selectedCourse.name) || ciEq(u.course, selectedCourse.code)));
       if (!matchProgram) return false;
     }
 
@@ -669,14 +674,14 @@ const AdminDashboard = () => {
 
   const availableStudentSemesters = (() => {
     if (programFilter) {
-      const course = courses.find((c) => c.code === programFilter || c.name === programFilter);
+      const course = courses.find((c) => ciEq(c.code, programFilter) || ciEq(c.name, programFilter));
       if (course?.totalSemesters) {
         return Array.from({ length: course.totalSemesters }, (_, i) => String(i + 1));
       }
       const matchingUsers = users.filter(
         (u) =>
-          u.course === programFilter ||
-          (course && (u.course === course.name || u.course === course.code))
+          ciEq(u.course, programFilter) ||
+          (course && (ciEq(u.course, course.name) || ciEq(u.course, course.code)))
       );
       const sems = [...new Set(matchingUsers.map((u) => String(u.semester)).filter(Boolean))].sort(
         (a, b) => Number(a) - Number(b)
