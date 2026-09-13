@@ -34,6 +34,7 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
   const superAdminMenu = [
     { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
     { id: 'admins', icon: '👤', label: 'Manage Admins' },
+    { id: 'students', icon: '👥', label: 'Manage Students' },
     { id: 'courses', icon: '🎓', label: 'Manage Programs' },
     { id: 'subjects', icon: '📚', label: 'Manage Subjects' },
     { id: 'assignment', icon: '🔗', label: 'Assign Faculty' },

@@ -23,6 +23,14 @@ const SuperAdminDashboard = () => {
   const [admins, setAdmins] = useState([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
 
+  // Students
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentProgramFilter, setStudentProgramFilter] = useState('');
+  const [studentSemesterFilter, setStudentSemesterFilter] = useState('');
+  const [blockingStudentId, setBlockingStudentId] = useState(null);
+
   // Courses
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -54,6 +62,7 @@ const SuperAdminDashboard = () => {
   useEffect(() => {
     if (activePage === 'dashboard') fetchStats();
     if (activePage === 'admins') { fetchAdmins(); fetchCourses(); }
+    if (activePage === 'students') { fetchStudents(); fetchCourses(); }
     if (activePage === 'courses') fetchCourses();
     if (activePage === 'subjects') { fetchSubjects(); fetchCourses(); }
     if (activePage === 'assignment') { fetchAssignSubjects(); fetchAdmins(); fetchCourses(); }
@@ -67,6 +76,28 @@ const SuperAdminDashboard = () => {
     setLoadingAdmins(true);
     try { const { data } = await API.get('/superadmin/admins'); setAdmins(data.admins || []); } catch { toast.error('Failed to load admins'); }
     setLoadingAdmins(false);
+  };
+  const fetchStudents = async () => {
+    setLoadingStudents(true);
+    try {
+      const { data } = await API.get('/superadmin/students');
+      setStudents(data.users || []);
+    } catch {
+      toast.error('Failed to load students');
+    }
+    setLoadingStudents(false);
+  };
+  const handleToggleBlockStudent = async (student) => {
+    setBlockingStudentId(student._id);
+    try {
+      const { data } = await API.put(`/superadmin/students/${student._id}/block`);
+      toast.success(data.message || 'Student status updated');
+      fetchStudents();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update student status');
+    } finally {
+      setBlockingStudentId(null);
+    }
   };
   const fetchCourses = async () => {
     setLoadingCourses(true);
@@ -180,6 +211,11 @@ const SuperAdminDashboard = () => {
         await API.delete(`/superadmin/subjects/${deleteConfirm.id}`);
         toast.success('Subject deleted');
         fetchSubjects();
+      } else if (deleteConfirm.type === 'student') {
+        await API.delete(`/superadmin/students/${deleteConfirm.id}`);
+        toast.success('Student deleted');
+        fetchStudents();
+        fetchStats();
       }
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
     setDeleteConfirm(null);
@@ -201,6 +237,7 @@ const SuperAdminDashboard = () => {
   const renderPage = () => {
     switch (activePage) {
       case 'admins': return renderAdmins();
+      case 'students': return renderStudents();
       case 'courses': return renderCourses();
       case 'subjects': return renderSubjects();
       case 'assignment': return renderAssignment();
@@ -216,7 +253,7 @@ const SuperAdminDashboard = () => {
       </div>
       <div className="stats-row">
         <div className="stat-card stat-blue"><span className="stat-number">{stats.totalAdmins}</span><span className="stat-label">Admins</span></div>
-        <div className="stat-card stat-green"><span className="stat-number">{stats.totalStudents}</span><span className="stat-label">Students</span></div>
+        <div className="stat-card stat-green clickable" style={{ cursor: 'pointer' }} title="Click to view all students" onClick={() => setActivePage('students')}><span className="stat-number">{stats.totalStudents}</span><span className="stat-label">Students</span></div>
         <div className="stat-card stat-purple"><span className="stat-number">{stats.totalCourses}</span><span className="stat-label">Programs</span></div>
         <div className="stat-card stat-orange"><span className="stat-number">{stats.totalSubjects}</span><span className="stat-label">Subjects</span></div>
         <div className="stat-card stat-blue"><span className="stat-number">{stats.assignedSubjects}</span><span className="stat-label">Assigned</span></div>
@@ -236,6 +273,9 @@ const SuperAdminDashboard = () => {
           <div className="subject-card admin-card clickable" onClick={() => setActivePage('admins')}>
             <div className="subject-icon">👤</div><h3>Manage Admins</h3><p>Create, view, and remove admin accounts</p>
           </div>
+          <div className="subject-card admin-card clickable" onClick={() => setActivePage('students')}>
+            <div className="subject-icon">👥</div><h3>Manage Students</h3><p>View, filter, and manage all student accounts</p>
+          </div>
           <div className="subject-card admin-card clickable" onClick={() => setActivePage('courses')}>
             <div className="subject-icon">🎓</div><h3>Manage Programs</h3><p>Add, edit, or remove programs</p>
           </div>
@@ -249,6 +289,254 @@ const SuperAdminDashboard = () => {
       </div>
     </>
   );
+
+  const renderStudents = () => {
+    const filteredStudents = students.filter((s) => {
+      if (s.role && s.role !== 'user') return false;
+
+      if (studentSearch) {
+        const term = studentSearch.toLowerCase().trim();
+        const match =
+          s.name?.toLowerCase().includes(term) ||
+          s.enrollmentNumber?.toLowerCase().includes(term) ||
+          s.email?.toLowerCase().includes(term) ||
+          s.phone?.toLowerCase().includes(term) ||
+          s.course?.toLowerCase().includes(term);
+        if (!match) return false;
+      }
+
+      if (studentProgramFilter) {
+        const selectedCourse = courses.find(
+          (c) => c.code === studentProgramFilter || c.name === studentProgramFilter
+        );
+        const matchProg =
+          s.course === studentProgramFilter ||
+          (selectedCourse && (s.course === selectedCourse.name || s.course === selectedCourse.code));
+        if (!matchProg) return false;
+      }
+
+      if (studentSemesterFilter) {
+        if (String(s.semester) !== String(studentSemesterFilter)) return false;
+      }
+
+      return true;
+    });
+
+    const availableSemesters = (() => {
+      if (studentProgramFilter) {
+        const course = courses.find((c) => c.code === studentProgramFilter || c.name === studentProgramFilter);
+        if (course?.totalSemesters) {
+          return Array.from({ length: course.totalSemesters }, (_, i) => String(i + 1));
+        }
+        const matching = students.filter(
+          (s) =>
+            s.course === studentProgramFilter ||
+            (course && (s.course === course.name || s.course === course.code))
+        );
+        const sems = [...new Set(matching.map((s) => String(s.semester)).filter(Boolean))].sort(
+          (a, b) => Number(a) - Number(b)
+        );
+        if (sems.length > 0) return sems;
+      }
+      return [...new Set(students.map((s) => String(s.semester)).filter(Boolean))].sort(
+        (a, b) => Number(a) - Number(b)
+      );
+    })();
+
+    return (
+      <div className="admin-section students-page">
+        <div className="section-header-row">
+          <div>
+            <h2>Manage Students</h2>
+            <p>View, search, and manage all student accounts across programs</p>
+          </div>
+        </div>
+
+        <div className="stats-row">
+          <div className="stat-card stat-blue">
+            <span className="stat-number">{filteredStudents.length}</span>
+            <span className="stat-label">Students Shown</span>
+          </div>
+          <div className="stat-card stat-green">
+            <span className="stat-number">{students.length}</span>
+            <span className="stat-label">Total Students</span>
+          </div>
+        </div>
+
+        <div className="filters-panel">
+          <div className="filter-group">
+            <label className="filter-label">Program</label>
+            <select
+              className="filter-select"
+              value={studentProgramFilter}
+              onChange={(e) => {
+                setStudentProgramFilter(e.target.value);
+                setStudentSemesterFilter('');
+              }}
+            >
+              <option value="">All Programs</option>
+              {courses.map((c) => (
+                <option key={c._id} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label className="filter-label">Semester</label>
+            <select
+              className="filter-select"
+              value={studentSemesterFilter}
+              onChange={(e) => setStudentSemesterFilter(e.target.value)}
+            >
+              <option value="">All Semesters</option>
+              {availableSemesters.map((sem) => (
+                <option key={sem} value={String(sem)}>Semester {sem}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group search-group">
+            <label className="filter-label">Search</label>
+            <div className="search-wrapper">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                className="filter-select search-input"
+                placeholder="Search by name, enrollment, email, phone..."
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+              />
+              {studentSearch && (
+                <button
+                  type="button"
+                  onClick={() => setStudentSearch('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: '#999'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {(studentProgramFilter || studentSemesterFilter || studentSearch) && (
+            <div className="filter-group" style={{ justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ height: '42px', marginTop: 'auto' }}
+                onClick={() => {
+                  setStudentProgramFilter('');
+                  setStudentSemesterFilter('');
+                  setStudentSearch('');
+                }}
+              >
+                ↺ Reset Filters
+              </button>
+            </div>
+          )}
+        </div>
+
+        {loadingStudents ? (
+          <div className="loading">Loading students...</div>
+        ) : students.length === 0 ? (
+          <div className="coming-soon" style={{ padding: '40px' }}>
+            <span className="coming-icon">👥</span>
+            <h3>No Students Found</h3>
+            <p>No student accounts found in the database.</p>
+          </div>
+        ) : filteredStudents.length === 0 ? (
+          <div className="coming-soon" style={{ padding: '40px' }}>
+            <span className="coming-icon">🔍</span>
+            <h3>No Matching Students</h3>
+            <p>Try adjusting your search query or filters.</p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <div className="table-container">
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Enrollment</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Program</th>
+                    <th>Sem</th>
+                    <th>Status</th>
+                    <th className="actions-header">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredStudents.map((s, i) => (
+                    <tr key={s._id}>
+                      <td data-label="#" className="serial-col">{i + 1}</td>
+                      <td data-label="Name" className="name-col">
+                        <div className="student-info">
+                          <span className="student-name">{s.name}</span>
+                          {s.isBlocked && <span className="status-badge blocked">Blocked</span>}
+                        </div>
+                      </td>
+                      <td data-label="Enrollment" className="enrollment-col">
+                        <code>{s.enrollmentNumber}</code>
+                      </td>
+                      <td data-label="Email" className="email-col">{s.email || '—'}</td>
+                      <td data-label="Phone" className="phone-col">{s.phone || '—'}</td>
+                      <td data-label="Program" className="program-col">
+                        <span className="program-badge">{s.course || '—'}</span>
+                      </td>
+                      <td data-label="Sem" className="sem-col">
+                        <span className="semester-badge">Sem {s.semester || '—'}</span>
+                      </td>
+                      <td data-label="Status" className="status-col">
+                        <span className={`status-badge ${s.isBlocked ? 'blocked' : 'active'}`}>
+                          {s.isBlocked ? 'Blocked' : 'Active'}
+                        </span>
+                      </td>
+                      <td data-label="Actions" className="actions-col">
+                        <div className="action-buttons">
+                          <button
+                            className={`action-btn ${s.isBlocked ? 'unblock' : 'block'}`}
+                            title={s.isBlocked ? 'Unblock Student' : 'Block Student'}
+                            disabled={blockingStudentId === s._id}
+                            onClick={() => handleToggleBlockStudent(s)}
+                          >
+                            {blockingStudentId === s._id ? '⏳' : (s.isBlocked ? '✅' : '🚫')}
+                          </button>
+                          <button
+                            className="action-btn delete"
+                            title="Delete Student"
+                            onClick={() => setDeleteConfirm({ type: 'student', id: s._id, name: s.name })}
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="table-footer">
+              <span className="results-count">
+                Showing {filteredStudents.length} of {students.length} students
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderAdmins = () => (
     <div className="admin-section">

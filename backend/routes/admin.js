@@ -43,6 +43,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
+const Course = require('../models/Course');
 const Subject = require('../models/Subject');
 const Exam = require('../models/Exam');
 const Question = require('../models/Question');
@@ -140,14 +141,17 @@ router.get('/users', auth, adminOnly, async (req, res) => {
       filter.role = req.query.role;
     }
     // Only add course filter if value is provided and not empty
-    if (req.query.course && req.query.course.trim()) {
-      filter.course = req.query.course.trim();
+    const courseParam = (req.query.course || req.query.program || '').trim();
+    if (courseParam) {
+      const courseDoc = await Course.findOne({ $or: [{ code: courseParam }, { name: courseParam }] }).lean();
+      if (courseDoc) {
+        filter.course = { $in: [courseDoc.code, courseDoc.name, courseParam] };
+      } else {
+        filter.course = courseParam;
+      }
     }
     if (req.query.semester && req.query.semester.trim()) {
       filter.semester = req.query.semester.trim();
-    }
-    if (req.query.program && req.query.program.trim()) {
-      filter.course = req.query.program.trim();
     }
 
     // Optional search across name/enrollment/email
@@ -160,17 +164,19 @@ router.get('/users', auth, adminOnly, async (req, res) => {
       ];
     }
 
-    // Optional pagination: ?page=1&limit=50 (defaults to returning everything,
-    // so existing clients keep working unchanged).
+    // Optional pagination: only paginate if limit is explicitly provided (> 0).
+    // When limit is omitted, return all matching users.
+    const hasLimit = req.query.limit !== undefined && req.query.limit !== null && String(req.query.limit).trim() !== '';
+    const parsedLimit = hasLimit ? parseInt(req.query.limit, 10) : 0;
+    const limit = parsedLimit > 0 ? Math.min(500, parsedLimit) : 0;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.max(1, Math.min(500, parseInt(req.query.limit, 10) || 0));
 
     const query = User.find(filter).select('-password -aadharNumber').sort({ createdAt: -1 });
     if (limit > 0) query.skip((page - 1) * limit).limit(limit);
 
     // lean() skips Mongoose document overhead — much faster for read-only lists
     const users = await query.lean();
-    const total = limit > 0 ? await User.countDocuments(filter) : users.length;
+    const total = await User.countDocuments(filter);
 
     res.json({ users, total, page, limit });
   } catch (error) {

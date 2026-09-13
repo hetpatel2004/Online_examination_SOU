@@ -70,6 +70,7 @@ const AdminDashboard = () => {
   const [userError, setUserError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [programFilter, setProgramFilter] = useState('');
+  const [studentSemesterFilter, setStudentSemesterFilter] = useState('');
   const [semesters, setSemesters] = useState([]);
 
   // ========== SUBJECT MANAGEMENT STATE ==========
@@ -623,15 +624,36 @@ const AdminDashboard = () => {
   }, [activePage]);
 
   // ========== FILTERED DATA ==========
-const filteredUsers = users.filter(
-      (u) =>
-        (u.role === 'user') && (
-          u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.enrollmentNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.course?.toLowerCase().includes(searchTerm.toLowerCase())
-        ) && (!programFilter || u.course === programFilter) && (!semesterFilter || u.semester === semesterFilter)
-    );
+  const filteredUsers = users.filter((u) => {
+    if (u.role && u.role !== 'user') return false;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      const match =
+        u.name?.toLowerCase().includes(term) ||
+        u.enrollmentNumber?.toLowerCase().includes(term) ||
+        u.email?.toLowerCase().includes(term) ||
+        u.phone?.toLowerCase().includes(term) ||
+        u.course?.toLowerCase().includes(term);
+      if (!match) return false;
+    }
+
+    if (programFilter) {
+      const selectedCourse = courses.find(
+        (c) => c.code === programFilter || c.name === programFilter
+      );
+      const matchProgram =
+        u.course === programFilter ||
+        (selectedCourse && (u.course === selectedCourse.name || u.course === selectedCourse.code));
+      if (!matchProgram) return false;
+    }
+
+    if (studentSemesterFilter) {
+      if (String(u.semester) !== String(studentSemesterFilter)) return false;
+    }
+
+    return true;
+  });
 
   const filteredSubjects = semesterFilter
     ? subjects.filter((s) => s.semester === Number(semesterFilter))
@@ -644,7 +666,27 @@ const filteredUsers = users.filter(
   const totalStudents = filteredUsers.length;
   const totalSubjects = subjects.length;
   const totalExams = exams.length;
-  const filteredSemesters = semesters.length > 0 ? semesters : (programFilter ? [...new Set(users.filter((u) => u.course === programFilter).map((u) => u.semester))].sort((a, b) => Number(a) - Number(b)) : []);
+
+  const availableStudentSemesters = (() => {
+    if (programFilter) {
+      const course = courses.find((c) => c.code === programFilter || c.name === programFilter);
+      if (course?.totalSemesters) {
+        return Array.from({ length: course.totalSemesters }, (_, i) => String(i + 1));
+      }
+      const matchingUsers = users.filter(
+        (u) =>
+          u.course === programFilter ||
+          (course && (u.course === course.name || u.course === course.code))
+      );
+      const sems = [...new Set(matchingUsers.map((u) => String(u.semester)).filter(Boolean))].sort(
+        (a, b) => Number(a) - Number(b)
+      );
+      if (sems.length > 0) return sems;
+    }
+    return [...new Set(users.map((u) => String(u.semester)).filter(Boolean))].sort(
+      (a, b) => Number(a) - Number(b)
+    );
+  })();
 
   // Helper: determine exam status (upcoming vs ongoing vs completed)
   const getExamStatus = (exam) => {
@@ -691,7 +733,7 @@ const filteredUsers = users.filter(
                   value={programFilter}
                   onChange={(e) => {
                     setProgramFilter(e.target.value);
-                    setSemesterFilter('');
+                    setStudentSemesterFilter('');
                   }}
                 >
                   <option value="">All Programs</option>
@@ -706,13 +748,12 @@ const filteredUsers = users.filter(
                 <select
                   id="semester-filter"
                   className="filter-select"
-                  value={semesterFilter}
-                  onChange={(e) => setSemesterFilter(e.target.value)}
-                  disabled={!programFilter || filteredSemesters.length === 0}
+                  value={studentSemesterFilter}
+                  onChange={(e) => setStudentSemesterFilter(e.target.value)}
                 >
                   <option value="">All Semesters</option>
-                  {filteredSemesters.map((sem) => (
-                    <option key={sem} value={sem}>Semester {sem}</option>
+                  {availableStudentSemesters.map((sem) => (
+                    <option key={sem} value={String(sem)}>Semester {sem}</option>
                   ))}
                 </select>
               </div>
@@ -729,8 +770,45 @@ const filteredUsers = users.filter(
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      className="search-clear-btn"
+                      onClick={() => setSearchTerm('')}
+                      style={{
+                        position: 'absolute',
+                        right: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#999'
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
+
+              {(programFilter || studentSemesterFilter || searchTerm) && (
+                <div className="filter-group" style={{ justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ height: '42px', marginTop: 'auto' }}
+                    onClick={() => {
+                      setProgramFilter('');
+                      setStudentSemesterFilter('');
+                      setSearchTerm('');
+                    }}
+                  >
+                    ↺ Reset Filters
+                  </button>
+                </div>
+              )}
             </div>
 
             {loadingUsers ? (

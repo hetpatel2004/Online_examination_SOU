@@ -42,19 +42,71 @@ router.get('/courses/public', async (req, res) => {
 // ============================================================
 router.get('/students', auth, superAdminOnly, async (req, res) => {
   try {
-    const { program, semester } = req.query;
-    const filter = {};
-    if (program) filter.course = program;
-    if (semester) filter.semester = semester;
-    
+    const { program, semester, search } = req.query;
+    const filter = { role: 'user' };
+
+    if (program && program.trim()) {
+      const prog = program.trim();
+      const courseDoc = await Course.findOne({ $or: [{ code: prog }, { name: prog }] }).lean();
+      if (courseDoc) {
+        filter.course = { $in: [courseDoc.code, courseDoc.name, prog] };
+      } else {
+        filter.course = prog;
+      }
+    }
+    if (semester && semester.trim()) {
+      filter.semester = semester.trim();
+    }
+    if (search && search.trim()) {
+      const s = search.trim();
+      filter.$or = [
+        { name: { $regex: s, $options: 'i' } },
+        { enrollmentNumber: { $regex: s, $options: 'i' } },
+        { email: { $regex: s, $options: 'i' } },
+      ];
+    }
+
     const users = await User.find(filter)
       .select('-password -aadharNumber')
-      .sort({ course: 1, semester: 1, name: 1 })
+      .sort({ createdAt: -1 })
       .lean();
-    
+
     res.json({ users });
   } catch (error) {
     console.error('Error fetching students:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.put('/students/:id/block', auth, superAdminOnly, async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (student.role !== 'user') return res.status(400).json({ message: 'Can only block student accounts' });
+
+    student.isBlocked = !student.isBlocked;
+    await student.save();
+
+    res.json({
+      message: `Student account ${student.isBlocked ? 'blocked' : 'unblocked'} successfully`,
+      isBlocked: student.isBlocked,
+    });
+  } catch (error) {
+    console.error('Error toggling student block:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.delete('/students/:id', auth, superAdminOnly, async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (student.role !== 'user') return res.status(400).json({ message: 'Can only delete student accounts' });
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Student deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting student:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
