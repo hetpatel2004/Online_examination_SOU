@@ -189,12 +189,17 @@ async function sendEmail({ to, subject, html }) {
   // Prefer the HTTPS email API when configured (works on Render); SMTP below is
   // used for local dev or when no API key is set. Gmail API can reach any
   // recipient, so it takes priority over Resend (which needs a verified domain
-  // to send beyond your own inbox).
+  // to send beyond your own inbox). If Gmail API or Resend fails, fall through
+  // to SMTP so email is still delivered.
   if (process.env.GOOGLE_REFRESH_TOKEN && process.env.GOOGLE_CLIENT_ID) {
-    return sendEmailViaGmail({ to, subject, html });
+    const gmailRes = await sendEmailViaGmail({ to, subject, html });
+    if (gmailRes.sent) return gmailRes;
+    console.warn('[NOTIFICATION] Gmail API failed, falling back to next transport:', gmailRes.reason);
   }
   if (process.env.RESEND_API_KEY) {
-    return sendEmailViaResend({ to, subject, html });
+    const resendRes = await sendEmailViaResend({ to, subject, html });
+    if (resendRes.sent) return resendRes;
+    console.warn('[NOTIFICATION] Resend API failed, falling back to SMTP:', resendRes.reason);
   }
 
   const from = process.env.EMAIL_FROM || 'noreply@online-examination-sou.com';

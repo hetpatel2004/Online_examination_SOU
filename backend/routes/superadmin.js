@@ -187,14 +187,18 @@ router.post('/admins', auth, superAdminOnly, async (req, res) => {
     // Email the new admin their login credentials (ID, password, role).
     // Fire-and-forget: SMTP can be slow/hang, so never block the response on it.
     // The admin is already saved, so a mail failure cannot lose the account.
+    const targetEmail = (credentialsEmail && typeof credentialsEmail === 'string' && credentialsEmail.trim()) 
+      ? credentialsEmail.trim() 
+      : admin.email;
+
     notifyAdminCredentials({
-      to: credentialsEmail || admin.email,
+      to: targetEmail,
       name: admin.name,
       enrollmentNumber: admin.enrollmentNumber,
       password,
       role: 'Admin'
     }).then((emailStatus) => {
-      console.log(`[CREDS-EMAIL] ${emailStatus.sent ? 'SENT' : 'FAILED'} to ${credentialsEmail || admin.email}: ${emailStatus.sent ? '' : emailStatus.reason}`);
+      console.log(`[CREDS-EMAIL] ${emailStatus.sent ? 'SENT' : 'FAILED'} to ${targetEmail}: ${emailStatus.sent ? '' : emailStatus.reason}`);
     }).catch((emailErr) => {
       console.error('[CREDS-EMAIL] Failed:', emailErr.message);
     });

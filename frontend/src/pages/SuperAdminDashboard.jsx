@@ -59,6 +59,12 @@ const SuperAdminDashboard = () => {
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Change Password
+  const [cpOldPassword, setCpOldPassword] = useState('');
+  const [cpNewPassword, setCpNewPassword] = useState('');
+  const [cpConfirmPassword, setCpConfirmPassword] = useState('');
+  const [cpLoading, setCpLoading] = useState(false);
+
   useEffect(() => {
     if (activePage === 'dashboard') fetchStats();
     if (activePage === 'admins') { fetchAdmins(); fetchCourses(); }
@@ -123,8 +129,8 @@ const SuperAdminDashboard = () => {
     const defaultCourse = courses.length > 0 ? courses[0].code : '';
 
     if (type === 'admin') {
-      setFormData(item ? { name: item.name, enrollmentNumber: item.enrollmentNumber, email: item.email, phone: item.phone, course: item.course || defaultCourse, semester: item.semester || 'N/A', password: '' }
-        : { name: '', enrollmentNumber: '', email: '', phone: '', course: defaultCourse, semester: 'N/A', password: '' });
+      setFormData(item ? { name: item.name, enrollmentNumber: item.enrollmentNumber, email: item.email, phone: item.phone, course: item.course || defaultCourse, semester: item.semester || 'N/A', password: '', credentialsEmail: '' }
+        : { name: '', enrollmentNumber: '', email: '', phone: '', course: defaultCourse, semester: 'N/A', password: '', credentialsEmail: '' });
     } else if (type === 'course') {
       setFormData(item ? { name: item.name, code: item.code, description: item.description || '', level: item.level || 'postgraduation' }
         : { name: '', code: '', description: '', level: 'postgraduation' });
@@ -230,6 +236,38 @@ const SuperAdminDashboard = () => {
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
   };
 
+  // ========== CHANGE PASSWORD ==========
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!cpOldPassword || !cpNewPassword || !cpConfirmPassword) {
+      toast.warning('Please fill in all password fields');
+      return;
+    }
+    if (cpNewPassword.length < 6) {
+      toast.warning('New password must be at least 6 characters');
+      return;
+    }
+    if (cpNewPassword !== cpConfirmPassword) {
+      toast.warning('New password and confirm password do not match');
+      return;
+    }
+    setCpLoading(true);
+    try {
+      const { data } = await API.post('/auth/change-password', {
+        oldPassword: cpOldPassword,
+        newPassword: cpNewPassword,
+      });
+      toast.success(data.message || 'Password changed successfully!');
+      setCpOldPassword('');
+      setCpNewPassword('');
+      setCpConfirmPassword('');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setCpLoading(false);
+    }
+  };
+
   // ========== FILTERED ==========
   const filteredSubjects = semesterFilter ? subjects.filter(s => s.semester === Number(semesterFilter)) : subjects;
 
@@ -241,9 +279,63 @@ const SuperAdminDashboard = () => {
       case 'courses': return renderCourses();
       case 'subjects': return renderSubjects();
       case 'assignment': return renderAssignment();
+      case 'change-password': return renderChangePassword();
       default: return renderDashboard();
     }
   };
+
+  // ========== RENDER CHANGE PASSWORD ==========
+  const renderChangePassword = () => (
+    <div className="admin-section">
+      <div className="section-header-row">
+        <div>
+          <h2>Change Password</h2>
+          <p>Update your Super Admin account password</p>
+        </div>
+      </div>
+      <div className="student-info" style={{ maxWidth: '480px' }}>
+        <form onSubmit={handleChangePassword}>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label>Current Password</label>
+            <input
+              type="password"
+              value={cpOldPassword}
+              onChange={(e) => setCpOldPassword(e.target.value)}
+              placeholder="Enter your current password"
+              required
+              autoComplete="current-password"
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label>New Password</label>
+            <input
+              type="password"
+              value={cpNewPassword}
+              onChange={(e) => setCpNewPassword(e.target.value)}
+              placeholder="Minimum 6 characters"
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label>Confirm New Password</label>
+            <input
+              type="password"
+              value={cpConfirmPassword}
+              onChange={(e) => setCpConfirmPassword(e.target.value)}
+              placeholder="Re-enter new password"
+              required
+              autoComplete="new-password"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={cpLoading}>
+            {cpLoading ? '⏳ Changing...' : '🔑 Change Password'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 
   const renderDashboard = () => (
     <>

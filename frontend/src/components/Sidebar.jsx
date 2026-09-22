@@ -23,6 +23,7 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'students', icon: '👥', label: 'Students' },
     { id: 'exams', icon: '📝', label: 'Exams' },
     { id: 'timetable', icon: '📅', label: 'Timetable' },
+    { id: 'change-password', icon: '🔑', label: 'Change Password' },
   ];
 
   const studentMenu = [
@@ -38,6 +39,7 @@ const Sidebar = ({ role, activePage, onNavigate, isOpen, onToggle }) => {
     { id: 'courses', icon: '🎓', label: 'Manage Programs' },
     { id: 'subjects', icon: '📚', label: 'Manage Subjects' },
     { id: 'assignment', icon: '🔗', label: 'Assign Faculty' },
+    { id: 'change-password', icon: '🔑', label: 'Change Password' },
   ];
 
   const menuItems = role === 'superadmin' ? superAdminMenu : role === 'admin' ? adminMenu : studentMenu;

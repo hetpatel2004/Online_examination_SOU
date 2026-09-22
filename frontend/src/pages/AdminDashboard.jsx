@@ -145,6 +145,12 @@ const AdminDashboard = () => {
   const [adminCodeOutput, setAdminCodeOutput] = useState({});
   const [adminCodeLang, setAdminCodeLang] = useState({});
 
+  // ========== CHANGE PASSWORD STATE ==========
+  const [adminCpOld, setAdminCpOld] = useState('');
+  const [adminCpNew, setAdminCpNew] = useState('');
+  const [adminCpConfirm, setAdminCpConfirm] = useState('');
+  const [adminCpLoading, setAdminCpLoading] = useState(false);
+
   // ========== STUDENT CRUD ==========
   const fetchUsers = async () => {
     setLoadingUsers(true);
@@ -250,6 +256,38 @@ const AdminDashboard = () => {
       toast.error(msg);
     } finally {
       setStudentBulkUploading(false);
+    }
+  };
+
+  // ========== CHANGE PASSWORD ==========
+  const handleAdminChangePassword = async (e) => {
+    e.preventDefault();
+    if (!adminCpOld || !adminCpNew || !adminCpConfirm) {
+      toast.warning('Please fill in all password fields');
+      return;
+    }
+    if (adminCpNew.length < 6) {
+      toast.warning('New password must be at least 6 characters');
+      return;
+    }
+    if (adminCpNew !== adminCpConfirm) {
+      toast.warning('New password and confirm password do not match');
+      return;
+    }
+    setAdminCpLoading(true);
+    try {
+      const { data } = await API.post('/auth/change-password', {
+        oldPassword: adminCpOld,
+        newPassword: adminCpNew,
+      });
+      toast.success(data.message || 'Password changed successfully!');
+      setAdminCpOld('');
+      setAdminCpNew('');
+      setAdminCpConfirm('');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setAdminCpLoading(false);
     }
   };
 
@@ -1100,6 +1138,59 @@ const AdminDashboard = () => {
       // ==========================================
       // DASHBOARD - Default overview
       // ==========================================
+      case 'change-password':
+        return (
+          <div className="admin-section">
+            <div className="section-header-row">
+              <div>
+                <h2>Change Password</h2>
+                <p>Update your Admin account password</p>
+              </div>
+            </div>
+            <div className="student-info" style={{ maxWidth: '480px' }}>
+              <form onSubmit={handleAdminChangePassword}>
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label>Current Password</label>
+                  <input
+                    type="password"
+                    value={adminCpOld}
+                    onChange={(e) => setAdminCpOld(e.target.value)}
+                    placeholder="Enter your current password"
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label>New Password</label>
+                  <input
+                    type="password"
+                    value={adminCpNew}
+                    onChange={(e) => setAdminCpNew(e.target.value)}
+                    placeholder="Minimum 6 characters"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '24px' }}>
+                  <label>Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={adminCpConfirm}
+                    onChange={(e) => setAdminCpConfirm(e.target.value)}
+                    placeholder="Re-enter new password"
+                    required
+                    autoComplete="new-password"
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={adminCpLoading}>
+                  {adminCpLoading ? '⏳ Changing...' : '🔑 Change Password'}
+                </button>
+              </form>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <>
@@ -1144,6 +1235,7 @@ const AdminDashboard = () => {
         );
     }
   };
+
 
   // ========== MAIN RETURN ==========
   return (
