@@ -1885,7 +1885,11 @@ const AdminDashboard = () => {
                             <span className="sub-time">{new Date(sub.submittedAt).toLocaleString()}</span>
                           </div>
                           <div className="submission-score-section">
-                            {submissionsExam.examType === 'mcq' && sub.totalMarks > 0 ? (
+                            {sub.status === 'disqualified' ? (
+                              <span className="sub-status-tag" style={{ background: '#FED7D7', color: '#9B2C2C', fontWeight: 'bold' }}>
+                                🚫 Disqualified (0 / {sub.totalMarks})
+                              </span>
+                            ) : submissionsExam.examType === 'mcq' && sub.totalMarks > 0 ? (
                               <div className="sub-score-badge">
                                 <span className="sub-score-num">{sub.score}</span>
                                 <span className="sub-score-of">/ {sub.totalMarks}</span>
@@ -1907,6 +1911,13 @@ const AdminDashboard = () => {
                               <div className="sub-detail-item"><label>Program</label><span>{student?.course}</span></div>
                               <div className="sub-detail-item"><label>Semester</label><span>{student?.semester}</span></div>
                             </div>
+
+                            {/* Disqualification Reason Alert */}
+                            {sub.status === 'disqualified' && (
+                              <div style={{ background: '#FFF5F5', border: '1px solid #FEB2B2', color: '#9B2C2C', padding: '10px 14px', borderRadius: '8px', marginBottom: '14px', fontSize: '14px' }}>
+                                <strong>🚫 Disqualification:</strong> {sub.disqualificationReason || 'Tab switching or leaving examination window detected'}
+                              </div>
+                            )}
 
                             {/* Answers section */}
                             {sub.answers && sub.answers.length > 0 && (

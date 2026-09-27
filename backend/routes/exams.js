@@ -51,7 +51,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/my-submissions', auth, async (req, res) => {
   try {
     const submissions = await Submission.find({ studentId: req.user.id })
-      .select('examId score totalMarks submittedAt status answerFile answers')
+      .select('examId score totalMarks submittedAt status answerFile answers disqualificationReason')
       .populate('examId', 'resultDate date time duration subjectName subjectCode examType totalMarks')
       .lean();
     res.json({ submissions });
@@ -76,6 +76,10 @@ router.get('/:examId/questions', auth, async (req, res) => {
 
     // Check if student already has a submission (already started)
     let submission = await Submission.findOne({ examId: req.params.examId, studentId: req.user.id });
+
+    if (submission && submission.status === 'disqualified') {
+      return res.status(403).json({ message: 'You have been disqualified from this exam.', disqualified: true });
+    }
 
     let assignedQuestionIds;
 
@@ -170,8 +174,11 @@ router.post('/:examId/submit', auth, async (req, res) => {
     const exam = await Exam.findById(req.params.examId);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
 
-    // Check existing submission — prevent duplicate submissions
+    // Check existing submission — prevent duplicate submissions or submitting after disqualification
     const existing = await Submission.findOne({ examId: req.params.examId, studentId });
+    if (existing && existing.status === 'disqualified') {
+      return res.status(403).json({ message: 'You have been disqualified from this exam' });
+    }
     if (existing && existing.answers && existing.answers.length > 0) {
       return res.status(400).json({ message: 'You have already submitted this exam' });
     }
@@ -298,6 +305,59 @@ router.post('/:examId/submit', auth, async (req, res) => {
     res.status(existing ? 200 : 201).json({ message: 'Exam submitted successfully', submission: responseSubmission });
   } catch (error) {
     console.error('Error submitting exam:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/exams/:examId/disqualify
+ * Disqualifies the student from the exam immediately (e.g. tab change or window blur)
+ */
+router.post('/:examId/disqualify', auth, async (req, res) => {
+  try {
+    const examId = req.params.examId;
+    const studentId = req.user.id;
+    const { reason } = req.body;
+
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ message: 'Exam not found' });
+
+    const disqualificationReason = reason || 'Tab switching or leaving the examination window';
+
+    let submission = await Submission.findOne({ examId, studentId });
+    if (submission) {
+      submission.status = 'disqualified';
+      submission.score = 0;
+      submission.disqualificationReason = disqualificationReason;
+      submission.submittedAt = new Date();
+      await submission.save();
+    } else {
+      submission = new Submission({
+        examId,
+        studentId,
+        status: 'disqualified',
+        score: 0,
+        totalMarks: exam.totalMarks || 0,
+        disqualificationReason,
+        submittedAt: new Date(),
+        answers: []
+      });
+      await submission.save();
+    }
+
+    console.log(`[DISQUALIFY] Student ${studentId} disqualified from exam ${examId}: ${disqualificationReason}`);
+    res.json({
+      message: 'Student has been disqualified',
+      submission: {
+        score: 0,
+        totalMarks: submission.totalMarks,
+        status: 'disqualified',
+        submittedAt: submission.submittedAt,
+        disqualificationReason
+      }
+    });
+  } catch (error) {
+    console.error('Error disqualifying student:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

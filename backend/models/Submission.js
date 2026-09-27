@@ -76,10 +76,17 @@ const submissionSchema = new mongoose.Schema({
   // 'graded' = manually graded by admin
   // 'evaluated' = auto-evaluated by AI
   // 'pending_review' = AI evaluation failed, needs manual review
+  // 'disqualified' = student violated exam rules (e.g. tab switching)
   status: {
     type: String,
-    enum: ['submitted', 'graded', 'evaluated', 'pending_review'],
+    enum: ['submitted', 'graded', 'evaluated', 'pending_review', 'disqualified'],
     default: 'submitted'
+  },
+
+  // Reason for disqualification (e.g. tab change or window blur)
+  disqualificationReason: {
+    type: String,
+    default: ''
   },
 
   // ========== AI EVALUATION FIELDS ==========

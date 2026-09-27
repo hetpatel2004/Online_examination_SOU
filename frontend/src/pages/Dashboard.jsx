@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [countdown, setCountdown] = useState(null);
   const [countdownExam, setCountdownExam] = useState(null);
   const timerRef = useRef(null);
+  const isDisqualifyingRef = useRef(false);
 
   const [uploadingFile, setUploadingFile] = useState(false);
 
@@ -190,8 +191,70 @@ const Dashboard = () => {
     return new Date() >= new Date(exam.resultDate);
   };
 
+  const disqualifyCurrentExam = useCallback(async (reason = 'Tab change or leaving the examination window') => {
+    if (!takingExam || submission || isDisqualifyingRef.current) return;
+    isDisqualifyingRef.current = true;
+
+    // Immediately stop any countdown timer
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const examId = takingExam._id;
+    const totalMarks = takingExam.totalMarks || 0;
+
+    toast.error('❌ You have been disqualified from this exam for switching tabs or leaving the exam window!', {
+      autoClose: 8000
+    });
+
+    try {
+      await API.post(`/exams/${examId}/disqualify`, { reason });
+    } catch (err) {
+      console.error('Failed to notify server of disqualification:', err);
+    }
+
+    setSubmission({
+      status: 'disqualified',
+      score: 0,
+      totalMarks,
+      submittedAt: new Date(),
+      disqualificationReason: reason
+    });
+    setExamQuestions([]);
+    setAnswers({});
+    fetchSubmissions();
+  }, [takingExam, submission]);
+
+  // Anti-cheat: Listen for tab switching (visibilitychange) or window blur
+  useEffect(() => {
+    if (!takingExam || submission) {
+      isDisqualifyingRef.current = false;
+      return;
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden || document.visibilityState === 'hidden') {
+        disqualifyCurrentExam('Switched browser tab or minimized window');
+      }
+    };
+
+    const handleWindowBlur = () => {
+      disqualifyCurrentExam('Left exam window or switched application');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
+    };
+  }, [takingExam, submission, disqualifyCurrentExam]);
+
   const startExam = async (exam) => {
     const existingSub = submissions[exam._id];
+    if (existingSub && existingSub.status === 'disqualified') {
+      checkSubmission(exam);
+      return;
+    }
     const alreadySubmitted = existingSub && ((existingSub.answers && existingSub.answers.length > 0) || existingSub.answerFile);
     if (alreadySubmitted) {
       checkSubmission(exam);
@@ -418,6 +481,27 @@ const Dashboard = () => {
           </div>
           <button className="btn btn-secondary" onClick={exitExam}>✕ Exit Exam</button>
         </div>
+
+        {/* PROCTORING TAB CHANGE WARNING BANNER */}
+        <div style={{
+          background: '#FFF3CD',
+          border: '1px solid #FFEBAA',
+          color: '#856404',
+          padding: '12px 18px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          fontSize: '14px',
+          fontWeight: '500'
+        }}>
+          <span style={{ fontSize: '22px' }}>⚠️</span>
+          <span>
+            <strong>Proctoring Notice:</strong> Switching browser tabs, opening new windows, or minimizing this window will <strong>instantly disqualify you from this exam</strong> with a score of 0.
+          </span>
+        </div>
+
         {loadingQuestions ? (
           <div className="loading">Loading questions...</div>
         ) : examQuestions.length === 0 ? (
@@ -511,6 +595,43 @@ const Dashboard = () => {
 
   const renderSubmissionResultUI = () => {
     if (!submission) return null;
+
+    if (submission.status === 'disqualified') {
+      return (
+        <div className="admin-section">
+          <div className="section-header-row">
+            <div>
+              <h2 style={{ color: '#E53E3E' }}>Exam Disqualified — {takingExam?.subjectName || 'Exam'}</h2>
+            </div>
+            <button className="btn btn-secondary" onClick={exitExam}>Back to Exams</button>
+          </div>
+          <div className="submission-result">
+            <div className="result-card" style={{ border: '2px solid #E53E3E', background: '#FFF5F5', padding: '36px 24px', textAlign: 'center' }}>
+              <span className="result-icon" style={{ fontSize: '56px', display: 'block', marginBottom: '12px' }}>🚫</span>
+              <h3 style={{ color: '#E53E3E', margin: '0 0 8px', fontSize: '24px' }}>You Have Been Disqualified</h3>
+              <p style={{ color: '#4A5568', fontSize: '15px', maxWidth: '520px', margin: '0 auto 16px', lineHeight: '1.6' }}>
+                You were disqualified from this examination because <strong>tab switching or window minimization</strong> was detected.
+              </p>
+              {submission.disqualificationReason && (
+                <div style={{ color: '#742A2A', fontSize: '13px', background: '#FED7D7', padding: '8px 14px', borderRadius: '6px', display: 'inline-block', marginBottom: '16px' }}>
+                  Violation: {submission.disqualificationReason}
+                </div>
+              )}
+              <div style={{ display: 'block', margin: '12px auto', maxWidth: '220px', background: '#FEB2B2', color: '#742A2A', padding: '12px', borderRadius: '8px', fontWeight: 'bold', fontSize: '18px' }}>
+                Score: 0 / {submission.totalMarks || takingExam?.totalMarks || 0}
+              </div>
+              <p style={{ color: '#718096', fontSize: '13px', marginTop: '14px' }}>
+                This attempt has been locked with a score of 0. You cannot re-take this exam.
+              </p>
+              <button className="btn btn-danger" style={{ marginTop: '20px' }} onClick={exitExam}>
+                Return to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const isAIEvaluated = submission.evaluationMethod === 'ai';
     return (
       <div className="admin-section">
@@ -803,18 +924,20 @@ const Dashboard = () => {
                   {subjectExams.map((exam) => {
                     const status = getExamStatus(exam);
                     const sub = submissions[exam._id];
-                    const hasSubmitted = sub && ((sub.answers && sub.answers.length > 0) || sub.answerFile);
-                    const resultReady = hasSubmitted && isResultPublished(exam);
-                    const resultPending = hasSubmitted && !resultReady && exam.resultDate;
+                    const isDisqualified = sub && sub.status === 'disqualified';
+                    const hasSubmitted = isDisqualified || (sub && ((sub.answers && sub.answers.length > 0) || sub.answerFile));
+                    const resultReady = hasSubmitted && !isDisqualified && isResultPublished(exam);
+                    const resultPending = hasSubmitted && !isDisqualified && !resultReady && exam.resultDate;
                     const examOver = status === 'completed';
                     let badgeClass = 'status-upcoming';
                     let badgeText = 'Upcoming';
-                    if (hasSubmitted) { badgeClass = 'status-completed'; badgeText = 'Attempted'; }
+                    if (isDisqualified) { badgeClass = 'status-completed'; badgeText = 'Disqualified'; }
+                    else if (hasSubmitted) { badgeClass = 'status-completed'; badgeText = 'Attempted'; }
                     else if (examOver) { badgeClass = 'status-completed'; badgeText = 'Missed'; }
                     else if (status === 'ongoing') { badgeClass = 'status-ongoing'; badgeText = 'LIVE Now'; }
                     return (
                       <div className={`subject-card ${status === 'ongoing' && !hasSubmitted ? 'card-live' : ''} ${hasSubmitted ? 'card-attempted' : ''} ${examOver && !hasSubmitted ? 'card-missed' : ''}`} key={exam._id}>
-                        <div className="subject-icon">{hasSubmitted ? '✅' : examOver ? '❌' : status === 'ongoing' ? '🔴' : '📋'}</div>
+                        <div className="subject-icon">{isDisqualified ? '🚫' : hasSubmitted ? '✅' : examOver ? '❌' : status === 'ongoing' ? '🔴' : '📋'}</div>
                         <h3>{exam.subjectName}</h3>
                         <p>Code: {exam.subjectCode}</p>
                         <div className="exam-details">
@@ -828,7 +951,13 @@ const Dashboard = () => {
                         </div>
                         <div className="exam-actions">
                           <span className={`exam-status ${badgeClass}`}>{badgeText}</span>
-                          {hasSubmitted && resultReady && (
+                          {isDisqualified && (
+                            <div className="disqualified-card-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ color: '#E53E3E', fontWeight: 'bold', fontSize: '13px' }}>0/{exam.totalMarks}</span>
+                              <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>Details</button>
+                            </div>
+                          )}
+                          {hasSubmitted && !isDisqualified && resultReady && (
                             <div className="result-ready-badge">
                               <span className="score-mini">{sub.score}/{sub.totalMarks}</span>
                               <button className="btn btn-primary btn-sm" onClick={() => checkSubmission(exam)}>View Result</button>
@@ -840,7 +969,7 @@ const Dashboard = () => {
                               <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>View Submission</button>
                             </div>
                           )}
-                          {hasSubmitted && !exam.resultDate && (
+                          {hasSubmitted && !isDisqualified && !exam.resultDate && (
                             <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>View Submission</button>
                           )}
                           {!hasSubmitted && status === 'upcoming' && (
@@ -891,15 +1020,19 @@ const Dashboard = () => {
                     {exams.map((exam) => {
                       const status = getExamStatus(exam);
                       const sub = submissions[exam._id];
-                      const hasSubmitted = sub && ((sub.answers && sub.answers.length > 0) || sub.answerFile);
-                      const resultReady = hasSubmitted && isResultPublished(exam);
-                      const resultPending = hasSubmitted && !resultReady && exam.resultDate;
+                      const isDisqualified = sub && sub.status === 'disqualified';
+                      const hasSubmitted = isDisqualified || (sub && ((sub.answers && sub.answers.length > 0) || sub.answerFile));
+                      const resultReady = hasSubmitted && !isDisqualified && isResultPublished(exam);
+                      const resultPending = hasSubmitted && !isDisqualified && !resultReady && exam.resultDate;
                       const examOver = status === 'completed';
 
                       // Badge logic
                       let badgeClass = 'status-upcoming';
                       let badgeText = 'Upcoming';
-                      if (hasSubmitted) {
+                      if (isDisqualified) {
+                        badgeClass = 'status-completed';
+                        badgeText = 'Disqualified';
+                      } else if (hasSubmitted) {
                         badgeClass = 'status-completed';
                         badgeText = 'Attempted';
                       } else if (examOver) {
@@ -913,7 +1046,7 @@ const Dashboard = () => {
                       return (
                         <div className={`subject-card ${status === 'ongoing' && !hasSubmitted ? 'card-live' : ''} ${hasSubmitted ? 'card-attempted' : ''} ${examOver && !hasSubmitted ? 'card-missed' : ''}`} key={exam._id}>
                           <div className="subject-icon">
-                            {hasSubmitted ? '✅' : examOver ? '❌' : status === 'ongoing' ? '🔴' : '📋'}
+                            {isDisqualified ? '🚫' : hasSubmitted ? '✅' : examOver ? '❌' : status === 'ongoing' ? '🔴' : '📋'}
                           </div>
                           <h3>{exam.subjectName}</h3>
                           <p>Code: {exam.subjectCode}</p>
@@ -940,8 +1073,18 @@ const Dashboard = () => {
                             {/* BADGE */}
                             <span className={`exam-status ${badgeClass}`}>{badgeText}</span>
 
+                            {/* DISQUALIFIED */}
+                            {isDisqualified && (
+                              <div className="disqualified-card-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#E53E3E', fontWeight: 'bold', fontSize: '13px' }}>0/{exam.totalMarks}</span>
+                                <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>
+                                  Details
+                                </button>
+                              </div>
+                            )}
+
                             {/* ATTEMPTED + RESULT READY → show score */}
-                            {hasSubmitted && resultReady && (
+                            {hasSubmitted && !isDisqualified && resultReady && (
                               <div className="result-ready-badge">
                                 <span className="score-mini">{sub.score}/{sub.totalMarks}</span>
                                 <button className="btn btn-primary btn-sm" onClick={() => checkSubmission(exam)}>
@@ -961,7 +1104,7 @@ const Dashboard = () => {
                             )}
 
                             {/* ATTEMPTED + NO RESULT DATE SET */}
-                            {hasSubmitted && !exam.resultDate && (
+                            {hasSubmitted && !isDisqualified && !exam.resultDate && (
                               <button className="btn btn-secondary btn-sm" onClick={() => checkSubmission(exam)}>
                                 View Submission
                               </button>
