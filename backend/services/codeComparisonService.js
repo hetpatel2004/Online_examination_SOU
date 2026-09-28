@@ -124,40 +124,56 @@ async function compareOutputs(studentCode, modelAnswer, language, testCases) {
     studentOutput.stderr = `Student execution error: ${err.message}`;
   }
 
-  const noStdinMatch = exactMatch(studentOutput.stdout, modelOutput.stdout);
+  const noStdinMatch = Boolean(
+    (studentOutput.stdout || '').trim().length > 0 &&
+    (modelOutput.stdout || '').trim().length > 0 &&
+    exactMatch(studentOutput.stdout, modelOutput.stdout)
+  );
 
   let passedTests = 0;
   let totalTests = 0;
 
   if (testCases && testCases.length > 0) {
-    for (const tc of testCases) {
-      totalTests++;
+    totalTests = testCases.length;
+    const testPromises = testCases.map(async (tc) => {
       try {
-        const modelRun = await executeCode(modelAnswer, language, tc.input);
-        const studentRun = await executeCode(studentCode, language, tc.input);
-        const expected = modelRun.stdout || '';
+        let expected = tc.expectedOutput || '';
+        let modelErr = '';
+
+        // Only run modelAnswer if expectedOutput is not provided in testCase
+        if (!expected && modelAnswer && modelAnswer.trim() && !isNonExec) {
+          const modelRun = await executeCode(modelAnswer, language, tc.input || '');
+          expected = modelRun.stdout || '';
+          modelErr = modelRun.stderr || '';
+        }
+
+        const studentRun = await executeCode(studentCode, language, tc.input || '');
         const actual = studentRun.stdout || '';
         const passed = exactMatch(actual, expected);
-        if (passed) passedTests++;
-        results.push({
+
+        return {
           input: tc.input,
           expectedOutput: expected,
           actualOutput: actual,
           passed,
-          modelError: modelRun.stderr || '',
+          modelError: modelErr,
           studentError: studentRun.stderr || '',
-        });
+        };
       } catch (err) {
-        results.push({
+        return {
           input: tc.input,
-          expectedOutput: '',
+          expectedOutput: tc.expectedOutput || '',
           actualOutput: '',
           passed: false,
           modelError: '',
           studentError: err.message,
-        });
+        };
       }
-    }
+    });
+
+    const testResults = await Promise.all(testPromises);
+    results.push(...testResults);
+    passedTests = testResults.filter(r => r.passed).length;
   }
 
   const codeSimilarity = calcCodeSimilarity(studentCode, modelAnswer);

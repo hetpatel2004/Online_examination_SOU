@@ -2,13 +2,13 @@
  * AI Evaluation Service — auto-grades practical (code) submissions.
  * Pipeline (3-tier):
  *   1. Execute code & compare against the model answer (output + similarity)
- *   2. OpenAI review (gpt-4o-mini) when OPENAI_API_KEY is set in .env
- *   3. Local heuristic/pattern analysis as fallback (never fails a submission)
+ *   2. AI review (Gemini 1.5 Flash / GPT-4o-mini) when GEMINI_API_KEY or OPENAI_API_KEY is configured
+ *   3. Intelligent heuristic/pattern analysis as fallback (never fails a submission)
  */
 const { executeCode } = require('./codeExecution');
 const { compareOutputs, calcCodeSimilarity, isNonExecutable } = require('./codeComparisonService');
 
-// Frontend/static languages can't run in the sandbox — scored by similarity/AI only
+// Frontend/static languages can't run in the sandbox — scored by similarity/AI/heuristic
 const NON_EXECUTABLE_LANGUAGES = new Set([
   'react', 'jsx', 'tsx', 'vue', 'svelte',
   'html', 'css', 'scss', 'sass', 'less',
@@ -19,14 +19,16 @@ function isNonExecutableLanguage(lang) {
   return NON_EXECUTABLE_LANGUAGES.has((lang || '').toLowerCase());
 }
 
-// True only when a real OpenAI key is configured (not a placeholder)
-function hasOpenAIKey() {
-  const key = process.env.OPENAI_API_KEY;
-  return key && key.length > 10 && !key.startsWith('your_');
+function hasAIKey() {
+  const gemini = process.env.GEMINI_API_KEY;
+  if (gemini && gemini.length > 10 && !gemini.startsWith('your_')) return true;
+  const openai = process.env.OPENAI_API_KEY;
+  if (openai && openai.length > 10 && !openai.startsWith('your_')) return true;
+  return false;
 }
 
-function isOpenAIAvailable() {
-  try { return hasOpenAIKey() && typeof fetch === 'function'; } catch { return false; }
+function isAIAvailable() {
+  try { return hasAIKey() && typeof fetch === 'function'; } catch { return false; }
 }
 
 // Per-language regex patterns for the heuristic scorer (functions, loops,
@@ -182,6 +184,7 @@ LANG_PROFILES.tsx = LANG_PROFILES.jsx;
 LANG_PROFILES.react = LANG_PROFILES.jsx;
 LANG_PROFILES['c++'] = LANG_PROFILES.c;
 LANG_PROFILES.csharp = LANG_PROFILES.c;
+LANG_PROFILES['c#'] = LANG_PROFILES.c;
 LANG_PROFILES.kotlin = LANG_PROFILES.java;
 LANG_PROFILES.scala = LANG_PROFILES.java;
 LANG_PROFILES.go = LANG_PROFILES.c;
@@ -190,12 +193,11 @@ LANG_PROFILES.ruby = LANG_PROFILES.python;
 LANG_PROFILES.php = LANG_PROFILES.javascript;
 LANG_PROFILES.swift = LANG_PROFILES.java;
 
-// Heuristic scorer: keyword relevance to the question, code length, language
-// patterns, vocabulary richness, line count → 0-50 (the other 50% comes from
-// AI or model-answer comparison).
-function analyzeCode(code, language, questionText) {
+// Robust heuristic scorer (0-100): Evaluates code syntax, problem relevance,
+// structural complexity, and clean execution when external AI is unavailable.
+function analyzeCode(code, language, questionText, executionResult = null) {
   if (!code || !code.trim()) return { score: 0, feedback: 'No code submitted' };
-  const lang = (language || '').toLowerCase();
+  const lang = (language || '').toLowerCase().trim();
   const profile = LANG_PROFILES[lang];
   const lines = code.split('\n').filter(l => l.trim());
   const len = code.length;
@@ -203,27 +205,41 @@ function analyzeCode(code, language, questionText) {
   const codeLower = code.toLowerCase();
   let score = 0;
   const feedback = [];
+
   const stopwords = new Set(['the','and','for','are','but','not','you','all','can','had','her','was','one','our','out','has','his','how','its','may','new','now','old','see','way','who','did','get','let','say','she','too','use','write','code','program','create','make','function','implement','using','with','that','this','from','each','have','will','your','them','than','some','what','when','which','there','their','about','would','could','should','other','into','just','also']);
   const qWords = (questionText || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopwords.has(w));
   const uniqueQWords = [...new Set(qWords)];
   let keywordHits = 0;
-  const matchedKeywords = [];
   for (const kw of uniqueQWords) {
-    if (codeLower.includes(kw)) { keywordHits++; matchedKeywords.push(kw); }
+    if (codeLower.includes(kw)) { keywordHits++; }
   }
-  const relevanceRatio = uniqueQWords.length > 0 ? keywordHits / uniqueQWords.length : 0;
-  if (relevanceRatio < 0.05 && uniqueQWords.length >= 3) {
-    feedback.push(`Very low question relevance (${keywordHits}/${uniqueQWords.length} keywords matched)`);
-  } else if (relevanceRatio < 0.15) {
-    feedback.push(`Low question relevance (${keywordHits}/${uniqueQWords.length} keywords matched)`);
-  } else if (relevanceRatio >= 0.3) {
-    feedback.push(`Good question relevance (${keywordHits}/${uniqueQWords.length} keywords matched)`);
+  const relevanceRatio = uniqueQWords.length > 0 ? keywordHits / uniqueQWords.length : 0.5;
+
+  // 1. Question relevance (up to 30 points)
+  if (relevanceRatio >= 0.4) {
+    score += 30;
+    feedback.push(`Strong question relevance (${keywordHits}/${uniqueQWords.length} terms matched)`);
+  } else if (relevanceRatio >= 0.2) {
+    score += 20;
+    feedback.push(`Moderate question relevance (${keywordHits}/${uniqueQWords.length} terms matched)`);
+  } else if (relevanceRatio > 0) {
+    score += 12;
+    feedback.push(`Basic question relevance`);
+  } else if (uniqueQWords.length >= 3) {
+    score += 5;
+    feedback.push('Low question relevance');
+  } else {
+    score += 20;
   }
-  if (len >= 500) { score += 10; feedback.push('Substantial code'); }
-  else if (len >= 300) { score += 8; feedback.push('Good code length'); }
-  else if (len >= 150) { score += 6; feedback.push('Moderate code'); }
-  else if (len >= 50) { score += 4; feedback.push('Short code'); }
-  else { score += 1; feedback.push('Very short'); }
+
+  // 2. Code length and substance (up to 20 points)
+  if (len >= 300 || lineCount >= 20) { score += 20; feedback.push('Substantial code length'); }
+  else if (len >= 150 || lineCount >= 10) { score += 15; feedback.push('Good code length'); }
+  else if (len >= 60 || lineCount >= 5) { score += 10; feedback.push('Moderate code length'); }
+  else if (len >= 20) { score += 6; feedback.push('Short code'); }
+  else { score += 2; feedback.push('Very short'); }
+
+  // 3. Language patterns & syntax (up to 40 points)
   if (profile && profile.patterns) {
     let patternScore = 0;
     for (const [category, regex] of Object.entries(profile.patterns)) {
@@ -231,91 +247,120 @@ function analyzeCode(code, language, questionText) {
       const count = matches ? matches.length : 0;
       if (count === 0) continue;
       if (['component', 'hooks', 'jsxReturn', 'jsxElements', 'state', 'effect', 'className', 'events', 'keys', 'props'].includes(category)) {
-        patternScore += Math.min(count * 1.5, 3);
+        patternScore += Math.min(count * 3, 7);
       } else if (['functions', 'classes', 'methods', 'imports', 'loops', 'conditions', 'errorHandling', 'tryCatch', 'oop', 'annotations', 'includes', 'pointers', 'structs', 'macros'].includes(category)) {
-        patternScore += Math.min(count * 1, 2.5);
+        patternScore += Math.min(count * 2.5, 7);
       } else if (['arrayMethods', 'dictMethods', 'comprehensions', 'fstrings', 'typeHints', 'generics', 'streams', 'collections', 'modules', 'dom', 'templateLiterals', 'flexbox', 'variables', 'animations', 'decorators'].includes(category)) {
-        patternScore += Math.min(count * 1, 2);
+        patternScore += Math.min(count * 2, 5);
       } else {
-        patternScore += Math.min(count * 0.5, 1.5);
+        patternScore += Math.min(count * 1, 3);
       }
     }
-    patternScore = Math.min(patternScore, 25);
+    patternScore = Math.min(patternScore, 40);
     score += patternScore;
-    feedback.push(`Language patterns: ${Math.round(patternScore)}/25`);
+    feedback.push(`Syntax/patterns: ${Math.round(patternScore)}/40`);
   } else {
-    const hasFunc = /function\s+\w+|def\s+\w+|class\s+\w+|=>\s*{|void\s+\w+\s*\(/.test(code);
-    const hasImports = /import\s|require\s*\(|#include|from\s+['"]/.test(code);
-    const hasLoops = /for\s*\(|while\s*\(|\.map\(|\.filter\(/.test(code);
-    const hasConditions = /if\s*\(|switch\s*\(|\?[^:]+:/.test(code);
-    if (hasFunc) score += 5;
-    if (hasImports) score += 3;
-    if (hasLoops) score += 3;
-    if (hasConditions) score += 3;
-    feedback.push('Generic evaluation (unknown language)');
+    let genericPattern = 0;
+    if (/function\s+\w+|def\s+\w+|class\s+\w+|=>\s*{|void\s+\w+\s*\(/.test(code)) genericPattern += 15;
+    if (/import\s|require\s*\(|#include|from\s+['"]/.test(code)) genericPattern += 8;
+    if (/for\s*\(|while\s*\(|\.map\(|\.filter\(/.test(code)) genericPattern += 9;
+    if (/if\s*\(|switch\s*\(|\?[^:]+:/.test(code)) genericPattern += 8;
+    score += Math.min(40, genericPattern);
+    feedback.push(`General patterns: ${Math.min(40, genericPattern)}/40`);
   }
-  const uniqueWords = new Set(code.match(/\b[A-Za-z_]\w*\b/g) || []).size;
-  if (uniqueWords >= 25) score += 10;
-  else if (uniqueWords >= 15) score += 7;
-  else if (uniqueWords >= 8) score += 4;
-  else score += 1;
-  if (lineCount >= 25) score += 3;
-  else if (lineCount >= 15) score += 2;
-  else if (lineCount >= 8) score += 1;
-  if (relevanceRatio >= 0.4) { score += 5; feedback.push('Strong question relevance'); }
-  else if (relevanceRatio >= 0.25) { score += 2; }
-  if (relevanceRatio < 0.05 && uniqueQWords.length >= 3) {
-    score = Math.max(0, score - 10);
-    feedback.push('Penalty: code appears unrelated to question');
+
+  // 4. Execution validity or vocabulary richness bonus (up to 10 points)
+  if (executionResult) {
+    if (executionResult.exitCode === 0 && !executionResult.stderr) {
+      score += 10;
+      feedback.push('Clean execution (no runtime errors)');
+    } else if (executionResult.stdout && executionResult.stdout.trim()) {
+      score += 5;
+      feedback.push('Executed with output');
+    }
+  } else {
+    const uniqueWords = new Set(code.match(/\b[A-Za-z_]\w*\b/g) || []).size;
+    if (uniqueWords >= 20) score += 10;
+    else if (uniqueWords >= 10) score += 6;
+    else score += 2;
   }
-  const final = Math.min(50, Math.max(5, score));
-  feedback.push(`Heuristic score: ${final}/100`);
+
+  const final = Math.min(100, Math.max(0, Math.round(score)));
+  feedback.push(`Evaluated score: ${final}/100`);
   return { score: final, feedback: feedback.join(', ') };
 }
 
-// Calls OpenAI chat completions (gpt-4o-mini) using OPENAI_API_KEY from .env
-async function callOpenAI(messages) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.2, max_tokens: 2000 }),
-  });
-  if (!response.ok) {
-    const errBody = await response.text();
-    throw new Error(`OpenAI ${response.status}: ${errBody.substring(0, 200)}`);
+// Calls OpenAI or Google Gemini (OpenAI-compatible) chat completions
+async function callAI(messages) {
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey && geminiKey.length > 10 && !geminiKey.startsWith('your_')) {
+    try {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${geminiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gemini-1.5-flash',
+          messages,
+          temperature: 0.2,
+          max_tokens: 2000,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content?.trim() || '';
+      }
+    } catch (e) {
+      console.warn('[AI-EVAL] Gemini API failed:', e.message);
+    }
   }
-  const data = await response.json();
-  return data.choices[0].message.content.trim();
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey && apiKey.length > 10 && !apiKey.startsWith('your_')) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.2, max_tokens: 2000 }),
+    });
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error(`OpenAI ${response.status}: ${errBody.substring(0, 200)}`);
+    }
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content?.trim() || '';
+  }
+
+  throw new Error('No valid AI key configured');
 }
 
-// Sends question + model answer + student code to OpenAI and asks for
-// JSON { score, feedback }. Strips ```json code fences before parsing.
+// Sends question + model answer + student code to AI and parses { score: 0-100, feedback }
 async function aiEvaluate(studentCode, questionText, language, strictness, marks, modelAnswer) {
   const strictNote = strictness === 'hard'
-    ? '\n\nHARD MODE: Be extremely strict. Only give high scores if code correctly solves the problem.'
+    ? '\n\nHARD MODE: Be strict on edge cases and algorithm correctness.'
     : strictness === 'easy'
-    ? '\n\nEASY MODE: Be lenient on style/formatting but still require correctness.'
-    : '\n\nMEDIUM MODE: Balanced evaluation.';
+    ? '\n\nEASY MODE: Be lenient on syntax formatting as long as logic is sound.'
+    : '\n\nMEDIUM MODE: Balanced evaluation of correctness and logic.';
 
   const content = modelAnswer && modelAnswer.trim()
-    ? `QUESTION: ${questionText}\n\nLANGUAGE: ${language}\n\nMODEL ANSWER (correct solution):\n\`\`\`${language}\n${modelAnswer}\n\`\`\`\n\nSTUDENT CODE:\n\`\`\`${language}\n${studentCode}\n\`\`\`\n\nCompare the student code against the model answer. How similar are they in logic, approach, and output? Return JSON with score (0-100) and feedback. Score should reflect how closely the student's solution matches the correct solution.`
-    : `QUESTION: ${questionText}\n\nLANGUAGE: ${language}\n\nSTUDENT CODE:\n\`\`\`${language}\n${studentCode}\n\`\`\`\n\nEvaluate this code. Does it actually solve the specific question asked? Return JSON with score (0-100) and feedback.`;
+    ? `QUESTION: ${questionText}\n\nLANGUAGE: ${language}\n\nMODEL ANSWER (correct solution):\n\`\`\`${language}\n${modelAnswer}\n\`\`\`\n\nSTUDENT CODE:\n\`\`\`${language}\n${studentCode}\n\`\`\`\n\nCompare the student code against the model answer. Evaluate if the student code achieves the correct logic and result. Return JSON only: { "score": 0-100, "feedback": "string explanation" }.`
+    : `QUESTION: ${questionText}\n\nLANGUAGE: ${language}\n\nSTUDENT CODE:\n\`\`\`${language}\n${studentCode}\n\`\`\`\n\nEvaluate whether this code correctly solves the question asked. Return JSON only: { "score": 0-100, "feedback": "string explanation" }.`;
 
   const msgs = [
-    { role: 'system', content: `You are a STRICT code reviewer. Return JSON only: { "score": 0-100, "feedback": "string" }` + strictNote },
+    { role: 'system', content: `You are an expert programming exam evaluator. Return ONLY valid JSON in format: { "score": 0-100, "feedback": "concise feedback" }` + strictNote },
     { role: 'user', content }
   ];
 
-  const raw = await callOpenAI(msgs);
-  const cleaned = raw.replace(/^```json\n?/gm, '').replace(/```$/gm, '').trim();
+  const raw = await callAI(msgs);
+  const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
   const parsed = JSON.parse(cleaned);
   return {
-    score: Math.min(100, Math.max(0, Number(parsed.score || parsed.qualityScore) || 0)),
-    feedback: String(parsed.feedback || ''),
+    score: Math.min(100, Math.max(0, Number(parsed.score ?? parsed.qualityScore) || 0)),
+    feedback: String(parsed.feedback || 'Evaluated successfully'),
   };
 }
 
@@ -328,23 +373,23 @@ function looksLikeFrontendCode(code) {
   ].some(p => p.test(code));
 }
 
-// Main entry point used by routes/exams.js after a practical exam is submitted.
-// Runs the full 3-tier pipeline; on any unexpected error it falls back to
-// heuristic-only scoring so a submission is never lost.
-async function evaluateSubmission({ questions, answers, language, strictness = 'medium' }) {
-  const isNonExec = isNonExecutableLanguage(language);
-  const useAI = isOpenAIAvailable();
-  console.log(`[AI-EVAL] START: lang=${language} nonExec=${isNonExec} openAI=${useAI} strict=${strictness} qs=${questions.length}`);
+/**
+ * Main entry point used by routes/exams.js after a practical exam is submitted.
+ * Evaluates each question with execution, AI review (if available), and heuristic fallback.
+ */
+async function evaluateSubmission({ questions, answers, language = 'python', strictness = 'medium' }) {
+  const useAI = isAIAvailable();
+  console.log(`[AI-EVAL] START: defaultLang=${language} openAI/Gemini=${useAI} strict=${strictness} qs=${questions.length}`);
 
   try {
-    return await _evaluate(questions, answers, language, strictness, isNonExec, useAI);
+    return await _evaluate(questions, answers, language, strictness, useAI);
   } catch (err) {
     console.error(`[AI-EVAL] UNEXPECTED ERROR:`, err.message);
     return _fallbackEvaluate(questions, answers, language);
   }
 }
 
-async function _evaluate(questions, answers, language, strictness, isNonExec, useAI) {
+async function _evaluate(questions, answers, defaultLanguage, strictness, useAI) {
   let totalScore = 0;
   let totalPossible = 0;
   const submittedCode = [];
@@ -356,37 +401,40 @@ async function _evaluate(questions, answers, language, strictness, isNonExec, us
   let memoryUsed = '';
 
   for (const question of questions) {
-    const answerObj = answers.find(a => String(a.questionId) === String(question._id));
+    const answerObj = (answers || []).find(a => String(a.questionId) === String(question._id));
     const studentCode = (answerObj?.answer || '').trim();
+    const qLang = (answerObj?.language || defaultLanguage || 'python').toLowerCase();
+    const isNonExec = isNonExecutableLanguage(qLang);
     const marks = question.marks || 1;
     totalPossible += marks;
 
-    submittedCode.push({ questionId: question._id, code: studentCode, language });
+    submittedCode.push({ questionId: question._id, code: studentCode, language: qLang });
 
     if (!studentCode) {
-      generatedSolution.push({ questionId: question._id, solution: '' });
+      generatedSolution.push({ questionId: question._id, solution: question.modelAnswer || '' });
       expectedOutput.push({ questionId: question._id, output: '' });
       studentOutput.push({ questionId: question._id, output: '', error: 'No code submitted' });
-      feedbacks.push(`Q: No code submitted. 0/${marks} marks.`);
+      feedbacks.push(`Q: No code submitted (0/${marks} marks).`);
       continue;
     }
 
     const modelAnswer = question.modelAnswer || '';
-    const testCases = question.testCases || [];
+    const testCases = Array.isArray(question.testCases) ? question.testCases : [];
 
-    // ── MODEL ANSWER COMPARISON (output + similarity) ──
+    // ── 1. MODEL ANSWER / TESTCASES COMPARISON ──
     let comparisonResult = null;
     let comparisonFeedback = '';
     let comparisonScore = 0;
 
     if (modelAnswer && modelAnswer.trim()) {
       try {
-        comparisonResult = await compareOutputs(studentCode, modelAnswer, language, testCases);
-        if (comparisonResult.compared) {
+        comparisonResult = await compareOutputs(studentCode, modelAnswer, qLang, testCases);
+        if (comparisonResult && comparisonResult.compared) {
           if (comparisonResult.nonExecutable) {
             const sim = comparisonResult.codeSimilarity || 0;
-            comparisonScore = Math.round(sim * 100);
-            comparisonFeedback = `Code similarity with model answer: ${Math.round(sim * 100)}%`;
+            const h = analyzeCode(studentCode, qLang, question.questionText);
+            comparisonScore = Math.min(100, Math.round(sim * 50 + (h.score / 100) * 50));
+            comparisonFeedback = `Frontend code similarity: ${Math.round(sim * 100)}%, syntax score: ${h.score}/100.`;
           } else {
             let outScore = 0;
             if (comparisonResult.testSummary && comparisonResult.testSummary.total > 0) {
@@ -395,55 +443,69 @@ async function _evaluate(questions, answers, language, strictness, isNonExec, us
               outScore = 100;
             }
             const sim = comparisonResult.codeSimilarity || 0;
-            comparisonScore = Math.round(outScore * 0.6 + sim * 100 * 0.25);
-            comparisonFeedback = comparisonResult.testSummary
-              ? `Test cases: ${comparisonResult.testSummary.passed}/${comparisonResult.testSummary.total} passed. Code similarity: ${Math.round(sim * 100)}%.`
-              : comparisonResult.basicOutputMatch
-              ? `Output matches model answer. Code similarity: ${Math.round(sim * 100)}%.`
-              : `Output differs from model answer. Code similarity: ${Math.round(sim * 100)}%.`;
+
+            if (comparisonResult.testSummary && comparisonResult.testSummary.passed === comparisonResult.testSummary.total && comparisonResult.testSummary.total > 0) {
+              // All test cases passed -> 100% score!
+              comparisonScore = 100;
+              comparisonFeedback = `All ${comparisonResult.testSummary.total} test cases passed. Excellent!`;
+            } else if (comparisonResult.basicOutputMatch) {
+              // Output matches model answer output -> 90-100% score
+              comparisonScore = Math.min(100, Math.max(90, Math.round(90 + sim * 10)));
+              comparisonFeedback = `Output matches model answer. Code similarity: ${Math.round(sim * 100)}%.`;
+            } else if (outScore > 0) {
+              // Partial test cases passed (80% tests + 20% similarity)
+              comparisonScore = Math.min(100, Math.round(outScore * 0.8 + sim * 100 * 0.2));
+              comparisonFeedback = `Test cases: ${comparisonResult.testSummary.passed}/${comparisonResult.testSummary.total} passed. Code similarity: ${Math.round(sim * 100)}%.`;
+            } else {
+              // Output differed or failed
+              const cleanRun = comparisonResult.studentOutput && comparisonResult.studentOutput.exitCode === 0 && !comparisonResult.studentOutput.stderr;
+              const h = analyzeCode(studentCode, qLang, question.questionText, comparisonResult.studentOutput);
+              comparisonScore = Math.min(60, Math.round((h.score / 100) * 50 + sim * 100 * 0.3 + (cleanRun ? 10 : 0)));
+              comparisonFeedback = `Output differed from expected. Code logic score: ${comparisonScore}/100.`;
+            }
           }
         }
       } catch (err) {
-        comparisonFeedback = `Comparison error: ${err.message}`;
+        console.warn(`[AI-EVAL] Comparison failed:`, err.message);
+        comparisonFeedback = `Comparison note: ${err.message}`;
       }
     }
 
-    // ── AI EVALUATION (supplementary) ──
+    // ── 2. EXECUTION INFO (when not already run) ──
+    let directExec = null;
+    if (!comparisonResult?.compared && !isNonExec && !looksLikeFrontendCode(studentCode)) {
+      try {
+        directExec = await executeCode(studentCode, qLang);
+        if (directExec.time) executionTime += Number(directExec.time) * 1000;
+        if (directExec.memory && !memoryUsed) memoryUsed = `${directExec.memory} KB`;
+      } catch (execErr) {
+        directExec = { stdout: '', stderr: execErr.message, exitCode: -1 };
+      }
+    }
+
+    // ── 3. AI EVALUATION (Gemini / OpenAI) ──
     let aiResult = null;
     if (useAI) {
       try {
         let evalCode = studentCode;
-        const shouldSkipExecution = isNonExec || looksLikeFrontendCode(studentCode);
-        if (!shouldSkipExecution) {
-          try {
-            const result = await executeCode(studentCode, language);
-            const out = result.stdout || '';
-            const err = result.stderr || result.compileOutput || '';
-            if (result.time) executionTime += Number(result.time) * 1000;
-            if (result.memory && !memoryUsed) memoryUsed = `${result.memory} KB`;
-            if (!comparisonResult || !comparisonResult.compared) {
-              studentOutput[studentOutput.length - 1] = { output: out, error: err };
-            }
-            if (err) evalCode += `\n\n// EXECUTION OUTPUT:\n// stdout: ${out}\n// stderr: ${err}`;
-            else evalCode += `\n\n// EXECUTION OUTPUT:\n// stdout: ${out}`;
-          } catch (execErr) {
-            if (!comparisonResult || !comparisonResult.compared) {
-              studentOutput[studentOutput.length - 1] = { output: '', error: execErr.message };
-            }
-            evalCode += `\n\n// EXECUTION ERROR: ${execErr.message}`;
-          }
+        const execInfo = comparisonResult?.studentOutput || directExec;
+        if (execInfo) {
+          const out = execInfo.stdout || '';
+          const err = execInfo.stderr || execInfo.compileOutput || '';
+          if (err) evalCode += `\n\n// EXECUTION OUTPUT:\n// stdout: ${out}\n// stderr: ${err}`;
+          else if (out) evalCode += `\n\n// EXECUTION OUTPUT:\n// stdout: ${out}`;
         }
-        aiResult = await aiEvaluate(evalCode, question.questionText, language, strictness, marks, modelAnswer);
+        aiResult = await aiEvaluate(evalCode, question.questionText, qLang, strictness, marks, modelAnswer);
       } catch (err) {
-        console.log(`[AI-EVAL] Q${question._id}: AI failed (${err.message})`);
+        console.warn(`[AI-EVAL] Q${question._id}: AI review skipped (${err.message})`);
       }
     }
 
-    // ── STORE EXPECTED/STUDENT OUTPUT ──
+    // ── 4. RECORD OUTPUT DATA ──
     generatedSolution.push({ questionId: question._id, solution: modelAnswer });
     if (comparisonResult && comparisonResult.compared) {
       if (comparisonResult.nonExecutable) {
-        expectedOutput.push({ questionId: question._id, output: '(Model answer - non-executable language)' });
+        expectedOutput.push({ questionId: question._id, output: '(Model answer - non-executable)' });
         studentOutput.push({ questionId: question._id, output: studentCode.substring(0, 500), error: '' });
       } else {
         expectedOutput.push({ questionId: question._id, output: comparisonResult.modelOutput?.stdout || '' });
@@ -453,84 +515,109 @@ async function _evaluate(questions, answers, language, strictness, isNonExec, us
           error: comparisonResult.studentOutput?.stderr || '',
         });
       }
+    } else if (directExec) {
+      expectedOutput.push({ questionId: question._id, output: '' });
+      studentOutput.push({
+        questionId: question._id,
+        output: directExec.stdout || '',
+        error: directExec.stderr || '',
+      });
     } else {
       expectedOutput.push({ questionId: question._id, output: '' });
       studentOutput.push({ questionId: question._id, output: '', error: '' });
     }
 
-    // ── COMPUTE FINAL SCORE ──
+    // ── 5. COMPUTE FINAL QUESTION SCORE ──
     let qScore = 0;
     let feedback = '';
-    let usedMethod = 'none';
 
     if (comparisonResult && comparisonResult.compared && comparisonScore > 0) {
-      qScore = Math.round((comparisonScore / 100) * marks);
-      feedback = comparisonFeedback;
-      usedMethod = 'model-comparison';
       if (aiResult) {
-        const aiScorePct = aiResult.score;
-        const combined = Math.round(comparisonScore * 0.7 + aiScorePct * 0.3);
+        // Blend execution comparison (70%) with AI code quality (30%)
+        const combined = comparisonScore >= 95
+          ? comparisonScore // Don't downgrade 100% passing code
+          : Math.round(comparisonScore * 0.7 + aiResult.score * 0.3);
         qScore = Math.round((combined / 100) * marks);
-        feedback += ` AI: ${aiResult.feedback}`;
-        usedMethod = 'model-comparison+ai';
+        feedback = `${comparisonFeedback} AI review: ${aiResult.feedback}`;
+      } else {
+        qScore = Math.round((comparisonScore / 100) * marks);
+        feedback = comparisonFeedback;
       }
     } else if (aiResult) {
       qScore = Math.round((aiResult.score / 100) * marks);
       feedback = aiResult.feedback;
-      usedMethod = 'ai';
     } else {
-      const h = analyzeCode(studentCode, language, question.questionText);
+      // Heuristic analysis with execution awareness
+      const execResult = directExec || comparisonResult?.studentOutput;
+      const h = analyzeCode(studentCode, qLang, question.questionText, execResult);
       qScore = Math.round((h.score / 100) * marks);
       feedback = h.feedback;
-      usedMethod = 'heuristic';
     }
 
+    qScore = Math.min(marks, Math.max(0, qScore));
     totalScore += qScore;
-    feedbacks.push(`Q: ${feedback}`);
+    feedbacks.push(`Q${questions.indexOf(question) + 1} (${marks}m): ${feedback} → ${qScore}/${marks}`);
   }
 
   const finalMarks = Math.min(totalScore, totalPossible);
   const pct = totalPossible > 0 ? Math.round((finalMarks / totalPossible) * 100) : 0;
 
-  console.log(`[AI-EVAL] DONE: ${finalMarks}/${totalPossible} (${pct}%)`);
+  console.log(`[AI-EVAL] FINISHED: ${finalMarks}/${totalPossible} (${pct}%)`);
 
   return {
-    submittedCode, generatedSolution, expectedOutput, studentOutput,
-    correctnessScore: pct, qualityScore: pct,
-    finalMarks, totalMarks: totalPossible,
+    submittedCode,
+    generatedSolution,
+    expectedOutput,
+    studentOutput,
+    correctnessScore: pct,
+    qualityScore: pct,
+    finalMarks,
+    totalMarks: totalPossible,
     aiFeedback: feedbacks.join('\n\n'),
     executionTime: Math.round(executionTime),
-    memoryUsed, status: 'evaluated',
+    memoryUsed,
+    status: 'evaluated',
   };
 }
 
-// Last-resort scoring when the AI pipeline throws — heuristic analysis only
-function _fallbackEvaluate(questions, answers, language) {
+// Fallback scoring if any unexpected exception arises — never fails a submission
+function _fallbackEvaluate(questions, answers, defaultLanguage) {
   let totalScore = 0;
   let totalPossible = 0;
-  const feedbacks = ['Fallback evaluation — heuristic scoring'];
+  const feedbacks = ['Auto evaluation completed'];
+
   for (const question of questions) {
-    const answerObj = answers.find(a => String(a.questionId) === String(question._id));
+    const answerObj = (answers || []).find(a => String(a.questionId) === String(question._id));
     const studentCode = (answerObj?.answer || '').trim();
+    const qLang = (answerObj?.language || defaultLanguage || 'python').toLowerCase();
     const marks = question.marks || 1;
     totalPossible += marks;
-    if (!studentCode) { feedbacks.push(`Q: No code. 0/${marks}`); continue; }
-    const h = analyzeCode(studentCode, language, question.questionText);
-    const qScore = Math.round((h.score / 100) * marks);
+
+    if (!studentCode) {
+      feedbacks.push(`Q${questions.indexOf(question) + 1}: No code submitted (0/${marks})`);
+      continue;
+    }
+
+    const h = analyzeCode(studentCode, qLang, question.questionText);
+    const qScore = Math.min(marks, Math.round((h.score / 100) * marks));
     totalScore += qScore;
-    feedbacks.push(`Q: ${h.feedback} → ${qScore}/${marks}`);
+    feedbacks.push(`Q${questions.indexOf(question) + 1}: ${h.feedback} → ${qScore}/${marks}`);
   }
+
+  const pct = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
   return {
-    submittedCode: answers.map(a => ({ questionId: a.questionId, code: a.answer || '', language })),
-    generatedSolution: questions.map(q => ({ questionId: q._id, solution: '' })),
+    submittedCode: (answers || []).map(a => ({ questionId: a.questionId, code: a.answer || '', language: a.language || defaultLanguage })),
+    generatedSolution: questions.map(q => ({ questionId: q._id, solution: q.modelAnswer || '' })),
     expectedOutput: questions.map(q => ({ questionId: q._id, output: '' })),
-    studentOutput: answers.map(a => ({ questionId: a.questionId, output: '', error: '' })),
-    correctnessScore: totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0,
-    qualityScore: 0,
+    studentOutput: (answers || []).map(a => ({ questionId: a.questionId, output: '', error: '' })),
+    correctnessScore: pct,
+    qualityScore: pct,
     finalMarks: Math.min(totalScore, totalPossible),
     totalMarks: totalPossible,
     aiFeedback: feedbacks.join('\n\n'),
-    executionTime: 0, memoryUsed: '', status: 'evaluated',
+    executionTime: 0,
+    memoryUsed: '',
+    status: 'evaluated',
   };
 }
 
@@ -539,5 +626,6 @@ module.exports = {
   analyzeCode,
   isNonExecutableLanguage,
   looksLikeFrontendCode,
-  hasOpenAIKey,
+  hasAIKey,
+  isAIAvailable,
 };

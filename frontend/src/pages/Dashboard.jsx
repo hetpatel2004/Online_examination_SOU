@@ -304,7 +304,11 @@ const Dashboard = () => {
 
   const submitExam = async () => {
     if (!takingExam) return;
-    const answerArray = Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer }));
+    const answerArray = Object.entries(answers).map(([questionId, answer]) => ({
+      questionId,
+      answer,
+      language: codeLanguages[questionId] || 'python'
+    }));
     if (answerArray.length === 0) {
       toast.warning('Please answer at least one question before submitting.');
       return;
@@ -314,12 +318,7 @@ const Dashboard = () => {
       const submitPayload = { answers: answerArray };
       if (takingExam.examType === 'practical') {
         const firstQId = Object.keys(answers)[0];
-        const selectedLang = codeLanguages[firstQId];
-        if (!selectedLang) {
-          toast.error('Please select a programming language before submitting.');
-          setSubmitting(false);
-          return;
-        }
+        const selectedLang = (firstQId && codeLanguages[firstQId]) || Object.values(codeLanguages)[0] || 'python';
         submitPayload.language = selectedLang;
       }
       const { data } = await API.post(`/exams/${takingExam._id}/submit`, submitPayload);

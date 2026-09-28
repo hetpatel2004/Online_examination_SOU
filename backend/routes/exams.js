@@ -183,30 +183,48 @@ router.post('/:examId/submit', auth, async (req, res) => {
       return res.status(400).json({ message: 'You have already submitted this exam' });
     }
 
-    // Fetch all questions referenced in the answers
-    const questionIds = answers.map(a => a.questionId);
-    const questions = await Question.find({ _id: { $in: questionIds } });
-    const qById = new Map(questions.map(q => [q._id.toString(), q]));
-
-    let score = 0;
-    let totalMarks = 0;
-
-    for (const ans of answers) {
-      const question = qById.get(ans.questionId);
-      if (question) {
-        totalMarks += question.marks;
-        if (exam.examType === 'mcq') {
-          if (ans.answer === question.correctAnswer) {
-            score += question.marks;
-          }
-        } else if (exam.evaluationMethod !== 'ai') {
-          // Manual practical: non-empty answer = full marks
-          if (ans.answer && ans.answer.trim().length > 0) {
-            score += question.marks;
-          }
-        }
-        // For AI practical exams, score stays 0 until AI evaluation runs
+    // Determine complete set of assigned questions for this submission
+    let assignedQIds = [];
+    if (existing && existing.assignedQuestions && existing.assignedQuestions.length > 0) {
+      assignedQIds = existing.assignedQuestions;
+    } else {
+      const allExamQuestions = await Question.find({ examId: req.params.examId }).select('_id').lean();
+      if (allExamQuestions.length > 0) {
+        assignedQIds = allExamQuestions.map(q => q._id);
+      } else {
+        assignedQIds = answers.map(a => a.questionId);
       }
+    }
+
+    const questions = await Question.find({ _id: { $in: assignedQIds } }).sort({ order: 1 });
+    let totalMarks = questions.reduce((sum, q) => sum + (q.marks || 1), 0);
+    let score = 0;
+
+    const ansMap = new Map((answers || []).map(a => [String(a.questionId), a]));
+
+    // Ensure answers array contains an entry for every assigned question so unanswered ones receive 0
+    const fullAnswers = questions.map(q => {
+      const submitted = ansMap.get(String(q._id));
+      return {
+        questionId: q._id,
+        answer: submitted ? (submitted.answer || '') : '',
+        language: submitted?.language || language || 'python'
+      };
+    });
+
+    for (const q of questions) {
+      const ans = ansMap.get(String(q._id));
+      if (exam.examType === 'mcq') {
+        if (ans && ans.answer === q.correctAnswer) {
+          score += q.marks;
+        }
+      } else if (exam.evaluationMethod !== 'ai') {
+        // Manual practical: non-empty answer = full marks
+        if (ans && ans.answer && ans.answer.trim().length > 0) {
+          score += q.marks;
+        }
+      }
+      // For AI practical exams, score calculated below
     }
 
     // Determine status and AI evaluation
@@ -221,7 +239,7 @@ router.post('/:examId/submit', auth, async (req, res) => {
 
         const evalResult = await evaluateSubmission({
           questions,
-          answers,
+          answers: fullAnswers,
           language: lang,
           strictness: exam.evaluationStrictness || 'medium',
         });
@@ -261,7 +279,8 @@ router.post('/:examId/submit', auth, async (req, res) => {
     // Update existing preliminary submission or create new submission
     let savedSubmission;
     if (existing) {
-      existing.answers = answers;
+      existing.answers = fullAnswers;
+      existing.assignedQuestions = assignedQIds;
       existing.score = score;
       existing.totalMarks = totalMarks;
       existing.submittedAt = new Date();
@@ -273,7 +292,8 @@ router.post('/:examId/submit', auth, async (req, res) => {
       const submission = new Submission({
         examId: req.params.examId,
         studentId,
-        answers,
+        answers: fullAnswers,
+        assignedQuestions: assignedQIds,
         score,
         totalMarks,
         submittedAt: new Date(),
@@ -471,8 +491,9 @@ router.get('/:examId/submission', auth, async (req, res) => {
     }
 
     if (exam.examType === 'practical' && resultObj.evaluationMethod === 'ai') {
-      delete resultObj.generatedSolution;
-      delete resultObj.submittedCode;
+      if (!resultPublished) {
+        delete resultObj.generatedSolution;
+      }
     }
 
     if (resultPublished) {
