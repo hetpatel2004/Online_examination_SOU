@@ -469,7 +469,15 @@ const AdminDashboard = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'course') {
+    if (name === 'subjectId') {
+      const selectedSub = subjects.find(s => s._id === value);
+      setFormData(prev => ({
+        ...prev,
+        subjectId: value,
+        course: selectedSub ? selectedSub.course : prev.course,
+        semester: selectedSub ? String(selectedSub.semester) : prev.semester
+      }));
+    } else if (name === 'course') {
       const total = courses.find(c => c.code === value)?.totalSemesters || 4;
       setFormData(prev => ({
         ...prev,
@@ -1348,32 +1356,24 @@ const AdminDashboard = () => {
                 {/* EXAM FORM */}
                 {modalType === 'exam' && (
                   <>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Program</label>
-                        <select name="course" value={formData.course || ''} onChange={handleInputChange} required>
-                          {courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label>Semester</label>
-                        <select name="semester" value={formData.semester || '1'} onChange={handleInputChange}>
-                          {getSemesterOptions(formData.course).map(s => <option key={s} value={s}>Semester {s}</option>)}
-                        </select>
-                      </div>
-                    </div>
                     <div className="form-group">
                       <label>Select Subject</label>
                       <select name="subjectId" value={formData.subjectId || ''} onChange={handleInputChange} required>
                         <option value="">-- Choose a subject --</option>
-                        {subjects
-                          .filter(s => s.semester === Number(formData.semester || '1') && s.course === (formData.course || 'MCA'))
-                          .map((s) => (
-                            <option key={s._id} value={s._id}>{s.name} ({s.code})</option>
-                          ))}
+                        {subjects.map((s) => {
+                          const courseObj = courses.find(c => c.code === s.course || c.name === s.course);
+                          const progName = courseObj ? (courseObj.code || courseObj.name) : s.course;
+                          return (
+                            <option key={s._id} value={s._id}>
+                              {s.name} ({progName}  sem-{s.semester})
+                            </option>
+                          );
+                        })}
                       </select>
-                      {subjects.filter(s => s.semester === Number(formData.semester || '1') && s.course === (formData.course || 'MCA')).length === 0 && (
-                            <span className="field-hint" style={{color:'#D64545'}}>No assigned subjects for this semester & program.</span>
+                      {subjects.length === 0 && (
+                        <span className="field-hint" style={{ color: '#D64545' }}>
+                          No assigned subjects found. Please ask Super Admin to assign subjects to you.
+                        </span>
                       )}
                     </div>
                     <div className="form-group">
@@ -1392,11 +1392,13 @@ const AdminDashboard = () => {
                       <div className="form-group"><label>Total Marks</label><input type="number" name="totalMarks" value={formData.totalMarks || '100'} onChange={handleInputChange} min="1" required /></div>
                     </div>
                     <div className="form-row">
-                      <div className="form-group">
-                        <label>Questions Per Student (Practical only)</label>
-                        <input type="number" name="questionsPerStudent" value={formData.questionsPerStudent || '0'} onChange={handleInputChange} min="0" placeholder="0 = all questions" />
-                        <span className="field-hint">MCQ: all students get every question (shuffled). Practical: random subset from pool.</span>
-                      </div>
+                      {formData.examType === 'practical' && (
+                        <div className="form-group">
+                          <label>Questions Per Student (Practical only)</label>
+                          <input type="number" name="questionsPerStudent" value={formData.questionsPerStudent || '0'} onChange={handleInputChange} min="0" placeholder="0 = all questions" />
+                          <span className="field-hint">Random subset from pool (0 = all questions).</span>
+                        </div>
+                      )}
                       <div className="form-group">
                         <label>Result Publish Date & Time</label>
                         <input type="datetime-local" name="resultDate" value={formData.resultDate || ''} onChange={handleInputChange} />
@@ -1411,7 +1413,7 @@ const AdminDashboard = () => {
                             <option value="manual">Manual Checking</option>
                             <option value="ai">AI Checking</option>
                           </select>
-                          <span className="field-hint">AI Checking uses GPT-4 to evaluate code correctness and quality automatically.</span>
+                          <span className="field-hint">AI Checking uses AI to evaluate code correctness and quality automatically.</span>
                         </div>
                         {formData.evaluationMethod === 'ai' && (
                           <div className="form-group">

@@ -587,13 +587,20 @@ router.post('/exams', auth, adminOnly, async (req, res) => {
   try {
     const { subjectId, date, time, duration, semester, course, totalMarks, totalQuestions, examType, questionsPerStudent, resultDate, evaluationMethod, evaluationStrictness } = req.body;
 
-    if (!subjectId || !date || !time || !duration || !semester || !course) {
-      return res.status(400).json({ message: 'Subject, date, time, duration, semester, and program are required' });
+    if (!subjectId || !date || !time || !duration) {
+      return res.status(400).json({ message: 'Subject, date, time, and duration are required' });
     }
 
     const subject = await Subject.findById(subjectId);
     if (!subject) {
       return res.status(404).json({ message: 'Subject not found' });
+    }
+
+    const examSemester = Number(semester) || subject.semester;
+    const examCourse = course || subject.course;
+
+    if (!examSemester || !examCourse) {
+      return res.status(400).json({ message: 'Subject semester and program are required' });
     }
 
     // Only allow creating exams for subjects assigned to this admin
@@ -609,8 +616,8 @@ router.post('/exams', auth, adminOnly, async (req, res) => {
       date,
       time,
       duration: Number(duration),
-      semester: Number(semester),
-      course,
+      semester: examSemester,
+      course: examCourse,
       totalMarks: totalMarks || 100,
       totalQuestions: totalQuestions || 0,
       examType: examType || 'mcq',
@@ -662,6 +669,8 @@ router.put('/exams/:id', auth, adminOnly, async (req, res) => {
       exam.subjectId = subjectId;
       exam.subjectName = subject.name;
       exam.subjectCode = subject.code;
+      exam.course = course || subject.course;
+      exam.semester = Number(semester) || subject.semester;
     }
 
     if (date) exam.date = date;
