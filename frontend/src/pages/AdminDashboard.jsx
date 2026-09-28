@@ -1362,7 +1362,7 @@ const AdminDashboard = () => {
                         <option value="">-- Choose a subject --</option>
                         {subjects.map((s) => {
                           const courseObj = courses.find(c => c.code === s.course || c.name === s.course);
-                          const progName = courseObj ? (courseObj.code || courseObj.name) : s.course;
+                          const progName = courseObj?.name || s.course;
                           return (
                             <option key={s._id} value={s._id}>
                               {s.name} ({progName}  sem-{s.semester})
