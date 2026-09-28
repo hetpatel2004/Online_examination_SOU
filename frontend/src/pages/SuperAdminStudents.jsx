@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import API from '../api/axios';
+import Pagination from '../components/Pagination';
 
 const SuperAdminStudents = () => {
   const { user } = useAuth();
@@ -18,6 +19,12 @@ const SuperAdminStudents = () => {
   const [error, setError] = useState('');
   const [blockingId, setBlockingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentPageSize, setStudentPageSize] = useState(10);
+
+  useEffect(() => {
+    setStudentPage(1);
+  }, [searchTerm, selectedProgram, semesterFilter]);
 
   // Fetch all courses/programs
   const fetchCourses = async () => {
@@ -137,6 +144,11 @@ const SuperAdminStudents = () => {
 
     return true;
   });
+
+  const paginatedUsers = filteredUsers.slice(
+    (studentPage - 1) * studentPageSize,
+    studentPage * studentPageSize
+  );
 
   return (
     <div className="dashboard-page">
@@ -331,10 +343,10 @@ const SuperAdminStudents = () => {
                       </thead>
 
                       <tbody>
-                        {filteredUsers.map((student, index) => (
+                        {paginatedUsers.map((student, index) => (
                           <tr key={student._id || student.enrollmentNumber || index}>
                             <td data-label="#" className="serial-col">
-                              {index + 1}
+                              {(studentPage - 1) * studentPageSize + index + 1}
                             </td>
                             <td data-label="Name" className="name-col">
                               <div className="student-info">
@@ -393,11 +405,14 @@ const SuperAdminStudents = () => {
                 )}
 
                 {filteredUsers.length > 0 && (
-                  <div className="table-footer">
-                    <span className="results-count">
-                      Showing {filteredUsers.length} of {users.length} students
-                    </span>
-                  </div>
+                  <Pagination
+                    currentPage={studentPage}
+                    totalItems={filteredUsers.length}
+                    pageSize={studentPageSize}
+                    onPageChange={setStudentPage}
+                    onPageSizeChange={setStudentPageSize}
+                    itemLabel="students"
+                  />
                 )}
               </div>
 

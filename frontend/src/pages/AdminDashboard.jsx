@@ -38,6 +38,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
 import ExamCalendar from '../components/ExamCalendar';
+import Pagination from '../components/Pagination';
 import API from '../api/axios';
 
 // Convert a datetime-local input value (admin's local time) to an absolute UTC ISO
@@ -93,6 +94,12 @@ const AdminDashboard = () => {
   const [loadingExams, setLoadingExams] = useState(false);
   const [examError, setExamError] = useState('');
   const [examSemesterFilter, setExamSemesterFilter] = useState('');
+
+  // ========== PAGINATION STATES ==========
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentPageSize, setStudentPageSize] = useState(10);
+  const [examPage, setExamPage] = useState(1);
+  const [examPageSize, setExamPageSize] = useState(10);
 
   // ========== MODAL STATE (shared for all types) ==========
   const [showModal, setShowModal] = useState(false);
@@ -706,6 +713,27 @@ const AdminDashboard = () => {
     ? exams.filter((e) => e.semester === Number(examSemesterFilter))
     : exams;
 
+  // Reset student page on filter changes
+  useEffect(() => {
+    setStudentPage(1);
+  }, [searchTerm, programFilter, studentSemesterFilter]);
+
+  // Reset exam page on filter changes
+  useEffect(() => {
+    setExamPage(1);
+  }, [examSemesterFilter]);
+
+  // Paginated students & exams
+  const paginatedUsers = filteredUsers.slice(
+    (studentPage - 1) * studentPageSize,
+    studentPage * studentPageSize
+  );
+
+  const paginatedExams = filteredExams.slice(
+    (examPage - 1) * examPageSize,
+    examPage * examPageSize
+  );
+
   const totalStudents = filteredUsers.length;
   const totalSubjects = subjects.length;
   const totalExams = exams.length;
@@ -894,9 +922,9 @@ const AdminDashboard = () => {
                           </td>
                         </tr>
                       ) : (
-                        filteredUsers.map((u, i) => (
+                        paginatedUsers.map((u, i) => (
                           <tr key={u._id}>
-                            <td data-label="#" className="serial-col">{i + 1}</td>
+                            <td data-label="#" className="serial-col">{(studentPage - 1) * studentPageSize + i + 1}</td>
                             <td data-label="Name" className="name-col">
                               <div className="student-info">
                                 <span className="student-name">{u.name}</span>
@@ -951,9 +979,14 @@ const AdminDashboard = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="table-footer">
-                  <span className="results-count">Showing {filteredUsers.length} of {users.length} students</span>
-                </div>
+                <Pagination
+                  currentPage={studentPage}
+                  totalItems={filteredUsers.length}
+                  pageSize={studentPageSize}
+                  onPageChange={setStudentPage}
+                  onPageSizeChange={setStudentPageSize}
+                  itemLabel="students"
+                />
               </div>
             )}
           </div>
@@ -1098,11 +1131,11 @@ const AdminDashboard = () => {
                     {filteredExams.length === 0 ? (
                       <tr><td colSpan="11" className="no-data">No exams scheduled yet</td></tr>
                     ) : (
-                      filteredExams.map((ex, i) => {
+                      paginatedExams.map((ex, i) => {
                         const status = getExamStatus(ex);
                         return (
                           <tr key={ex._id}>
-                            <td data-label="#">{i + 1}</td>
+                            <td data-label="#">{(examPage - 1) * examPageSize + i + 1}</td>
                             <td data-label="Subject" className="name-cell">{ex.subjectName}</td>
                             <td data-label="Code" className="enrollment-cell">{ex.subjectCode}</td>
                             <td data-label="Type"><span className={`exam-type-tag ${ex.examType === 'mcq' ? 'type-mcq' : 'type-practical'}`}>{ex.examType === 'mcq' ? 'MCQ' : 'Practical'}</span></td>
@@ -1130,6 +1163,14 @@ const AdminDashboard = () => {
                     )}
                   </tbody>
                 </table>
+                <Pagination
+                  currentPage={examPage}
+                  totalItems={filteredExams.length}
+                  pageSize={examPageSize}
+                  onPageChange={setExamPage}
+                  onPageSizeChange={setExamPageSize}
+                  itemLabel="exams"
+                />
               </div>
             )}
           </div>

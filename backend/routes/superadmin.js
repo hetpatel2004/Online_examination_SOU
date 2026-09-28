@@ -238,7 +238,7 @@ router.delete('/admins/:id', auth, superAdminOnly, async (req, res) => {
 // ============================================================
 router.get('/courses', auth, superAdminOnly, async (req, res) => {
   try {
-    const courses = await Course.find().sort({ code: 1 });
+    const courses = await Course.find().sort({ code: 1 }).lean();
     res.json({ courses });
   } catch (error) {
     console.error('Error fetching courses:', error.message);
@@ -319,7 +319,8 @@ router.get('/subjects', auth, superAdminOnly, async (req, res) => {
   try {
     const subjects = await Subject.find()
       .populate('assignedTo', 'name enrollmentNumber email')
-      .sort({ course: 1, semester: 1, name: 1 });
+      .sort({ course: 1, semester: 1, name: 1 })
+      .lean();
     res.json({ subjects });
   } catch (error) {
     console.error('Error fetching subjects:', error.message);

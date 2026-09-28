@@ -554,7 +554,7 @@ router.get('/subjects', auth, adminOnly, async (req, res) => {
 router.get('/exams', auth, adminOnly, async (req, res) => {
   try {
     // Find subjects assigned to this admin
-    const mySubjects = await Subject.find({ assignedTo: req.user.id }).select('_id');
+    const mySubjects = await Subject.find({ assignedTo: req.user.id }).select('_id').lean();
     const mySubjectIds = mySubjects.map(s => s._id);
 
     // Only show exams for assigned subjects

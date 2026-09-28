@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
+import Pagination from '../components/Pagination';
 import API from '../api/axios';
 
 const SuperAdminDashboard = () => {
@@ -22,6 +23,8 @@ const SuperAdminDashboard = () => {
   // Admins
   const [admins, setAdmins] = useState([]);
   const [loadingAdmins, setLoadingAdmins] = useState(false);
+  const [adminPage, setAdminPage] = useState(1);
+  const [adminPageSize, setAdminPageSize] = useState(10);
 
   // Students
   const [students, setStudents] = useState([]);
@@ -30,6 +33,8 @@ const SuperAdminDashboard = () => {
   const [studentProgramFilter, setStudentProgramFilter] = useState('');
   const [studentSemesterFilter, setStudentSemesterFilter] = useState('');
   const [blockingStudentId, setBlockingStudentId] = useState(null);
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentPageSize, setStudentPageSize] = useState(10);
 
   // Courses
   const [courses, setCourses] = useState([]);
@@ -64,6 +69,11 @@ const SuperAdminDashboard = () => {
   const [cpNewPassword, setCpNewPassword] = useState('');
   const [cpConfirmPassword, setCpConfirmPassword] = useState('');
   const [cpLoading, setCpLoading] = useState(false);
+
+  // Reset student page on filter changes
+  useEffect(() => {
+    setStudentPage(1);
+  }, [studentSearch, studentProgramFilter, studentSemesterFilter]);
 
   useEffect(() => {
     if (activePage === 'dashboard') fetchStats();
@@ -435,6 +445,11 @@ const SuperAdminDashboard = () => {
       );
     })();
 
+    const paginatedStudents = filteredStudents.slice(
+      (studentPage - 1) * studentPageSize,
+      studentPage * studentPageSize
+    );
+
     return (
       <div className="admin-section students-page">
         <div className="section-header-row">
@@ -570,9 +585,9 @@ const SuperAdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((s, i) => (
+                  {paginatedStudents.map((s, i) => (
                     <tr key={s._id}>
-                      <td data-label="#" className="serial-col">{i + 1}</td>
+                      <td data-label="#" className="serial-col">{(studentPage - 1) * studentPageSize + i + 1}</td>
                       <td data-label="Name" className="name-col">
                         <div className="student-info">
                           <span className="student-name">{s.name}</span>
@@ -619,38 +634,74 @@ const SuperAdminDashboard = () => {
                 </tbody>
               </table>
             </div>
-            <div className="table-footer">
-              <span className="results-count">
-                Showing {filteredStudents.length} of {students.length} students
-              </span>
-            </div>
+            <Pagination
+              currentPage={studentPage}
+              totalItems={filteredStudents.length}
+              pageSize={studentPageSize}
+              onPageChange={setStudentPage}
+              onPageSizeChange={setStudentPageSize}
+              itemLabel="students"
+            />
           </div>
         )}
       </div>
     );
   };
 
-  const renderAdmins = () => (
-    <div className="admin-section">
-      <div className="section-header-row">
-        <div>
-          <h2>Manage Admins</h2>
-          <p>Create, view, and remove admin accounts</p>
+  const renderAdmins = () => {
+    const paginatedAdmins = admins.slice(
+      (adminPage - 1) * adminPageSize,
+      adminPage * adminPageSize
+    );
+    return (
+      <div className="admin-section">
+        <div className="section-header-row">
+          <div>
+            <h2>Manage Admins</h2>
+            <p>Create, view, and remove admin accounts</p>
+          </div>
+          <button className="btn btn-primary" onClick={() => openModal('admin')}>+ Create Admin</button>
         </div>
-        <button className="btn btn-primary" onClick={() => openModal('admin')}>+ Create Admin</button>
+        <div className="stats-row">
+          <div className="stat-card stat-blue"><span className="stat-number">{admins.length}</span><span className="stat-label">Admins</span></div>
+        </div>
+        {loadingAdmins ? <div className="loading">Loading admins...</div> : admins.length === 0 ? (
+          <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">👤</span><h3>No Admins</h3><p>Create your first admin account.</p></div>
+        ) : (
+          <div className="table-wrapper">
+            <div className="table-container">
+              <table className="users-table">
+                <thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Program</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {paginatedAdmins.map((a, i) => (
+                    <tr key={a._id}>
+                      <td data-label="#">{(adminPage - 1) * adminPageSize + i + 1}</td>
+                      <td data-label="Name" className="name-cell"><strong>{a.name}</strong></td>
+                      <td data-label="Enrollment" className="enrollment-cell"><code>{a.enrollmentNumber}</code></td>
+                      <td data-label="Email">{a.email}</td>
+                      <td data-label="Phone">{a.phone}</td>
+                      <td data-label="Program">{a.course}</td>
+                      <td data-label="Actions" className="actions-cell">
+                        <button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              currentPage={adminPage}
+              totalItems={admins.length}
+              pageSize={adminPageSize}
+              onPageChange={setAdminPage}
+              onPageSizeChange={setAdminPageSize}
+              itemLabel="admins"
+            />
+          </div>
+        )}
       </div>
-      <div className="stats-row">
-        <div className="stat-card stat-blue"><span className="stat-number">{admins.length}</span><span className="stat-label">Admins</span></div>
-      </div>
-      {loadingAdmins ? <div className="loading">Loading admins...</div> : admins.length === 0 ? (
-        <div className="coming-soon" style={{ padding: '40px' }}><span className="coming-icon">👤</span><h3>No Admins</h3><p>Create your first admin account.</p></div>
-      ) : (
-        <div className="table-container"><table className="users-table"><thead><tr><th>#</th><th>Name</th><th>Enrollment</th><th>Email</th><th>Phone</th><th>Program</th><th>Actions</th></tr></thead><tbody>
-          {admins.map((a, i) => (<tr key={a._id}><td data-label="#">{i + 1}</td><td data-label="Name" className="name-cell"><strong>{a.name}</strong></td><td data-label="Enrollment" className="enrollment-cell"><code>{a.enrollmentNumber}</code></td><td data-label="Email">{a.email}</td><td data-label="Phone">{a.phone}</td><td data-label="Program">{a.course}</td><td data-label="Actions" className="actions-cell"><button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button></td></tr>))}
-        </tbody></table></div>
-      )}
-    </div>
-  );
+    );
+  };
 
   const renderCourses = () => (
     <div className="admin-section">
