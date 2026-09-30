@@ -124,8 +124,8 @@ app.listen(PORT, () => {
   // Verify AI evaluation service is loaded
   try {
     const aiEval = require('./services/aiEvaluation');
-    const hasKey = aiEval.hasOpenAIKey();
-    console.log(`[STARTUP] AI Evaluation Service: LOADED | OpenAI Key: ${hasKey ? 'CONFIGURED' : 'NOT CONFIGURED (using heuristic fallback)'}`);
+    const hasKey = typeof aiEval.hasAIKey === 'function' ? aiEval.hasAIKey() : (typeof aiEval.hasOpenAIKey === 'function' ? aiEval.hasOpenAIKey() : false);
+    console.log(`[STARTUP] AI Evaluation Service: LOADED | AI Keys: ${hasKey ? 'CONFIGURED' : 'NOT CONFIGURED (using heuristic fallback)'}`);
   } catch (err) {
     console.error(`[STARTUP] AI Evaluation Service FAILED TO LOAD:`, err.message);
   }

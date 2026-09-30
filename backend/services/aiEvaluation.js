@@ -627,5 +627,6 @@ module.exports = {
   isNonExecutableLanguage,
   looksLikeFrontendCode,
   hasAIKey,
+  hasOpenAIKey: hasAIKey,
   isAIAvailable,
 };
