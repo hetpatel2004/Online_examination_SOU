@@ -389,6 +389,7 @@ const AdminDashboard = () => {
       } else {
         await API.post('/admin/exams', payload);
         toast.success('Exam scheduled successfully!');
+        setExamPage(1);
       }
       closeModal();
       fetchExams();
@@ -721,6 +722,14 @@ const AdminDashboard = () => {
     ? exams.filter((e) => e.semester === Number(examSemesterFilter))
     : exams;
 
+  // Sort exams: Newest created exam at top, oldest down
+  const sortedExams = [...filteredExams].sort((a, b) => {
+    const timeA = new Date(a.createdAt || 0).getTime();
+    const timeB = new Date(b.createdAt || 0).getTime();
+    if (timeA && timeB && timeA !== timeB) return timeB - timeA;
+    return String(b._id || '').localeCompare(String(a._id || ''));
+  });
+
   // Reset student page on filter changes
   useEffect(() => {
     setStudentPage(1);
@@ -737,7 +746,7 @@ const AdminDashboard = () => {
     studentPage * studentPageSize
   );
 
-  const paginatedExams = filteredExams.slice(
+  const paginatedExams = sortedExams.slice(
     (examPage - 1) * examPageSize,
     examPage * examPageSize
   );
@@ -1136,7 +1145,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredExams.length === 0 ? (
+                    {sortedExams.length === 0 ? (
                       <tr><td colSpan="11" className="no-data">No exams scheduled yet</td></tr>
                     ) : (
                       paginatedExams.map((ex, i) => {
@@ -1173,7 +1182,7 @@ const AdminDashboard = () => {
                 </table>
                 <Pagination
                   currentPage={examPage}
-                  totalItems={filteredExams.length}
+                  totalItems={sortedExams.length}
                   pageSize={examPageSize}
                   onPageChange={setExamPage}
                   onPageSizeChange={setExamPageSize}

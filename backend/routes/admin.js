@@ -562,7 +562,7 @@ router.get('/exams', auth, adminOnly, async (req, res) => {
     if (req.query.semester) filter.semester = Number(req.query.semester);
     if (req.query.course) filter.course = req.query.course;
 
-    const exams = await Exam.find(filter).sort({ date: 1, time: 1 }).lean();
+    const exams = await Exam.find(filter).sort({ createdAt: -1, _id: -1 }).lean();
     res.json({ exams });
   } catch (error) {
     console.error('Error fetching exams:', error.message);
