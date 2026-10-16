@@ -31,6 +31,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');        // For hashing and comparing passwords
 const jwt = require('jsonwebtoken');       // For creating authentication tokens
 const User = require('../models/User');    // User model to interact with database
+const Course = require('../models/Course');
 const auth = require('../middleware/auth'); // Auth middleware for route protection
 
 const router = express.Router();
@@ -114,13 +115,24 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(aadharNumber, salt);
 
-    // Step 9: Create new user object with all data
+    // Step 9: Resolve course to canonical name if it matches a Course code or name
+    let userCourse = course ? String(course).trim() : '';
+    if (userCourse) {
+      const courseDoc = await Course.findOne({
+        $or: [
+          { name: new RegExp(`^${userCourse.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+          { code: new RegExp(`^${userCourse.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+        ]
+      }).lean();
+      if (courseDoc && courseDoc.name) userCourse = courseDoc.name;
+    }
+
     user = new User({
       name,
       enrollmentNumber,
       email,
       phone,
-      course,
+      course: userCourse,
       semester,
       aadharNumber,
       password: hashedPassword,  // Store hashed password, not plain text

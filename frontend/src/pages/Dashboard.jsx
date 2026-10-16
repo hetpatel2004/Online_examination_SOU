@@ -48,8 +48,12 @@ const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await API.get(`/subjects?semester=${user?.semester}&course=${user?.course}`);
-      setSubjects(data.subjects);
+      const params = new URLSearchParams();
+      if (user?.semester) params.append('semester', user.semester);
+      if (user?.course) params.append('course', user.course);
+      const queryStr = params.toString() ? `?${params.toString()}` : '';
+      const { data } = await API.get(`/subjects${queryStr}`);
+      setSubjects(data.subjects || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load subjects');
     } finally {
@@ -71,7 +75,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (activePage === 'subjects') fetchSubjects();
+    if (activePage === 'subjects' || activePage === 'dashboard') fetchSubjects();
     if (activePage === 'exams' || activePage === 'subjectDetail') {
       fetchExams();
       fetchSubmissions();
@@ -84,14 +88,18 @@ const Dashboard = () => {
       setResultCountdown(null);
       setResultCountdownExam(null);
     };
-  }, [activePage]);
+  }, [activePage, user?.semester, user?.course]);
 
   const fetchExams = async () => {
     setLoadingExams(true);
     setExamError('');
     try {
-      const { data } = await API.get(`/exams?semester=${user?.semester}&course=${user?.course}`);
-      setExams(data.exams);
+      const params = new URLSearchParams();
+      if (user?.semester) params.append('semester', user.semester);
+      if (user?.course) params.append('course', user.course);
+      const queryStr = params.toString() ? `?${params.toString()}` : '';
+      const { data } = await API.get(`/exams${queryStr}`);
+      setExams(data.exams || []);
     } catch (err) {
       setExamError(err.response?.data?.message || 'Failed to load exams');
     } finally {

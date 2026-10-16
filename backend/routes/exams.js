@@ -25,6 +25,10 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 }
 });
 
+const Course = require('../models/Course');
+
+const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /**
  * GET /api/exams
  * Fetch scheduled exams (any logged-in user)
@@ -33,7 +37,25 @@ router.get('/', auth, async (req, res) => {
   try {
     const filter = {};
     if (req.query.semester) filter.semester = Number(req.query.semester);
-    if (req.query.course) filter.course = req.query.course;
+    if (req.query.course) {
+      const rawCourse = String(req.query.course).trim();
+      const courseDoc = await Course.findOne({
+        $or: [
+          { name: new RegExp(`^${escapeRegex(rawCourse)}$`, 'i') },
+          { code: new RegExp(`^${escapeRegex(rawCourse)}$`, 'i') }
+        ]
+      }).lean();
+
+      const courseMatches = new Set([rawCourse]);
+      if (courseDoc) {
+        if (courseDoc.name) courseMatches.add(courseDoc.name);
+        if (courseDoc.code) courseMatches.add(courseDoc.code);
+      }
+
+      filter.course = {
+        $in: Array.from(courseMatches).map(c => new RegExp(`^${escapeRegex(c)}$`, 'i'))
+      };
+    }
 
     const exams = await Exam.find(filter).sort({ date: 1, time: 1 }).lean();
     res.json({ exams });

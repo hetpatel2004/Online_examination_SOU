@@ -11,10 +11,19 @@ const SuperAdminDashboard = () => {
   const [semesterFilter, setSemesterFilter] = useState('');
   const [assignCourseFilter, setAssignCourseFilter] = useState('');
 
-  const getSemesterOptions = (courseCode) => {
-    const course = courses.find(c => c.code === courseCode);
+  const getSemesterOptions = (courseCodeOrName) => {
+    const course = courses.find(c => c.code === courseCodeOrName || c.name === courseCodeOrName);
     const total = course?.totalSemesters || 4;
     return Array.from({ length: total }, (_, i) => i + 1);
+  };
+
+  const getProgramDisplayName = (courseVal) => {
+    if (!courseVal) return '—';
+    const found = courses.find(c =>
+      (c.name && c.name.toLowerCase() === String(courseVal).toLowerCase()) ||
+      (c.code && c.code.toLowerCase() === String(courseVal).toLowerCase())
+    );
+    return found ? found.name : courseVal;
   };
 
   // Stats
@@ -136,7 +145,7 @@ const SuperAdminDashboard = () => {
     setModalType(type);
     setEditingItem(item);
     setFormError('');
-    const defaultCourse = courses.length > 0 ? courses[0].code : '';
+    const defaultCourse = courses.length > 0 ? (courses[0].name || courses[0].code) : 'MCA';
 
     if (type === 'admin') {
       setFormData(item ? { name: item.name, enrollmentNumber: item.enrollmentNumber, email: item.email, phone: item.phone, course: item.course || defaultCourse, semester: item.semester || 'N/A', password: '', credentialsEmail: '' }
@@ -158,7 +167,7 @@ const SuperAdminDashboard = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'course') {
-      const total = courses.find(c => c.code === value)?.totalSemesters || 4;
+      const total = courses.find(c => c.code === value || c.name === value)?.totalSemesters || 4;
       setFormData(prev => ({
         ...prev,
         course: value,
@@ -600,7 +609,7 @@ const SuperAdminDashboard = () => {
                       <td data-label="Email" className="email-col">{s.email || '—'}</td>
                       <td data-label="Phone" className="phone-col">{s.phone || '—'}</td>
                       <td data-label="Program" className="program-col">
-                        <span className="program-badge">{s.course || '—'}</span>
+                        <span className="program-badge">{getProgramDisplayName(s.course)}</span>
                       </td>
                       <td data-label="Sem" className="sem-col">
                         <span className="semester-badge">Sem {s.semester || '—'}</span>
@@ -680,7 +689,7 @@ const SuperAdminDashboard = () => {
                       <td data-label="Enrollment" className="enrollment-cell"><code>{a.enrollmentNumber}</code></td>
                       <td data-label="Email">{a.email}</td>
                       <td data-label="Phone">{a.phone}</td>
-                      <td data-label="Program">{a.course}</td>
+                      <td data-label="Program">{getProgramDisplayName(a.course)}</td>
                       <td data-label="Actions" className="actions-cell">
                         <button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'admin', id: a._id, name: a.name })}>🗑️</button>
                       </td>
@@ -757,7 +766,7 @@ const SuperAdminDashboard = () => {
           <div className="table-container"><table className="users-table subject-table"><thead><tr><th>#</th><th>Code</th><th>Name</th><th>Program</th><th>Sem</th><th>Assigned To</th><th>Actions</th></tr></thead><tbody>
             {filteredSubjects.map((s, i) => {
               const assignedList = Array.isArray(s.assignedTo) ? s.assignedTo : (s.assignedTo ? [s.assignedTo] : []);
-              return (<tr key={s._id}><td>{i + 1}</td><td className="enrollment-cell"><code>{s.code}</code></td><td className="name-cell"><strong>{s.name}</strong></td><td>{s.course}</td><td><span className="semester-tag">Sem {s.semester}</span></td><td><div className="faculty-tags-wrap">{assignedList.length > 0 ? assignedList.map(a => <span key={a._id} className="assigned-faculty">{a.name}</span>) : <span className="unassigned-tag">Unassigned</span>}</div></td><td className="actions-cell">
+              return (<tr key={s._id}><td>{i + 1}</td><td className="enrollment-cell"><code>{s.code}</code></td><td className="name-cell"><strong>{s.name}</strong></td><td>{getProgramDisplayName(s.course)}</td><td><span className="semester-tag">Sem {s.semester}</span></td><td><div className="faculty-tags-wrap">{assignedList.length > 0 ? assignedList.map(a => <span key={a._id} className="assigned-faculty">{a.name}</span>) : <span className="unassigned-tag">Unassigned</span>}</div></td><td className="actions-cell">
               <button className="btn-icon btn-edit" title="Edit" onClick={() => openModal('subject', s)}>✏️</button>
               <button className="btn-icon btn-delete" title="Delete" onClick={() => setDeleteConfirm({ type: 'subject', id: s._id, name: s.name })}>🗑️</button>
             </td></tr>);
@@ -873,7 +882,7 @@ const SuperAdminDashboard = () => {
                       <div className="form-group"><label>Phone</label><input type="text" name="phone" value={formData.phone || ''} onChange={handleInputChange} required placeholder="9876543210" /></div>
                     </div>
                     <div className="form-row">
-                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || 'MCA'} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}<option value="Administration">Administration</option></select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || 'MCA'} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}<option value="Administration">Administration</option></select></div>
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || 'N/A'} onChange={handleInputChange} required><option value="N/A">All Semesters</option>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                     </div>
                     {!editingItem && <div className="form-group"><label>Password</label><input type="password" name="password" value={formData.password || ''} onChange={handleInputChange} required minLength="6" placeholder="Min 6 characters" /></div>}
@@ -915,7 +924,7 @@ const SuperAdminDashboard = () => {
                       <div className="form-group"><label>Subject Code</label><input type="text" name="code" value={formData.code || ''} onChange={handleInputChange} required placeholder="MCA401" disabled={!!editingItem} /></div>
                     </div>
                     <div className="form-row">
-                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.length > 0 ? courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>) : <option value="">Loading programs...</option>}</select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.length > 0 ? courses.map(c => <option key={c._id} value={c.name}>{c.name}</option>) : <option value="">Loading programs...</option>}</select></div>
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleInputChange} required>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                     </div>
                     <div className="form-group"><label>Description</label><input type="text" name="description" value={formData.description || ''} onChange={handleInputChange} placeholder="Optional description" /></div>

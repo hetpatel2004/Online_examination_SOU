@@ -60,6 +60,38 @@ const normalizeResultDate = (val) => {
   return isNaN(d.getTime()) ? null : d.toISOString();
 };
 
+const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const resolveCourseCanonicalName = async (courseVal) => {
+  if (!courseVal) return courseVal;
+  const raw = String(courseVal).trim();
+  const doc = await Course.findOne({
+    $or: [
+      { name: new RegExp(`^${escapeRegex(raw)}$`, 'i') },
+      { code: new RegExp(`^${escapeRegex(raw)}$`, 'i') }
+    ]
+  }).lean();
+  return doc ? doc.name : raw;
+};
+
+const getCourseMatchingFilter = async (courseVal) => {
+  if (!courseVal) return null;
+  const raw = String(courseVal).trim();
+  const doc = await Course.findOne({
+    $or: [
+      { name: new RegExp(`^${escapeRegex(raw)}$`, 'i') },
+      { code: new RegExp(`^${escapeRegex(raw)}$`, 'i') }
+    ]
+  }).lean();
+
+  const set = new Set([raw]);
+  if (doc) {
+    if (doc.name) set.add(doc.name);
+    if (doc.code) set.add(doc.code);
+  }
+  return { $in: Array.from(set).map(c => new RegExp(`^${escapeRegex(c)}$`, 'i')) };
+};
+
 // Multer config for practical answer ZIP uploads
 const uploadDir = path.join(__dirname, '..', 'uploads', 'answers');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -231,12 +263,13 @@ router.post('/users', auth, adminOnly, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create and save new user
+    const canonicalCourse = await resolveCourseCanonicalName(course);
     const newUser = new User({
       name,
       enrollmentNumber,
       email,
       phone,
-      course,
+      course: canonicalCourse,
       semester,
       aadharNumber,
       password: hashedPassword,
@@ -287,7 +320,7 @@ router.put('/users/:id', auth, adminOnly, async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (phone) user.phone = phone;
-    if (course) user.course = course;
+    if (course) user.course = await resolveCourseCanonicalName(course);
     if (semester) user.semester = semester;
 
     // Only hash and update password if a new one is provided
@@ -462,12 +495,13 @@ router.post('/users/bulk', auth, adminOnly, async (req, res) => {
 
       const role = enrollmentNumber.toUpperCase().startsWith('ADMIN') ? 'admin' : 'user';
 
+      const canonicalCourse = await resolveCourseCanonicalName(course);
       docs.push({
         name,
         enrollmentNumber,
         email,
         phone,
-        course,
+        course: canonicalCourse,
         semester,
         aadharNumber,
         role,
@@ -519,18 +553,102 @@ router.post('/users/bulk', auth, adminOnly, async (req, res) => {
 
 /**
  * GET /api/admin/subjects
- * Read-only: Admin can only see subjects assigned to them
+ * Admin can see subjects assigned to them (with dynamic course and semester filtering)
  */
 router.get('/subjects', auth, adminOnly, async (req, res) => {
   try {
     const filter = { assignedTo: req.user.id };
     if (req.query.semester) filter.semester = Number(req.query.semester);
-    if (req.query.course) filter.course = req.query.course;
+    if (req.query.course) {
+      filter.course = await getCourseMatchingFilter(req.query.course);
+    }
 
     const subjects = await Subject.find(filter).sort({ semester: 1, code: 1 }).lean();
     res.json({ subjects });
   } catch (error) {
     console.error('Error fetching subjects:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/admin/subjects
+ * Admin can create a new subject (auto-assigns to the creator)
+ */
+router.post('/subjects', auth, adminOnly, async (req, res) => {
+  try {
+    const { name, code, semester, course, description } = req.body;
+    if (!name || !code || !semester || !course) {
+      return res.status(400).json({ message: 'Name, code, semester, and program are required' });
+    }
+
+    const existing = await Subject.findOne({ code: String(code).trim() });
+    if (existing) {
+      return res.status(400).json({ message: 'A subject with this code already exists' });
+    }
+
+    const canonicalCourse = await resolveCourseCanonicalName(course);
+
+    const subject = new Subject({
+      name: String(name).trim(),
+      code: String(code).trim(),
+      semester: Number(semester),
+      course: canonicalCourse,
+      description: description ? String(description).trim() : '',
+      assignedTo: [req.user.id]
+    });
+
+    await subject.save();
+    res.status(201).json({ message: 'Subject created successfully', subject });
+  } catch (error) {
+    console.error('Error creating subject:', error.message);
+    res.status(500).json({ message: 'Server error: ' + error.message });
+  }
+});
+
+/**
+ * PUT /api/admin/subjects/:id
+ * Admin can update a subject assigned to them
+ */
+router.put('/subjects/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const { name, code, semester, course, description } = req.body;
+    const subject = await Subject.findOne({ _id: req.params.id, assignedTo: req.user.id });
+    if (!subject) {
+      return res.status(404).json({ message: 'Subject not found or not assigned to you' });
+    }
+
+    if (code && code.trim() !== subject.code) {
+      const existing = await Subject.findOne({ code: code.trim() });
+      if (existing) return res.status(400).json({ message: 'Subject code already exists' });
+      subject.code = code.trim();
+    }
+    if (name) subject.name = name.trim();
+    if (semester) subject.semester = Number(semester);
+    if (course) subject.course = await resolveCourseCanonicalName(course);
+    if (description !== undefined) subject.description = description ? description.trim() : '';
+
+    await subject.save();
+    res.json({ message: 'Subject updated successfully', subject });
+  } catch (error) {
+    console.error('Error updating subject:', error.message);
+    res.status(500).json({ message: 'Server error: ' + error.message });
+  }
+});
+
+/**
+ * DELETE /api/admin/subjects/:id
+ * Admin can delete a subject assigned to them
+ */
+router.delete('/subjects/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const subject = await Subject.findOneAndDelete({ _id: req.params.id, assignedTo: req.user.id });
+    if (!subject) {
+      return res.status(404).json({ message: 'Subject not found or not assigned to you' });
+    }
+    res.json({ message: 'Subject deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting subject:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -560,7 +678,9 @@ router.get('/exams', auth, adminOnly, async (req, res) => {
     // Only show exams for assigned subjects
     const filter = { subjectId: { $in: mySubjectIds } };
     if (req.query.semester) filter.semester = Number(req.query.semester);
-    if (req.query.course) filter.course = req.query.course;
+    if (req.query.course) {
+      filter.course = await getCourseMatchingFilter(req.query.course);
+    }
 
     const exams = await Exam.find(filter).sort({ createdAt: -1, _id: -1 }).lean();
     res.json({ exams });
@@ -597,7 +717,8 @@ router.post('/exams', auth, adminOnly, async (req, res) => {
     }
 
     const examSemester = Number(semester) || subject.semester;
-    const examCourse = course || subject.course;
+    const rawExamCourse = course || subject.course;
+    const examCourse = await resolveCourseCanonicalName(rawExamCourse);
 
     if (!examSemester || !examCourse) {
       return res.status(400).json({ message: 'Subject semester and program are required' });
@@ -669,7 +790,7 @@ router.put('/exams/:id', auth, adminOnly, async (req, res) => {
       exam.subjectId = subjectId;
       exam.subjectName = subject.name;
       exam.subjectCode = subject.code;
-      exam.course = course || subject.course;
+      exam.course = await resolveCourseCanonicalName(course || subject.course);
       exam.semester = Number(semester) || subject.semester;
     }
 
@@ -677,7 +798,7 @@ router.put('/exams/:id', auth, adminOnly, async (req, res) => {
     if (time) exam.time = time;
     if (duration) exam.duration = Number(duration);
     if (semester) exam.semester = Number(semester);
-    if (course) exam.course = course;
+    if (course) exam.course = await resolveCourseCanonicalName(course);
     if (totalMarks !== undefined) exam.totalMarks = totalMarks;
     if (totalQuestions !== undefined) exam.totalQuestions = totalQuestions;
     if (examType) exam.examType = examType;

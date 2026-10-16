@@ -19,6 +19,18 @@ const superAdminOnly = (req, res, next) => {
   next();
 };
 
+const resolveCourseCanonicalName = async (courseVal) => {
+  if (!courseVal) return courseVal;
+  const raw = String(courseVal).trim();
+  const doc = await Course.findOne({
+    $or: [
+      { name: new RegExp(`^${raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+      { code: new RegExp(`^${raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+    ]
+  }).lean();
+  return doc ? doc.name : raw;
+};
+
 // ============================================================
 // PUBLIC COURSES LIST (for registration, no auth needed)
 // ============================================================
@@ -338,7 +350,8 @@ router.post('/subjects', auth, superAdminOnly, async (req, res) => {
     const existing = await Subject.findOne({ code });
     if (existing) return res.status(400).json({ message: 'Subject code already exists' });
 
-    const subject = new Subject({ name, code, semester, course, description: description || '' });
+    const canonicalCourse = await resolveCourseCanonicalName(course);
+    const subject = new Subject({ name, code, semester, course: canonicalCourse, description: description || '' });
     await subject.save();
     res.status(201).json({ message: 'Subject created', subject });
   } catch (error) {
@@ -360,7 +373,7 @@ router.put('/subjects/:id', auth, superAdminOnly, async (req, res) => {
     }
     if (name) subject.name = name;
     if (semester) subject.semester = semester;
-    if (course) subject.course = course;
+    if (course) subject.course = await resolveCourseCanonicalName(course);
     if (description !== undefined) subject.description = description;
 
     await subject.save();

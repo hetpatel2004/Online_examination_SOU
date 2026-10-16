@@ -54,7 +54,7 @@ const Register = () => {
       const list = data.courses || [];
       setCourses(list);
       if (list.length > 0 && !formData.course) {
-        setFormData(prev => ({ ...prev, course: list[0].code }));
+        setFormData(prev => ({ ...prev, course: list[0].name || list[0].code }));
       }
     }).catch(() => {});
   }, []);
@@ -62,7 +62,7 @@ const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'course') {
-      const course = courses.find(c => c.code === value);
+      const course = courses.find(c => c.name === value || c.code === value);
       const total = course?.totalSemesters || 4;
       setFormData(prev => ({
         ...prev,
@@ -221,7 +221,7 @@ const Register = () => {
                 <label>Program</label>
                 <select name="course" value={formData.course} onChange={handleChange} required>
                   {courses.length > 0 ? courses.map(c => (
-                    <option key={c._id} value={c.code}>{c.name}</option>
+                    <option key={c._id} value={c.name}>{c.name}</option>
                   )) : <option value="">Loading programs...</option>}
                 </select>
               </div>
@@ -229,7 +229,7 @@ const Register = () => {
                 <label>Semester</label>
                 <select name="semester" value={formData.semester} onChange={handleChange} required>
                   {(() => {
-                    const course = courses.find(c => c.code === formData.course);
+                    const course = courses.find(c => c.name === formData.course || c.code === formData.course);
                     const total = course?.totalSemesters || 4;
                     return Array.from({ length: total }, (_, i) => (
                       <option key={i + 1} value={String(i + 1)}>Semester {i + 1}</option>

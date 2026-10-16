@@ -83,10 +83,19 @@ const AdminDashboard = () => {
   // ========== COURSES STATE ==========
   const [courses, setCourses] = useState([]);
 
-  const getSemesterOptions = (courseCode) => {
-    const course = courses.find(c => c.code === courseCode);
+  const getSemesterOptions = (courseCodeOrName) => {
+    const course = courses.find(c => c.code === courseCodeOrName || c.name === courseCodeOrName);
     const total = course?.totalSemesters || 4;
     return Array.from({ length: total }, (_, i) => i + 1);
+  };
+
+  const getProgramDisplayName = (courseVal) => {
+    if (!courseVal) return '—';
+    const found = courses.find(c =>
+      (c.name && c.name.toLowerCase() === String(courseVal).toLowerCase()) ||
+      (c.code && c.code.toLowerCase() === String(courseVal).toLowerCase())
+    );
+    return found ? found.name : courseVal;
   };
 
   // ========== EXAM MANAGEMENT STATE ==========
@@ -419,7 +428,7 @@ const AdminDashboard = () => {
   const openAddModal = (type) => {
     setModalType(type);
     setEditingItem(null);
-    const defaultCourse = courses.length > 0 ? courses[0].code : '';
+    const defaultCourse = courses.length > 0 ? (courses[0].name || courses[0].code) : 'MCA';
     if (type === 'student') {
       setFormData({ name: '', enrollmentNumber: '', email: '', phone: '', course: defaultCourse, semester: '1', aadharNumber: '', password: '' });
     } else if (type === 'subject') {
@@ -435,7 +444,7 @@ const AdminDashboard = () => {
   const openEditModal = (type, item) => {
     setModalType(type);
     setEditingItem(item);
-    const defaultCourse = courses.length > 0 ? courses[0].code : '';
+    const defaultCourse = courses.length > 0 ? (courses[0].name || courses[0].code) : 'MCA';
     if (type === 'student') {
       setFormData({ name: item.name || '', email: item.email || '', phone: item.phone || '', course: item.course || defaultCourse, semester: item.semester || '1', password: '' });
     } else if (type === 'subject') {
@@ -479,7 +488,7 @@ const AdminDashboard = () => {
         semester: selectedSub ? String(selectedSub.semester) : prev.semester
       }));
     } else if (name === 'course') {
-      const total = courses.find(c => c.code === value)?.totalSemesters || 4;
+      const total = courses.find(c => c.code === value || c.name === value)?.totalSemesters || 4;
       setFormData(prev => ({
         ...prev,
         course: value,
@@ -494,11 +503,24 @@ const AdminDashboard = () => {
   const openQuestionManager = async (exam) => {
     setManagingExam(exam);
     setShowQuestionModal(true);
+    setShowBulkUpload(false);
+    setBulkUploadText('');
+    const isPractical = exam.examType === 'practical';
+    setQuestionForm({
+      questionText: '',
+      questionType: isPractical ? 'practical' : 'mcq',
+      options: ['', '', '', ''],
+      correctAnswer: '',
+      marks: isPractical ? 10 : 1,
+      modelAnswer: '',
+      testCases: []
+    });
     await fetchQuestions(exam._id);
   };
 
   const closeQuestionManager = () => {
     setShowQuestionModal(false);
+    setShowBulkUpload(false);
     setManagingExam(null);
     setQuestions([]);
     setQuestionForm({ questionText: '', questionType: 'mcq', options: ['', '', '', ''], correctAnswer: '', marks: 1, modelAnswer: '', testCases: [] });
@@ -518,11 +540,46 @@ const AdminDashboard = () => {
 
   const handleQuestionSubmit = async (e) => {
     e.preventDefault();
+    if (!managingExam) return;
+    const isPractical = managingExam.examType === 'practical';
+
+    if (!questionForm.questionText.trim()) {
+      toast.error('Question text is required');
+      return;
+    }
+
+    if (!isPractical) {
+      const validOptions = questionForm.options.filter(o => o.trim());
+      if (validOptions.length < 2) {
+        toast.error('At least 2 options are required for MCQ');
+        return;
+      }
+      if (!questionForm.correctAnswer.trim()) {
+        toast.error('Please select the correct answer for MCQ');
+        return;
+      }
+    }
+
     setQuestionLoading(true);
     try {
-      await API.post(`/admin/exams/${managingExam._id}/questions`, questionForm);
+      const payload = {
+        ...questionForm,
+        questionType: isPractical ? 'practical' : 'mcq',
+        testCases: isPractical && Array.isArray(questionForm.testCases)
+          ? questionForm.testCases.filter(tc => (tc.input && tc.input.trim()) || (tc.expectedOutput && tc.expectedOutput.trim()))
+          : []
+      };
+      await API.post(`/admin/exams/${managingExam._id}/questions`, payload);
       toast.success('Question added successfully!');
-      setQuestionForm({ questionText: '', questionType: questionForm.questionType, options: ['', '', '', ''], correctAnswer: '', marks: 1, modelAnswer: '', testCases: [] });
+      setQuestionForm({
+        questionText: '',
+        questionType: isPractical ? 'practical' : 'mcq',
+        options: ['', '', '', ''],
+        correctAnswer: '',
+        marks: isPractical ? 10 : 1,
+        modelAnswer: '',
+        testCases: []
+      });
       await fetchQuestions(managingExam._id);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add question');
@@ -954,7 +1011,7 @@ const AdminDashboard = () => {
                             <td data-label="Email" className="email-col">{u.email || '—'}</td>
                             <td data-label="Phone" className="phone-col">{u.phone || '—'}</td>
                             <td data-label="Program" className="program-col">
-                              <span className="program-badge">{u.course || '—'}</span>
+                              <span className="program-badge">{getProgramDisplayName(u.course)}</span>
                             </td>
                             <td data-label="Sem" className="sem-col">
                               <span className="semester-badge">Sem {u.semester || '—'}</span>
@@ -1049,7 +1106,7 @@ const AdminDashboard = () => {
                         filteredSubjects.map((s, i) => (
                           <tr key={s._id}>
                             <td>{i + 1}</td><td className="name-cell">{s.name}</td><td className="enrollment-cell">{s.code}</td>
-                            <td><span className="semester-tag">Sem {s.semester}</span></td><td>{s.course}</td>
+                            <td><span className="semester-tag">Sem {s.semester}</span></td><td>{getProgramDisplayName(s.course)}</td>
                             <td className="desc-cell">{s.description || '—'}</td>
                           </tr>
                         ))}
@@ -1160,7 +1217,7 @@ const AdminDashboard = () => {
                             <td data-label="Time">{ex.time}</td>
                             <td data-label="Duration">{ex.duration} min</td>
                             <td data-label="Sem"><span className="semester-tag">Sem {ex.semester}</span></td>
-                            <td data-label="Program">{ex.course}</td>
+                            <td data-label="Program">{getProgramDisplayName(ex.course)}</td>
                             <td data-label="Status">
                               <span className={`exam-status ${status === 'upcoming' ? 'status-upcoming' : status === 'ongoing' ? 'status-ongoing' : 'status-completed'}`}>
                                 {status === 'upcoming' ? 'Upcoming' : status === 'ongoing' ? 'LIVE' : 'Completed'}
@@ -1332,7 +1389,7 @@ const AdminDashboard = () => {
                     <div className="form-group"><label>Email</label><input type="email" name="email" value={formData.email || ''} onChange={handleInputChange} placeholder="student@email.com" required /></div>
                     <div className="form-group"><label>Phone</label><input type="text" name="phone" value={formData.phone || ''} onChange={handleInputChange} placeholder="10-digit phone" required /></div>
                     <div className="form-row">
-                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}</select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}</select></div>
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleInputChange}>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
                     </div>
                     {!editingItem && (
@@ -1356,7 +1413,7 @@ const AdminDashboard = () => {
                     )}
                     <div className="form-row">
                       <div className="form-group"><label>Semester</label><select name="semester" value={formData.semester || '1'} onChange={handleInputChange}>{getSemesterOptions(formData.course).map(s => <option key={s} value={s}>Semester {s}</option>)}</select></div>
-                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.code}>{c.name}</option>)}</select></div>
+                      <div className="form-group"><label>Program</label><select name="course" value={formData.course || ''} onChange={handleInputChange} required>{courses.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}</select></div>
                     </div>
                     <div className="form-group"><label>Description (optional)</label><input type="text" name="description" value={formData.description || ''} onChange={handleInputChange} placeholder="Brief description" /></div>
                   </>
@@ -1370,8 +1427,7 @@ const AdminDashboard = () => {
                       <select name="subjectId" value={formData.subjectId || ''} onChange={handleInputChange} required>
                         <option value="">-- Choose a subject --</option>
                         {subjects.map((s) => {
-                          const courseObj = courses.find(c => c.code === s.course || c.name === s.course);
-                          const progName = courseObj?.name || s.course;
+                          const progName = getProgramDisplayName(s.course);
                           return (
                             <option key={s._id} value={s._id}>
                               {s.name} ({progName}  sem-{s.semester})
@@ -1590,21 +1646,21 @@ const AdminDashboard = () => {
         <div className="modal-overlay" onClick={closeQuestionManager}>
           <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Manage Questions — {managingExam.subjectName} ({managingExam.examType === 'mcq' ? 'MCQ' : 'Practical'})</h3>
+              <h3>Manage Questions — {managingExam.subjectName} ({managingExam.examType === 'practical' ? 'Practical Exam' : 'MCQ Exam'})</h3>
               <button className="modal-close" onClick={closeQuestionManager}>✕</button>
             </div>
             <div className="modal-body">
               {/* Bulk Upload Toggle */}
               <div style={{display:'flex',gap:'10px',marginBottom:'16px'}}>
                 <button className="btn btn-primary" onClick={() => setShowBulkUpload(!showBulkUpload)}>
-                  {showBulkUpload ? '← Back to Single' : '📦 Bulk Upload Questions'}
+                  {showBulkUpload ? '← Back to Single Question' : `📦 Bulk Upload ${managingExam.examType === 'practical' ? 'Practical' : 'MCQ'} Questions`}
                 </button>
               </div>
 
               {/* Bulk Upload Section */}
               {showBulkUpload && (
-                <div className="question-form-section" style={{background:'#FFF8E1',border:'2px solid #D89B00'}}>
-                  <h4>Bulk Upload Questions ({managingExam.examType === 'mcq' ? 'MCQ' : 'Practical'})</h4>
+                <div className="question-form-section" style={{background:'#FFF8E1',border:'2px solid #D89B00',borderRadius:'8px',padding:'16px'}}>
+                  <h4>Bulk Upload Questions ({managingExam.examType === 'practical' ? 'Practical Coding' : 'MCQ'})</h4>
 
                   {/* File Upload */}
                   <div style={{marginBottom:'14px',padding:'14px',background:'white',borderRadius:'8px',border:'1px solid #ffe0b2'}}>
@@ -1633,30 +1689,31 @@ const AdminDashboard = () => {
                   </div>
 
                   {/* Format Guide */}
-                  <div style={{marginBottom:'12px',padding:'10px 14px',background:'white',borderRadius:'8px',border:'1px solid #ffe0b2',fontSize:'12px',color:'#666',lineHeight:'1.6'}}>
-                    <strong style={{color:'#D89B00'}}>CSV Format:</strong><br/>
-                    {managingExam.examType === 'mcq' ? (
+                  <div style={{marginBottom:'12px',padding:'12px 14px',background:'white',borderRadius:'8px',border:'1px solid #ffe0b2',fontSize:'12px',color:'#555',lineHeight:'1.6'}}>
+                    {managingExam.examType === 'practical' ? (
                       <>
-                        <code style={{background:'#f5f5f5',padding:'2px 6px',borderRadius:'3px'}}>
+                        <strong style={{color:'#D89B00',fontSize:'13px',display:'block',marginBottom:'4px'}}>💻 Practical Questions CSV Format:</strong>
+                        <code style={{background:'#f5f5f5',padding:'3px 8px',borderRadius:'4px',display:'inline-block',marginBottom:'6px',fontSize:'12px'}}>
+                          questionText, marks, modelAnswer
+                        </code><br/>
+                        <span style={{color:'#666'}}>
+                          Example:<br/>
+                          <code>{'"Write a Python function to reverse a string",10,"def rev(s): return s[::-1]"'}</code><br/>
+                          <code>{'"Write a program to find factorial of a number",10,"def fact(n): return 1 if n<=1 else n*fact(n-1)"'}</code>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <strong style={{color:'#D89B00',fontSize:'13px',display:'block',marginBottom:'4px'}}>📝 MCQ Questions CSV Format:</strong>
+                        <code style={{background:'#f5f5f5',padding:'3px 8px',borderRadius:'4px',display:'inline-block',marginBottom:'6px',fontSize:'12px'}}>
                           questionText, optionA, optionB, optionC, optionD, correctAnswer, marks
                         </code><br/>
-                        <span style={{color:'#888'}}>
+                        <span style={{color:'#666'}}>
                           Example:<br/>
                           <code>"What is HTML?","Language","Framework","Database","OS","Language",1</code><br/>
                           <code>"CSS stands for?","Cascading Style Sheets","Computer Style Sheets","Creative Style Sheets","Colorful Style Sheets","Cascading Style Sheets",1</code>
                         </span><br/>
-                        <span style={{color:'#888'}}>Header row is optional. Commas inside quotes are handled. 4 options required for MCQ.</span>
-                      </>
-                    ) : (
-                      <>
-                        <code style={{background:'#f5f5f5',padding:'2px 6px',borderRadius:'3px'}}>
-                          questionText, marks
-                        </code><br/>
-                        <span style={{color:'#888'}}>
-                          Example:<br/>
-                          <code>"Write a program to reverse a string",10</code><br/>
-                          <code>"Explain recursion with example",10</code>
-                        </span>
+                        <span style={{color:'#888',fontSize:'11px'}}>4 options required for MCQ. Commas inside quotes are properly handled.</span>
                       </>
                     )}
                   </div>
@@ -1667,9 +1724,9 @@ const AdminDashboard = () => {
                       Or paste JSON array instead of CSV
                     </summary>
                     <div style={{fontSize:'11px',color:'#888',marginBottom:'6px',lineHeight:'1.5'}}>
-                      {managingExam.examType === 'mcq'
-                        ? '[{"questionText":"Q?","options":["A","B","C","D"],"correctAnswer":"A","marks":1}]'
-                        : '[{"questionText":"Q?","marks":10}]'
+                      {managingExam.examType === 'practical'
+                        ? '[{"questionText":"Write a program to reverse a string","marks":10,"modelAnswer":"def rev(s): return s[::-1]","testCases":[{"input":"hello","expectedOutput":"olleh"}]}]'
+                        : '[{"questionText":"What is HTML?","options":["Language","Framework","Database","OS"],"correctAnswer":"Language","marks":1}]'
                       }
                     </div>
                   </details>
@@ -1678,11 +1735,11 @@ const AdminDashboard = () => {
                   <textarea
                     value={bulkUploadText}
                     onChange={(e) => setBulkUploadText(e.target.value)}
-                    placeholder={managingExam.examType === 'mcq'
-                      ? 'Paste CSV here or use file upload above...\n\nquestionText,optionA,optionB,optionC,optionD,correctAnswer,marks\n"What is HTML?","Language","Framework","Database","OS","Language",1'
-                      : 'Paste CSV here or use file upload above...\n\nquestionText,marks\n"Write a program to reverse a string",10'
+                    placeholder={managingExam.examType === 'practical'
+                      ? 'Paste CSV here or use file upload above...\n\nquestionText,marks,modelAnswer\n"Write a Python function to reverse a string",10,"def rev(s): return s[::-1]"\n"Write a Python function to find factorial of a number",10,"def fact(n): return 1 if n <= 1 else n * fact(n-1)"'
+                      : 'Paste CSV here or use file upload above...\n\nquestionText,optionA,optionB,optionC,optionD,correctAnswer,marks\n"What is HTML?","Language","Framework","Database","OS","Language",1'
                     }
-                    rows="10"
+                    rows="8"
                     style={{width:'100%',padding:'12px',borderRadius:'8px',border:'1px solid #ccc',fontFamily:'monospace',fontSize:'13px',resize:'vertical'}}
                   />
 
@@ -1693,7 +1750,7 @@ const AdminDashboard = () => {
                   )}
 
                   <button className="btn btn-primary" onClick={handleBulkUpload} disabled={bulkUploading || !bulkUploadText.trim()} style={{marginTop:'10px'}}>
-                    {bulkUploading ? 'Uploading...' : `Upload ${managingExam.examType === 'mcq' ? 'MCQ' : 'Practical'} Questions`}
+                    {bulkUploading ? 'Uploading...' : `Upload ${managingExam.examType === 'practical' ? 'Practical' : 'MCQ'} Questions`}
                   </button>
                 </div>
               )}
@@ -1701,20 +1758,38 @@ const AdminDashboard = () => {
               {/* Add Question Form (single) */}
               {!showBulkUpload && (
               <div className="question-form-section">
-                <h4>Add New Question</h4>
+                <h4>{managingExam.examType === 'practical' ? '💻 Add Practical Coding Question' : '📝 Add MCQ Question'}</h4>
                 <form onSubmit={handleQuestionSubmit}>
                   <div className="form-group">
-                    <label>Question Text</label>
-                    <textarea name="questionText" value={questionForm.questionText} onChange={handleQuestionFormChange} placeholder="Enter your question..." required rows="2" style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd',fontFamily:'inherit'}} />
+                    <label>{managingExam.examType === 'practical' ? 'Problem Statement / Question' : 'Question Text'}</label>
+                    <textarea
+                      name="questionText"
+                      value={questionForm.questionText}
+                      onChange={handleQuestionFormChange}
+                      placeholder={managingExam.examType === 'practical' ? "e.g., Write a function to check if a string is a palindrome." : "Enter your question..."}
+                      required
+                      rows={managingExam.examType === 'practical' ? 3 : 2}
+                      style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd',fontFamily:'inherit'}}
+                    />
                   </div>
 
                   <div className="form-row">
                     <div className="form-group">
                       <label>Question Type</label>
-                      <select name="questionType" value={questionForm.questionType} onChange={handleQuestionFormChange}>
-                        <option value="mcq">MCQ</option>
-                        <option value="practical">Practical</option>
-                      </select>
+                      <div style={{
+                        padding: '9px 12px',
+                        background: managingExam.examType === 'practical' ? '#E8F5E9' : '#E3F2FD',
+                        borderRadius: '6px',
+                        color: managingExam.examType === 'practical' ? '#1B5E20' : '#0D47A1',
+                        fontWeight: 600,
+                        fontSize: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <span>{managingExam.examType === 'practical' ? '💻' : '📝'}</span>
+                        <span>{managingExam.examType === 'practical' ? 'Practical Coding Question' : 'Multiple Choice Question (MCQ)'}</span>
+                      </div>
                     </div>
                     <div className="form-group">
                       <label>Marks</label>
@@ -1722,7 +1797,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {questionForm.questionType === 'mcq' && (
+                  {managingExam.examType === 'mcq' && (
                     <>
                       <div className="form-group">
                         <label>Options</label>
@@ -1745,75 +1820,85 @@ const AdminDashboard = () => {
                     </>
                   )}
 
-                  {questionForm.questionType === 'practical' && (
+                  {managingExam.examType === 'practical' && (
                     <>
                       <div className="form-group">
-                        <label>Model Answer (expected correct code)</label>
+                        <label>Model Answer / Solution Code (Reference Implementation)</label>
                         <textarea
                           name="modelAnswer"
                           value={questionForm.modelAnswer}
                           onChange={handleQuestionFormChange}
-                          placeholder="Write the correct solution code here..."
+                          placeholder="def solution():&#10;    # Write the expected correct implementation here&#10;    pass"
                           rows="6"
-                          style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'13px',resize:'vertical'}}
+                          style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'13px',resize:'vertical',background:'#F8FAFC'}}
                         />
-                        <span className="field-hint">Student code will be compared against this model answer for accurate grading.</span>
+                        <span className="field-hint">Student code is evaluated against this reference solution code and test cases.</span>
                       </div>
                       <div className="form-group">
-                        <label>Test Cases ({questionForm.testCases.length})</label>
-                        <span className="field-hint" style={{display:'block',marginBottom:'8px'}}>Define input/output pairs to validate code correctness.</span>
-                        {questionForm.testCases.map((tc, tci) => (
-                          <div key={tci} style={{display:'flex',gap:'8px',marginBottom:'6px',alignItems:'center'}}>
-                            <input
-                              type="text"
-                              value={tc.input}
-                              onChange={(e) => {
-                                const newTCs = [...questionForm.testCases];
-                                newTCs[tci] = { ...newTCs[tci], input: e.target.value };
-                                setQuestionForm({ ...questionForm, testCases: newTCs });
-                              }}
-                              placeholder="Input"
-                              style={{flex:1,padding:'8px',borderRadius:'6px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'12px'}}
-                            />
-                            <input
-                              type="text"
-                              value={tc.expectedOutput}
-                              onChange={(e) => {
-                                const newTCs = [...questionForm.testCases];
-                                newTCs[tci] = { ...newTCs[tci], expectedOutput: e.target.value };
-                                setQuestionForm({ ...questionForm, testCases: newTCs });
-                              }}
-                              placeholder="Expected output"
-                              style={{flex:1,padding:'8px',borderRadius:'6px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'12px'}}
-                            />
-                            <button
-                              type="button"
-                              className="btn-icon btn-delete"
-                              onClick={() => {
-                                const newTCs = questionForm.testCases.filter((_, i) => i !== tci);
-                                setQuestionForm({ ...questionForm, testCases: newTCs });
-                              }}
-                              style={{padding:'4px 8px',fontSize:'14px'}}
-                            >✕</button>
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+                          <label style={{margin:0}}>Test Cases ({questionForm.testCases.length})</label>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => {
+                              setQuestionForm({
+                                ...questionForm,
+                                testCases: [...questionForm.testCases, { input: '', expectedOutput: '' }]
+                              });
+                            }}
+                            style={{fontSize:'12px',padding:'4px 12px'}}
+                          >+ Add Test Case</button>
+                        </div>
+                        <span className="field-hint" style={{display:'block',marginBottom:'8px'}}>Define input and expected output pairs to automatically test student code.</span>
+                        {questionForm.testCases.length === 0 ? (
+                          <div style={{padding:'12px',background:'#F7FAFC',border:'1px dashed #CBD5E0',borderRadius:'6px',textAlign:'center',color:'#718096',fontSize:'12px'}}>
+                            No test cases added yet. Click "+ Add Test Case" to add one.
                           </div>
-                        ))}
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => {
-                            setQuestionForm({
-                              ...questionForm,
-                              testCases: [...questionForm.testCases, { input: '', expectedOutput: '' }]
-                            });
-                          }}
-                          style={{marginTop:'4px',fontSize:'12px',padding:'4px 12px'}}
-                        >+ Add Test Case</button>
+                        ) : (
+                          questionForm.testCases.map((tc, tci) => (
+                            <div key={tci} style={{display:'flex',gap:'8px',marginBottom:'8px',alignItems:'center'}}>
+                              <span style={{fontSize:'12px',fontWeight:600,color:'#718096',minWidth:'28px'}}>#{tci + 1}</span>
+                              <input
+                                type="text"
+                                value={tc.input}
+                                onChange={(e) => {
+                                  const newTCs = [...questionForm.testCases];
+                                  newTCs[tci] = { ...newTCs[tci], input: e.target.value };
+                                  setQuestionForm({ ...questionForm, testCases: newTCs });
+                                }}
+                                placeholder="Input (e.g. 5 or 'radar')"
+                                style={{flex:1,padding:'8px',borderRadius:'6px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'12px'}}
+                              />
+                              <input
+                                type="text"
+                                value={tc.expectedOutput}
+                                onChange={(e) => {
+                                  const newTCs = [...questionForm.testCases];
+                                  newTCs[tci] = { ...newTCs[tci], expectedOutput: e.target.value };
+                                  setQuestionForm({ ...questionForm, testCases: newTCs });
+                                }}
+                                placeholder="Expected Output (e.g. 120 or True)"
+                                style={{flex:1,padding:'8px',borderRadius:'6px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'12px'}}
+                              />
+                              <button
+                                type="button"
+                                className="btn-icon btn-delete"
+                                onClick={() => {
+                                  const newTCs = questionForm.testCases.filter((_, i) => i !== tci);
+                                  setQuestionForm({ ...questionForm, testCases: newTCs });
+                                }}
+                                style={{padding:'4px 8px',fontSize:'14px'}}
+                                title="Remove test case"
+                              >✕</button>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </>
                   )}
 
                   <button type="submit" className="btn btn-primary" disabled={questionLoading} style={{marginTop:'8px'}}>
-                    {questionLoading ? 'Adding...' : '+ Add Question'}
+                    {questionLoading ? 'Adding...' : managingExam.examType === 'practical' ? '+ Add Practical Question' : '+ Add MCQ Question'}
                   </button>
                 </form>
               </div>
@@ -1829,32 +1914,52 @@ const AdminDashboard = () => {
                     {questions.map((q, idx) => (
                       <div key={q._id} className="question-item" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px',border:'1px solid #eee',borderRadius:'8px',marginBottom:'8px',background:'#fafafa'}}>
                         <div style={{flex:1}}>
-                          <strong>Q{idx + 1}.</strong> {q.questionText}
+                          <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'4px'}}>
+                            <span style={{
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: q.questionType === 'practical' ? '#E8F5E9' : '#E3F2FD',
+                              color: q.questionType === 'practical' ? '#1B5E20' : '#0D47A1'
+                            }}>
+                              {q.questionType === 'practical' ? 'PRACTICAL' : 'MCQ'}
+                            </span>
+                            <span style={{fontSize:'12px',color:'#718096',fontWeight:600}}>Marks: {q.marks}</span>
+                          </div>
+                          <div><strong>Q{idx + 1}.</strong> {q.questionText}</div>
                           {q.questionType === 'mcq' && q.options && (
                             <div style={{marginTop:'6px',marginLeft:'24px'}}>
                               {q.options.map((opt, oi) => (
-                                <div key={oi} style={{fontSize:'13px',color: opt === q.correctAnswer ? '#00612e' : '#555'}}>
-                                  {String.fromCharCode(65 + oi)}. {opt} {opt === q.correctAnswer && '✓'}
+                                <div key={oi} style={{fontSize:'13px',color: opt === q.correctAnswer ? '#00612e' : '#555',fontWeight: opt === q.correctAnswer ? 600 : 400}}>
+                                  {String.fromCharCode(65 + oi)}. {opt} {opt === q.correctAnswer && '✓ (Correct)'}
                                 </div>
                               ))}
                             </div>
                           )}
                           {q.questionType === 'practical' && q.modelAnswer && (
                             <details style={{marginTop:'6px',marginLeft:'24px',fontSize:'12px'}}>
-                              <summary style={{cursor:'pointer',color:'#00612e',fontWeight:600}}>Model Answer</summary>
-                              <pre style={{background:'#f0faf0',padding:'8px',borderRadius:'6px',marginTop:'4px',whiteSpace:'pre-wrap',fontSize:'11px',border:'1px solid #c8e6c9'}}>{q.modelAnswer}</pre>
+                              <summary style={{cursor:'pointer',color:'#00612e',fontWeight:600}}>Model Answer / Solution Code</summary>
+                              <pre style={{background:'#f0faf0',padding:'8px',borderRadius:'6px',marginTop:'4px',whiteSpace:'pre-wrap',fontSize:'12px',border:'1px solid #c8e6c9',fontFamily:'monospace'}}>{q.modelAnswer}</pre>
                             </details>
                           )}
                           {q.questionType === 'practical' && q.testCases && q.testCases.length > 0 && (
-                            <div style={{marginTop:'4px',marginLeft:'24px',fontSize:'11px',color:'#555'}}>
-                              <span style={{fontWeight:600}}>{q.testCases.length}</span> test case{q.testCases.length !== 1 ? 's' : ''}
-                            </div>
+                            <details style={{marginTop:'6px',marginLeft:'24px',fontSize:'12px'}}>
+                              <summary style={{cursor:'pointer',color:'#2B6CB0',fontWeight:600}}>
+                                Test Cases ({q.testCases.length})
+                              </summary>
+                              <div style={{marginTop:'4px',display:'flex',flexDirection:'column',gap:'4px'}}>
+                                {q.testCases.map((tc, tci) => (
+                                  <div key={tci} style={{background:'#f7fafc',padding:'6px 10px',borderRadius:'4px',fontSize:'11px',border:'1px solid #e2e8f0',fontFamily:'monospace'}}>
+                                    <div><strong>Input:</strong> {tc.input || '—'}</div>
+                                    <div><strong>Expected:</strong> {tc.expectedOutput || '—'}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
                           )}
-                          <div style={{marginTop:'4px',fontSize:'12px',color:'#888'}}>
-                            Type: {q.questionType.toUpperCase()} | Marks: {q.marks}
-                          </div>
                         </div>
-                        <button className="btn-icon btn-delete" onClick={() => handleDeleteQuestion(q._id)} style={{marginLeft:'10px'}}>🗑️</button>
+                        <button className="btn-icon btn-delete" onClick={() => handleDeleteQuestion(q._id)} style={{marginLeft:'10px'}} title="Delete question">🗑️</button>
                       </div>
                     ))}
                   </div>
@@ -1933,7 +2038,7 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                           <div className="submission-meta">
-                            <span className="sub-course">{student?.course} • Sem {student?.semester}</span>
+                            <span className="sub-course">{getProgramDisplayName(student?.course)} • Sem {student?.semester}</span>
                             <span className="sub-time">{new Date(sub.submittedAt).toLocaleString()}</span>
                           </div>
                           <div className="submission-score-section">
@@ -1960,7 +2065,7 @@ const AdminDashboard = () => {
                             <div className="sub-detail-student">
                               <div className="sub-detail-item"><label>Email</label><span>{student?.email || '—'}</span></div>
                               <div className="sub-detail-item"><label>Phone</label><span>{student?.phone || '—'}</span></div>
-                              <div className="sub-detail-item"><label>Program</label><span>{student?.course}</span></div>
+                              <div className="sub-detail-item"><label>Program</label><span>{getProgramDisplayName(student?.course)}</span></div>
                               <div className="sub-detail-item"><label>Semester</label><span>{student?.semester}</span></div>
                             </div>
 
