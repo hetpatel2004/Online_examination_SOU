@@ -6837,3 +6837,399 @@ body {
 
 
 
+
+/* ========================================================
+   STUDENT PRACTICAL EXAM IDE CODE EDITOR & COMPILER
+   ======================================================== */
+.ide-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  background: #0f172a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
+
+.ide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  padding: 8px 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ide-header-left, .ide-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ide-file-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid #334155;
+}
+
+.ide-lang-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ide-lang-label {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ide-lang-select {
+  background: #0f172a;
+  color: #f1f5f9;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.ide-lang-select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.ide-btn-tool {
+  background: #334155;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ide-btn-tool:hover {
+  background: #475569;
+  color: #ffffff;
+}
+
+.ide-btn-tool.active {
+  background: #2563eb;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.ide-btn-run {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.ide-btn-run:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.45);
+}
+
+.ide-btn-run:disabled {
+  background: #475569;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+.ide-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: ideSpin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes ideSpin {
+  to { transform: rotate(360deg); }
+}
+
+.ide-stdin-panel {
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  padding: 8px 12px;
+}
+
+.ide-stdin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cbd5e1;
+  font-size: 11.5px;
+  margin-bottom: 5px;
+}
+
+.ide-stdin-header code {
+  color: #38bdf8;
+  background: #0f172a;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.ide-stdin-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ide-stdin-textarea {
+  width: 100%;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  resize: vertical;
+  outline: none;
+}
+
+.ide-stdin-textarea:focus {
+  border-color: #38bdf8;
+}
+
+.ide-editor-body {
+  display: flex;
+  min-height: 220px;
+  max-height: 520px;
+  background: #0f172a;
+  position: relative;
+}
+
+.ide-line-numbers {
+  padding: 12px 0;
+  width: 44px;
+  background: #090d16;
+  border-right: 1px solid #1e293b;
+  color: #475569;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+}
+
+.ide-line-num {
+  padding-right: 10px;
+}
+
+.ide-code-textarea {
+  flex: 1;
+  padding: 12px 14px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: none;
+  outline: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  resize: vertical;
+  tab-size: 4;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+.ide-code-textarea::placeholder {
+  color: #475569;
+}
+
+.ide-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+  background: #090d16;
+  border-top: 1px solid #1e293b;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.ide-footer-left, .ide-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ide-status-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+/* ========================================================
+   COMPILER OUTPUT / TERMINAL CONSOLE
+   ======================================================== */
+.ide-terminal {
+  border-top: 1px solid #334155;
+  background: #090d16;
+  animation: ideSlideDown 0.2s ease-out;
+}
+
+@keyframes ideSlideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ide-terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 12px;
+  background: #131b2e;
+  border-bottom: 1px solid #1e293b;
+}
+
+.terminal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.badge-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.badge-preview {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.badge-running {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+}
+
+.ide-terminal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ide-terminal-lang-tag {
+  color: #94a3b8;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  text-transform: uppercase;
+}
+
+.ide-terminal-clear-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ide-terminal-clear-btn:hover {
+  color: #ffffff;
+  background: #334155;
+}
+
+.ide-terminal-body {
+  padding: 10px 14px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.ide-terminal-code {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal-success .ide-terminal-code {
+  color: #4ade80;
+}
+
+.terminal-error .ide-terminal-code {
+  color: #f87171;
+}
+
+.terminal-loading-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #facc15;
+  font-size: 12.5px;
+  padding: 8px 0;
+}
+
+.ide-spinner-large {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(250, 204, 21, 0.2);
+  border-top-color: #facc15;
+  border-radius: 50%;
+  animation: ideSpin 0.7s linear infinite;
+}
+
+.ide-preview-wrapper {
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 320px;
+}
+
+.ide-preview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}

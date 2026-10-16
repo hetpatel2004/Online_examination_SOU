@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
+import CodeEditor from '../components/CodeEditor';
 import API from '../api/axios';
 
 const Dashboard = () => {
@@ -237,7 +238,18 @@ const Dashboard = () => {
     };
 
     const handleWindowBlur = () => {
-      disqualifyCurrentExam('Left exam window or switched application');
+      // Do not trigger if user interacted with an internal preview iframe
+      if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+        return;
+      }
+      setTimeout(() => {
+        if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+          return;
+        }
+        if (document.hidden || !document.hasFocus()) {
+          disqualifyCurrentExam('Left exam window or switched application');
+        }
+      }, 150);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -371,19 +383,19 @@ const Dashboard = () => {
     }
   };
 
-  const runCode = async (questionId) => {
-    const code = answers[questionId] || '';
+  const runCode = async (questionId, codeParam, langParam, stdinParam = '') => {
+    const code = codeParam !== undefined ? codeParam : (answers[questionId] || '');
     if (!code.trim()) {
-      toast.warning('Please write some code first');
+      toast.warning('Please write some code first before compiling');
       return;
     }
-    const lang = codeLanguages[questionId] || 'python';
+    const lang = langParam || codeLanguages[questionId] || 'python';
     setRunningCode(questionId);
     setCodeOutput(prev => ({ ...prev, [questionId]: { running: true } }));
     try {
-      const { data } = await API.post('/exams/run-code', { code, language: lang });
+      const { data } = await API.post('/exams/run-code', { code, language: lang, stdin: stdinParam });
 
-      // Preview languages (HTML/CSS) → show iframe
+      // Preview languages (HTML/CSS/JSX) → show iframe
       if (data.status === 'preview' && data.previewHTML) {
         setCodeOutput(prev => ({
           ...prev,
@@ -391,31 +403,39 @@ const Dashboard = () => {
             running: false,
             isPreview: true,
             previewHTML: data.previewHTML,
-            language: data.language,
+            language: data.language || lang,
           }
         }));
         return;
       }
 
       const output = data.stdout || data.stderr || data.compile_output || '';
-      const hasError = data.status === 'error' || data.stderr || data.compile_output;
+      const hasError = data.status === 'error' || Boolean(data.stderr) || Boolean(data.compile_output);
       setCodeOutput(prev => ({
         ...prev,
         [questionId]: {
           running: false,
-          output: output.trim() || '(No output)',
-          isError: !!hasError,
-          language: data.language,
+          output: output.trim() || '(Program completed successfully with no output)',
+          isError: hasError,
+          language: data.language || lang,
         }
       }));
     } catch (err) {
       setCodeOutput(prev => ({
         ...prev,
-        [questionId]: { running: false, output: err.response?.data?.message || 'Execution failed', isError: true }
+        [questionId]: { running: false, output: err.response?.data?.message || 'Compilation or execution failed', isError: true }
       }));
     } finally {
       setRunningCode(null);
     }
+  };
+
+  const clearCodeOutput = (questionId) => {
+    setCodeOutput(prev => {
+      const updated = { ...prev };
+      delete updated[questionId];
+      return updated;
+    });
   };
 
   const exitExam = () => {
@@ -530,53 +550,17 @@ const Dashboard = () => {
                   </div>
                 )}
                 {(q.questionType === 'practical' || !q.questionType) && (
-                  <div className="practical-answer">
-                    <div className="lang-select-row">
-                      <label className="lang-label">Language:</label>
-                      <select
-                        className="lang-select"
-                        value={codeLanguages[q._id] || 'python'}
-                        onChange={(e) => setCodeLanguages({ ...codeLanguages, [q._id]: e.target.value })}
-                      >
-                        <optgroup label="Backend">
-                          <option value="python">Python</option>
-                          <option value="java">Java</option>
-                          <option value="c">C</option>
-                          <option value="cpp">C++</option>
-                          <option value="csharp">C#</option>
-                          <option value="go">Go</option>
-                          <option value="rust">Rust</option>
-                          <option value="php">PHP</option>
-                          <option value="ruby">Ruby</option>
-                          <option value="kotlin">Kotlin</option>
-                          <option value="swift">Swift</option>
-                          <option value="scala">Scala</option>
-                          <option value="r">R</option>
-                        </optgroup>
-                        <optgroup label="Frontend">
-                          <option value="javascript">JavaScript</option>
-                          <option value="jsx">React (JSX)</option>
-                          <option value="typescript">TypeScript</option>
-                          <option value="tsx">React (TSX)</option>
-                          <option value="html">HTML</option>
-                          <option value="css">CSS</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                          <option value="sql">SQL</option>
-                          <option value="bash">Bash</option>
-                          <option value="haskell">Haskell</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                    <textarea
-                      className="code-textarea"
-                      placeholder="// Write your code here..."
-                      value={answers[q._id] || ''}
-                      onChange={(e) => handleAnswerChange(q._id, e.target.value)}
-                      rows="8"
-                      spellCheck="false"
-                    />
-                  </div>
+                  <CodeEditor
+                    questionId={q._id}
+                    code={answers[q._id] || ''}
+                    onChange={(val) => handleAnswerChange(q._id, val)}
+                    language={codeLanguages[q._id] || 'python'}
+                    onLanguageChange={(newLang) => setCodeLanguages(prev => ({ ...prev, [q._id]: newLang }))}
+                    onRun={(qid, c, l, s) => runCode(qid, c, l, s)}
+                    running={runningCode === q._id}
+                    output={codeOutput[q._id]}
+                    onClearOutput={() => clearCodeOutput(q._id)}
+                  />
                 )}
               </div>
             ))}
