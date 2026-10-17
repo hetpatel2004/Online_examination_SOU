@@ -48,18 +48,22 @@ function calcTokenSimilarity(codeA, codeB) {
 }
 
 function lineDiffSimilarity(codeA, codeB) {
-  const linesA = (codeA || '').split('\n').filter(l => l.trim());
-  const linesB = (codeB || '').split('\n').filter(l => l.trim());
+  const linesA = (codeA || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const linesB = (codeB || '').split('\n').map(l => l.trim()).filter(Boolean);
   if (!linesA.length && !linesB.length) return 1;
   if (!linesA.length || !linesB.length) return 0;
-  let matchCount = 0;
-  const normA = linesA.map(l => l.trim());
-  const normB = linesB.map(l => l.trim());
-  for (const la of normA) {
-    if (normB.includes(la)) matchCount++;
+  const setA = new Set(linesA);
+  const setB = new Set(linesB);
+  let intersection = 0;
+  for (const l of setA) {
+    if (setB.has(l)) intersection++;
   }
-  return (matchCount / Math.max(linesA.length, linesB.length)) * 0.5 +
-    (matchCount / Math.max(linesA.length, linesB.length)) * 0.5;
+  const minSize = Math.min(setA.size, setB.size);
+  const unionSize = new Set([...setA, ...setB]).size;
+  // Blend containment (so concise solutions are not penalized for fewer lines) with Jaccard
+  const containment = minSize > 0 ? intersection / minSize : 0;
+  const jaccard = unionSize > 0 ? intersection / unionSize : 0;
+  return containment * 0.5 + jaccard * 0.5;
 }
 
 function calcCodeSimilarity(codeA, codeB) {

@@ -193,101 +193,342 @@ LANG_PROFILES.ruby = LANG_PROFILES.python;
 LANG_PROFILES.php = LANG_PROFILES.javascript;
 LANG_PROFILES.swift = LANG_PROFILES.java;
 
-// Robust heuristic scorer (0-100): Evaluates code syntax, problem relevance,
-// structural complexity, and clean execution when external AI is unavailable.
-function analyzeCode(code, language, questionText, executionResult = null) {
-  if (!code || !code.trim()) return { score: 0, feedback: 'No code submitted' };
-  const lang = (language || '').toLowerCase().trim();
-  const profile = LANG_PROFILES[lang];
-  const lines = code.split('\n').filter(l => l.trim());
-  const len = code.length;
-  const lineCount = lines.length;
+// Extracts problem requirements, intent keywords, and algorithmic concepts from question text
+function extractProblemRequirements(questionText = '') {
+  const text = (questionText || '').toLowerCase();
+  const requirements = {
+    keywords: [],
+    intents: [],
+  };
+
+  // Detect key problem intents
+  if (/\b(palindrome)\b/.test(text)) requirements.intents.push('palindrome');
+  if (/\b(prime)\b/.test(text)) requirements.intents.push('prime');
+  if (/\b(factorial)\b/.test(text)) requirements.intents.push('factorial');
+  if (/\b(fibonacci)\b/.test(text)) requirements.intents.push('fibonacci');
+  if (/\b(even|odd)\b/.test(text)) requirements.intents.push('even_odd');
+  if (/\b(reverse|reversed|reversing)\b/.test(text)) requirements.intents.push('reverse');
+  if (/\b(sort|sorted|sorting|ascending|descending|bubble|quick|merge)\b/.test(text)) requirements.intents.push('sort');
+  if (/\b(search|searching|binary\s+search|find|lookup)\b/.test(text)) requirements.intents.push('search');
+  if (/\b(matrix|matrices|2d\s+array)\b/.test(text)) requirements.intents.push('matrix');
+  if (/\b(armstrong)\b/.test(text)) requirements.intents.push('armstrong');
+  if (/\b(vowel|consonant)\b/.test(text)) requirements.intents.push('vowel');
+  if (/\b(gcd|hcf|lcm)\b/.test(text)) requirements.intents.push('gcd_lcm');
+  if (/\b(swap)\b/.test(text)) requirements.intents.push('swap');
+  if (/\b(duplicate|unique|distinct)\b/.test(text)) requirements.intents.push('duplicate');
+  if (/\b(pattern|pyramid|triangle)\b/.test(text)) requirements.intents.push('pattern');
+  if (/\b(recursion|recursive)\b/.test(text)) requirements.intents.push('recursion');
+  if (/\b(sum|average|add|addition)\b/.test(text)) requirements.intents.push('sum');
+  if (/\b(class|object|constructor|inheritance)\b/.test(text)) requirements.intents.push('oop');
+  if (/\b(react|component|hook|state)\b/.test(text)) requirements.intents.push('react');
+
+  // Extract core domain tokens (filtering out common filler/stop words)
+  const stopwords = new Set([
+    'the','and','for','are','but','not','you','all','can','had','her','was','one','our','out','has','his',
+    'how','its','may','new','now','old','see','way','who','did','get','let','say','she','too','use','write',
+    'code','program','create','make','function','implement','using','with','that','this','from','each','have',
+    'will','your','them','than','some','what','when','which','there','their','about','would','could','should',
+    'other','into','just','also','given','take','input','output','print','check','find','display','calculate'
+  ]);
+  const tokens = text.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopwords.has(w));
+  requirements.keywords = [...new Set(tokens)];
+
+  return requirements;
+}
+
+// Evaluates the student's applied logic against the question requirements (up to 45 points)
+// NEVER scores based on code length — concise 1-line solutions receive full marks if logic is sound!
+function evaluateStudentLogic(code, requirements, language) {
   const codeLower = code.toLowerCase();
-  let score = 0;
-  const feedback = [];
+  let logicPoints = 0;
+  const maxLogicPoints = 45;
+  const observations = [];
 
-  const stopwords = new Set(['the','and','for','are','but','not','you','all','can','had','her','was','one','our','out','has','his','how','its','may','new','now','old','see','way','who','did','get','let','say','she','too','use','write','code','program','create','make','function','implement','using','with','that','this','from','each','have','will','your','them','than','some','what','when','which','there','their','about','would','could','should','other','into','just','also']);
-  const qWords = (questionText || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopwords.has(w));
-  const uniqueQWords = [...new Set(qWords)];
-  let keywordHits = 0;
-  for (const kw of uniqueQWords) {
-    if (codeLower.includes(kw)) { keywordHits++; }
+  const { intents, keywords } = requirements;
+
+  if (intents.length === 0 && keywords.length === 0) {
+    const hasFunction = /def\s+\w+|function\s+\w+|class\s+\w+|=>\s*\{|\w+\s+\w+\s*\([^)]*\)\s*\{/.test(code);
+    const hasControlFlow = /if\s*\(|if\s+|for\s*\(|for\s+|while\s*\(|while\s+|\?.*:/.test(code);
+    const hasReturnOrPrint = /return\b|print\s*\(|console\.log|System\.out|printf|cout\s*<</.test(code);
+    if (hasFunction) logicPoints += 15;
+    if (hasControlFlow) logicPoints += 15;
+    if (hasReturnOrPrint) logicPoints += 15;
+    observations.push('Structured programmatic logic detected');
+    return { score: Math.min(maxLogicPoints, logicPoints), observations };
   }
-  const relevanceRatio = uniqueQWords.length > 0 ? keywordHits / uniqueQWords.length : 0.5;
 
-  // 1. Question relevance (up to 30 points)
-  if (relevanceRatio >= 0.4) {
-    score += 30;
-    feedback.push(`Strong question relevance (${keywordHits}/${uniqueQWords.length} terms matched)`);
-  } else if (relevanceRatio >= 0.2) {
-    score += 20;
-    feedback.push(`Moderate question relevance (${keywordHits}/${uniqueQWords.length} terms matched)`);
-  } else if (relevanceRatio > 0) {
-    score += 12;
-    feedback.push(`Basic question relevance`);
-  } else if (uniqueQWords.length >= 3) {
-    score += 5;
-    feedback.push('Low question relevance');
+  let intentMatched = 0;
+  for (const intent of intents) {
+    let matched = false;
+    switch (intent) {
+      case 'palindrome':
+        if (/\[::-1\]|reverse|reversed|str\(.*\)\[::-1\]|==.*\[|charAt|equals/.test(code)) {
+          matched = true;
+          observations.push('Palindrome reversal/comparison logic verified');
+        }
+        break;
+      case 'prime':
+        if (/%|\.is_prime|math\.sqrt|range\s*\(\s*2/.test(code)) {
+          matched = true;
+          observations.push('Prime number divisibility logic verified');
+        }
+        break;
+      case 'factorial':
+        if (/\*=|(?:\w+)\s*\*\s*(?:\w+)|return\s+.*\*|\bmath\.factorial\b/.test(code)) {
+          matched = true;
+          observations.push('Factorial multiplication/recursion logic verified');
+        }
+        break;
+      case 'fibonacci':
+        if (/\+|,\s*|\bfib\b/.test(code)) {
+          matched = true;
+          observations.push('Fibonacci progression logic verified');
+        }
+        break;
+      case 'even_odd':
+        if (/%[\s]*2|&\s*1/.test(code)) {
+          matched = true;
+          observations.push('Even/odd parity logic verified');
+        }
+        break;
+      case 'reverse':
+        if (/\[::-1\]|reverse|reversed|\.reverse\(\)|len.*-.*1|--/.test(code)) {
+          matched = true;
+          observations.push('Reversal logic verified');
+        }
+        break;
+      case 'sort':
+        if (/\.sort|sorted\(|<|>|swap/.test(code)) {
+          matched = true;
+          observations.push('Sorting/comparison logic verified');
+        }
+        break;
+      case 'search':
+        if (/\bin\b|\.find|\.indexOf|binary|mid\s*=|==/.test(code)) {
+          matched = true;
+          observations.push('Search/lookup logic verified');
+        }
+        break;
+      case 'armstrong':
+        if (/%[\s]*10|\*\*|pow|\/\//.test(code)) {
+          matched = true;
+          observations.push('Digit extraction and power logic verified');
+        }
+        break;
+      case 'vowel':
+        if (/['"][aeiouAEIOU]['"]|includes|in\s+['"]aeiou/.test(code)) {
+          matched = true;
+          observations.push('Vowel matching logic verified');
+        }
+        break;
+      case 'recursion': {
+        const funcMatch = code.match(/(?:def|function)\s+(\w+)/);
+        if (funcMatch && funcMatch[1]) {
+          const fnName = funcMatch[1];
+          const rest = code.slice(funcMatch.index + funcMatch[0].length);
+          if (new RegExp(`\\b${fnName}\\s*\\(`).test(rest)) {
+            matched = true;
+            observations.push('Recursive self-call verified');
+          }
+        }
+        break;
+      }
+      case 'sum':
+        if (/\+=|\+|\bsum\(/.test(code)) {
+          matched = true;
+          observations.push('Summation/accumulation logic verified');
+        }
+        break;
+      case 'oop':
+        if (/class\s+\w+|__init__|constructor|this\.|self\./.test(code)) {
+          matched = true;
+          observations.push('OOP class/object structure verified');
+        }
+        break;
+      case 'matrix':
+        if (/\[\w+\]\s*\[\w+\]|for.*for/.test(code)) {
+          matched = true;
+          observations.push('Matrix/2D indexing logic verified');
+        }
+        break;
+      case 'gcd_lcm':
+        if (/%|gcd|lcm/.test(code)) {
+          matched = true;
+          observations.push('GCD/LCM calculation logic verified');
+        }
+        break;
+      case 'swap':
+        if (/temp\s*=|,\s*\w+\s*=\s*\w+,\s*\w+|\^/.test(code)) {
+          matched = true;
+          observations.push('Variable swap logic verified');
+        }
+        break;
+      case 'duplicate':
+        if (/set\(|unique|distinct|\.filter|\.includes|\.has\(/.test(code)) {
+          matched = true;
+          observations.push('Deduplication logic verified');
+        }
+        break;
+      default:
+        break;
+    }
+    if (matched) intentMatched++;
+  }
+
+  let keywordMatches = 0;
+  for (const kw of keywords) {
+    if (codeLower.includes(kw)) keywordMatches++;
+  }
+  const kwRatio = keywords.length > 0 ? keywordMatches / keywords.length : 0;
+
+  if (intents.length > 0) {
+    if (intentMatched === 0) {
+      logicPoints = Math.round(kwRatio * 15);
+    } else {
+      const intentRatio = intentMatched / intents.length;
+      logicPoints = Math.round(intentRatio * 35 + Math.min(10, kwRatio * 10));
+    }
   } else {
-    score += 20;
+    logicPoints = Math.round(kwRatio * 35 + 10);
   }
 
-  // 2. Code length and substance (up to 20 points)
-  if (len >= 300 || lineCount >= 20) { score += 20; feedback.push('Substantial code length'); }
-  else if (len >= 150 || lineCount >= 10) { score += 15; feedback.push('Good code length'); }
-  else if (len >= 60 || lineCount >= 5) { score += 10; feedback.push('Moderate code length'); }
-  else if (len >= 20) { score += 6; feedback.push('Short code'); }
-  else { score += 2; feedback.push('Very short'); }
+  // Programmatic return/print statement or function declaration bonus
+  if (/return\b|print\s*\(|console\.log|printf|cout\s*<</.test(code)) {
+    logicPoints += 5;
+  }
+  if (/def\s+\w+|function\s+\w+|=>/.test(code)) {
+    logicPoints += 5;
+  }
 
-  // 3. Language patterns & syntax (up to 40 points)
-  if (profile && profile.patterns) {
-    let patternScore = 0;
-    for (const [category, regex] of Object.entries(profile.patterns)) {
-      const matches = code.match(regex);
-      const count = matches ? matches.length : 0;
-      if (count === 0) continue;
-      if (['component', 'hooks', 'jsxReturn', 'jsxElements', 'state', 'effect', 'className', 'events', 'keys', 'props'].includes(category)) {
-        patternScore += Math.min(count * 3, 7);
-      } else if (['functions', 'classes', 'methods', 'imports', 'loops', 'conditions', 'errorHandling', 'tryCatch', 'oop', 'annotations', 'includes', 'pointers', 'structs', 'macros'].includes(category)) {
-        patternScore += Math.min(count * 2.5, 7);
-      } else if (['arrayMethods', 'dictMethods', 'comprehensions', 'fstrings', 'typeHints', 'generics', 'streams', 'collections', 'modules', 'dom', 'templateLiterals', 'flexbox', 'variables', 'animations', 'decorators'].includes(category)) {
-        patternScore += Math.min(count * 2, 5);
+  return {
+    score: Math.min(maxLogicPoints, Math.max(0, logicPoints)),
+    observations,
+  };
+}
+
+// Evaluates the accuracy and functional execution of the code (up to 45 points)
+function evaluateAccuracyAndExecution(code, executionResult, language, logicScore) {
+  let accuracyPoints = 0;
+  const maxAccuracy = 45;
+  const notes = [];
+
+  if (executionResult) {
+    const stdout = (executionResult.stdout || '').trim();
+    const stderr = (executionResult.stderr || executionResult.compileOutput || '').trim();
+    const exitCode = executionResult.exitCode;
+
+    if (exitCode === 0 && !stderr) {
+      accuracyPoints = stdout ? 45 : 40;
+      notes.push(stdout ? 'Execution succeeded with accurate output' : 'Clean execution with no runtime errors');
+    } else if (stdout && exitCode === 0) {
+      accuracyPoints = 38;
+      notes.push('Executed successfully with output');
+    } else if (stderr) {
+      if (stderr.includes('SyntaxError') || stderr.includes('error:') || stderr.includes('compilation error')) {
+        accuracyPoints = 8;
+        notes.push('Compilation/Syntax error encountered during execution');
       } else {
-        patternScore += Math.min(count * 1, 3);
+        accuracyPoints = 15;
+        notes.push('Runtime error encountered during execution');
+      }
+    } else {
+      accuracyPoints = 20;
+      notes.push('Execution completed with non-zero exit status');
+    }
+  } else {
+    // Delimiter balance check
+    let balanced = true;
+    const stack = [];
+    const pairs = { ')': '(', '}': '{', ']': '[' };
+    for (const ch of code) {
+      if (['(', '{', '['].includes(ch)) stack.push(ch);
+      else if ([')', '}', ']'].includes(ch)) {
+        if (stack.pop() !== pairs[ch]) { balanced = false; break; }
       }
     }
-    patternScore = Math.min(patternScore, 40);
-    score += patternScore;
-    feedback.push(`Syntax/patterns: ${Math.round(patternScore)}/40`);
-  } else {
-    let genericPattern = 0;
-    if (/function\s+\w+|def\s+\w+|class\s+\w+|=>\s*{|void\s+\w+\s*\(/.test(code)) genericPattern += 15;
-    if (/import\s|require\s*\(|#include|from\s+['"]/.test(code)) genericPattern += 8;
-    if (/for\s*\(|while\s*\(|\.map\(|\.filter\(/.test(code)) genericPattern += 9;
-    if (/if\s*\(|switch\s*\(|\?[^:]+:/.test(code)) genericPattern += 8;
-    score += Math.min(40, genericPattern);
-    feedback.push(`General patterns: ${Math.min(40, genericPattern)}/40`);
-  }
+    if (stack.length > 0) balanced = false;
 
-  // 4. Execution validity or vocabulary richness bonus (up to 10 points)
-  if (executionResult) {
-    if (executionResult.exitCode === 0 && !executionResult.stderr) {
-      score += 10;
-      feedback.push('Clean execution (no runtime errors)');
-    } else if (executionResult.stdout && executionResult.stdout.trim()) {
-      score += 5;
-      feedback.push('Executed with output');
+    if (balanced) {
+      accuracyPoints += 25;
+      notes.push('Well-formed syntax with balanced brackets and structure');
+    } else {
+      accuracyPoints += 5;
+      notes.push('Notice: Unbalanced brackets or delimiter mismatch detected');
     }
-  } else {
-    const uniqueWords = new Set(code.match(/\b[A-Za-z_]\w*\b/g) || []).size;
-    if (uniqueWords >= 20) score += 10;
-    else if (uniqueWords >= 10) score += 6;
-    else score += 2;
+
+    if (/return\s+[^;]+|print\s*\(.+?\)|console\.log\(.+?\)|printf\(.+?\)/.test(code)) {
+      accuracyPoints += 15;
+      notes.push('Complete output/return expression present');
+    } else if (/return\b|print|console/.test(code)) {
+      accuracyPoints += 8;
+    } else {
+      accuracyPoints += 3;
+    }
+
+    if (!/;\s*;|,\s*,|\(\s*\)/.test(code)) {
+      accuracyPoints += 5;
+    }
   }
 
-  const final = Math.min(100, Math.max(0, Math.round(score)));
-  feedback.push(`Evaluated score: ${final}/100`);
-  return { score: final, feedback: feedback.join(', ') };
+  // Accuracy must scale with question relevance: if the code does not address the question logic at all,
+  // accuracy to the problem is also scaled down accordingly.
+  if (logicScore < 15) {
+    accuracyPoints = Math.round(accuracyPoints * (logicScore / 15));
+    notes.push('Accuracy scaled to reflect relevance to the problem requirements');
+  }
+
+  return {
+    score: Math.min(maxAccuracy, Math.max(0, accuracyPoints)),
+    notes,
+  };
+}
+
+// Evaluates valid syntax and language constructs (up to 10 points)
+function evaluateSyntaxValidity(code, language) {
+  const lang = (language || '').toLowerCase().trim();
+  const profile = LANG_PROFILES[lang];
+  let syntaxPoints = 0;
+  const maxSyntax = 10;
+
+  if (profile && profile.patterns) {
+    let matchCount = 0;
+    for (const [, regex] of Object.entries(profile.patterns)) {
+      if (regex.test(code)) matchCount++;
+    }
+    syntaxPoints = matchCount >= 3 ? 10 : matchCount >= 2 ? 8 : matchCount >= 1 ? 6 : 4;
+  } else {
+    const genericKeywords = /\b(def|function|class|return|var|let|const|if|else|for|while|import|include|int|void|public|private)\b/;
+    syntaxPoints = genericKeywords.test(code) ? 10 : 6;
+  }
+
+  return Math.min(maxSyntax, Math.max(2, syntaxPoints));
+}
+
+// Question-first, logic-driven heuristic evaluation (0-100)
+// Evaluates problem requirements, applied logic, functional accuracy, and syntax.
+// NEVER judges or penalizes code based on length or line count!
+function analyzeCode(code, language, questionText = '', executionResult = null) {
+  if (!code || !code.trim()) return { score: 0, feedback: 'No code submitted' };
+
+  const requirements = extractProblemRequirements(questionText);
+  const logicEval = evaluateStudentLogic(code, requirements, language);
+  const accuracyEval = evaluateAccuracyAndExecution(code, executionResult, language, logicEval.score);
+  const syntaxScore = evaluateSyntaxValidity(code, language);
+
+  const totalScore = Math.min(100, Math.max(0, logicEval.score + accuracyEval.score + syntaxScore));
+
+  const feedbackParts = [];
+  if (logicEval.observations.length > 0) feedbackParts.push(logicEval.observations.join(', '));
+  if (accuracyEval.notes.length > 0) feedbackParts.push(accuracyEval.notes.join(', '));
+  feedbackParts.push(`Logic: ${logicEval.score}/45, Accuracy: ${accuracyEval.score}/45, Syntax: ${syntaxScore}/10 (Final: ${totalScore}/100)`);
+
+  return {
+    score: totalScore,
+    logicScore: logicEval.score,
+    accuracyScore: accuracyEval.score,
+    syntaxScore: syntaxScore,
+    feedback: feedbackParts.join('. '),
+  };
 }
 
 // Calls OpenAI or Google Gemini (OpenAI-compatible) chat completions
@@ -304,7 +545,7 @@ async function callAI(messages) {
         body: JSON.stringify({
           model: 'gemini-1.5-flash',
           messages,
-          temperature: 0.2,
+          temperature: 0.1,
           max_tokens: 2000,
         }),
       });
@@ -325,7 +566,7 @@ async function callAI(messages) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.2, max_tokens: 2000 }),
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.1, max_tokens: 2000 }),
     });
     if (!response.ok) {
       const errBody = await response.text();
@@ -338,29 +579,106 @@ async function callAI(messages) {
   throw new Error('No valid AI key configured');
 }
 
-// Sends question + model answer + student code to AI and parses { score: 0-100, feedback }
-async function aiEvaluate(studentCode, questionText, language, strictness, marks, modelAnswer) {
+// Sends question + model answer + student code to AI and parses structured evaluation
+// Follows strict question-first, logic-based, and accuracy-focused evaluation with ZERO length bias!
+async function aiEvaluate(studentCode, questionText, language, strictness, marks, modelAnswer, execInfo = null) {
   const strictNote = strictness === 'hard'
-    ? '\n\nHARD MODE: Be strict on edge cases and algorithm correctness.'
+    ? '\nHARD MODE: Strict scrutiny on corner cases, algorithmic complexity, boundary conditions, and accuracy.'
     : strictness === 'easy'
-    ? '\n\nEASY MODE: Be lenient on syntax formatting as long as logic is sound.'
-    : '\n\nMEDIUM MODE: Balanced evaluation of correctness and logic.';
+    ? '\nEASY MODE: Be lenient on minor syntax slips or formatting, as long as the student logic is sound and the answer is accurate.'
+    : '\nMEDIUM MODE: Standard balanced evaluation of question requirements, student logic, and accuracy.';
 
-  const content = modelAnswer && modelAnswer.trim()
-    ? `QUESTION: ${questionText}\n\nLANGUAGE: ${language}\n\nMODEL ANSWER (correct solution):\n\`\`\`${language}\n${modelAnswer}\n\`\`\`\n\nSTUDENT CODE:\n\`\`\`${language}\n${studentCode}\n\`\`\`\n\nCompare the student code against the model answer. Evaluate if the student code achieves the correct logic and result. Return JSON only: { "score": 0-100, "feedback": "string explanation" }.`
-    : `QUESTION: ${questionText}\n\nLANGUAGE: ${language}\n\nSTUDENT CODE:\n\`\`\`${language}\n${studentCode}\n\`\`\`\n\nEvaluate whether this code correctly solves the question asked. Return JSON only: { "score": 0-100, "feedback": "string explanation" }.`;
+  const systemPrompt = `You are a Senior Computer Science Professor and Automated Programming Exam Evaluator.
+Your evaluation MUST follow a strict multi-step reasoning protocol focused entirely on QUESTION REQUIREMENTS, APPLIED LOGIC, and ACCURACY.
+
+CRITICAL RULES (NON-NEGOTIABLE):
+1. NEVER JUDGE OR GRADE CODE BASED ON CODE LENGTH OR LINE COUNT:
+   - A concise, minimal solution (such as a 1-line or 2-line solution using recursion, list comprehension, built-in standard library, or lambda) that accurately solves the problem MUST receive FULL 100% MARKS.
+   - Verbose, long, or bloated boilerplate code MUST NOT receive extra points just because it has many lines.
+2. 3-PHASE REASONING EVALUATION PROTOCOL:
+   - PHASE 1: QUESTION REQUIREMENTS ANALYSIS
+     * Read and analyze the question carefully. What problem needs to be solved? What are the inputs, required logic, and expected outputs?
+   - PHASE 2: STUDENT APPLIED LOGIC REVIEW
+     * Examine what logic, algorithm, or data structure the student applied.
+     * Did the student apply the correct logic to address what the question asked?
+     * Allow any valid algorithm, paradigm, or alternative method (e.g. recursive vs iterative, math formula vs simulation).
+   - PHASE 3: ACCURACY & FUNCTIONAL CORRECTNESS
+     * How accurate is the student's solution against the question?
+     * Does it produce the correct output? Does it handle edge cases? Are there logical flaws, off-by-one errors, or incorrect formulas?
+   - PHASE 4: SYNTAX & LANGUAGE VALIDITY
+     * Check valid syntax in the target programming language (${language}).
+
+SCORING BREAKDOWN (Total 100 points):
+- Logic & Algorithmic Approach: 45 points (sound logic that directly addresses what the question asks)
+- Functional Accuracy & Correctness: 45 points (accuracy of the solution in producing expected results and satisfying requirements)
+- Language Syntax & Structure: 10 points (syntactically valid code in the given language)
+
+NOTE ON REFERENCE SOLUTION (MODEL ANSWER):
+If a reference solution is provided, treat it ONLY as one example of correct behavior. DO NOT penalize the student if they used a different, valid algorithm, paradigm, or coding style.
+
+RESPONSE FORMAT:
+You MUST respond with ONLY a valid JSON object in this exact schema (no markdown formatting, no code blocks):
+{
+  "questionRequirements": "Concise summary of what the question required",
+  "studentLogic": "Analysis of the specific logic and algorithm applied by the student",
+  "accuracyAssessment": "Assessment of how accurate the code is against the requirements",
+  "logicScore": 0-45,
+  "accuracyScore": 0-45,
+  "syntaxScore": 0-10,
+  "score": 0-100,
+  "feedback": "Clear, constructive feedback explaining the logic and accuracy of the submission"
+}
+${strictNote}`;
+
+  const userSections = [
+    `QUESTION STATEMENT:\n${questionText}`,
+    `TARGET LANGUAGE:\n${language}`,
+  ];
+
+  if (modelAnswer && modelAnswer.trim()) {
+    userSections.push(`REFERENCE SOLUTION (Example):\n\`\`\`${language}\n${modelAnswer}\n\`\`\``);
+  }
+
+  if (execInfo) {
+    const stdout = (execInfo.stdout || '').trim();
+    const stderr = (execInfo.stderr || execInfo.compileOutput || '').trim();
+    userSections.push(`EXECUTION RUNTIME REPORT:\n- Exit Code: ${execInfo.exitCode ?? 0}\n- Standard Output: ${stdout ? `\n${stdout}` : '(none)'}\n- Standard Error / Compiler Output: ${stderr ? `\n${stderr}` : '(none)'}`);
+  }
+
+  userSections.push(`STUDENT SUBMISSION:\n\`\`\`${language}\n${studentCode}\n\`\`\``);
+  userSections.push(`EVALUATION INSTRUCTION:\nReview the question first, inspect the logic applied by the student to solve that question, and evaluate the accuracy of the answer. Remember: NEVER judge by code length (a 1-line correct solution deserves full marks). Provide your JSON evaluation:`);
 
   const msgs = [
-    { role: 'system', content: `You are an expert programming exam evaluator. Return ONLY valid JSON in format: { "score": 0-100, "feedback": "concise feedback" }` + strictNote },
-    { role: 'user', content }
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userSections.join('\n\n') }
   ];
 
   const raw = await callAI(msgs);
   const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
   const parsed = JSON.parse(cleaned);
+
+  let finalScore = Number(parsed.score);
+  if (isNaN(finalScore)) {
+    const l = Number(parsed.logicScore) || 0;
+    const a = Number(parsed.accuracyScore) || 0;
+    const s = Number(parsed.syntaxScore) || 0;
+    finalScore = l + a + s;
+  }
+  finalScore = Math.min(100, Math.max(0, Math.round(finalScore)));
+
+  const feedbackParts = [];
+  if (parsed.studentLogic) feedbackParts.push(`Logic: ${parsed.studentLogic}`);
+  if (parsed.accuracyAssessment) feedbackParts.push(`Accuracy: ${parsed.accuracyAssessment}`);
+  if (parsed.feedback) feedbackParts.push(parsed.feedback);
+
   return {
-    score: Math.min(100, Math.max(0, Number(parsed.score ?? parsed.qualityScore) || 0)),
-    feedback: String(parsed.feedback || 'Evaluated successfully'),
+    score: finalScore,
+    logicScore: parsed.logicScore,
+    accuracyScore: parsed.accuracyScore,
+    syntaxScore: parsed.syntaxScore,
+    studentLogic: parsed.studentLogic,
+    accuracyAssessment: parsed.accuracyAssessment,
+    feedback: feedbackParts.join(' | ') || String(parsed.feedback || 'Evaluated successfully'),
   };
 }
 
@@ -431,10 +749,11 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
         comparisonResult = await compareOutputs(studentCode, modelAnswer, qLang, testCases);
         if (comparisonResult && comparisonResult.compared) {
           if (comparisonResult.nonExecutable) {
-            const sim = comparisonResult.codeSimilarity || 0;
             const h = analyzeCode(studentCode, qLang, question.questionText);
-            comparisonScore = Math.min(100, Math.round(sim * 50 + (h.score / 100) * 50));
-            comparisonFeedback = `Frontend code similarity: ${Math.round(sim * 100)}%, syntax score: ${h.score}/100.`;
+            const sim = comparisonResult.codeSimilarity || 0;
+            // For non-executable (HTML/CSS), emphasize semantic logic & structure (70%) and reference similarity (30%)
+            comparisonScore = Math.min(100, Math.round((h.score / 100) * 70 + sim * 30));
+            comparisonFeedback = `Frontend structure & logic: ${h.score}/100. Reference alignment: ${Math.round(sim * 100)}%.`;
           } else {
             let outScore = 0;
             if (comparisonResult.testSummary && comparisonResult.testSummary.total > 0) {
@@ -442,26 +761,24 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
             } else if (comparisonResult.basicOutputMatch) {
               outScore = 100;
             }
-            const sim = comparisonResult.codeSimilarity || 0;
 
             if (comparisonResult.testSummary && comparisonResult.testSummary.passed === comparisonResult.testSummary.total && comparisonResult.testSummary.total > 0) {
-              // All test cases passed -> 100% score!
+              // All test cases passed -> 100% accurate!
               comparisonScore = 100;
-              comparisonFeedback = `All ${comparisonResult.testSummary.total} test cases passed. Excellent!`;
+              comparisonFeedback = `All ${comparisonResult.testSummary.total} test cases passed (100% accuracy). Excellent!`;
             } else if (comparisonResult.basicOutputMatch) {
-              // Output matches model answer output -> 90-100% score
-              comparisonScore = Math.min(100, Math.max(90, Math.round(90 + sim * 10)));
-              comparisonFeedback = `Output matches model answer. Code similarity: ${Math.round(sim * 100)}%.`;
+              // Output matches model answer output -> 100% accurate!
+              comparisonScore = 100;
+              comparisonFeedback = `Output matches model answer accurately (100% accuracy).`;
             } else if (outScore > 0) {
-              // Partial test cases passed (80% tests + 20% similarity)
-              comparisonScore = Math.min(100, Math.round(outScore * 0.8 + sim * 100 * 0.2));
-              comparisonFeedback = `Test cases: ${comparisonResult.testSummary.passed}/${comparisonResult.testSummary.total} passed. Code similarity: ${Math.round(sim * 100)}%.`;
+              // Partial test cases passed -> proportional accuracy score
+              comparisonScore = outScore;
+              comparisonFeedback = `Test cases: ${comparisonResult.testSummary.passed}/${comparisonResult.testSummary.total} passed (${outScore}% accuracy).`;
             } else {
-              // Output differed or failed
-              const cleanRun = comparisonResult.studentOutput && comparisonResult.studentOutput.exitCode === 0 && !comparisonResult.studentOutput.stderr;
+              // Output differed or failed -> evaluate logic applied by student
               const h = analyzeCode(studentCode, qLang, question.questionText, comparisonResult.studentOutput);
-              comparisonScore = Math.min(60, Math.round((h.score / 100) * 50 + sim * 100 * 0.3 + (cleanRun ? 10 : 0)));
-              comparisonFeedback = `Output differed from expected. Code logic score: ${comparisonScore}/100.`;
+              comparisonScore = Math.min(60, h.score);
+              comparisonFeedback = `Output differed from expected. Student applied logic score: ${comparisonScore}/100.`;
             }
           }
         }
@@ -487,15 +804,8 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
     let aiResult = null;
     if (useAI) {
       try {
-        let evalCode = studentCode;
         const execInfo = comparisonResult?.studentOutput || directExec;
-        if (execInfo) {
-          const out = execInfo.stdout || '';
-          const err = execInfo.stderr || execInfo.compileOutput || '';
-          if (err) evalCode += `\n\n// EXECUTION OUTPUT:\n// stdout: ${out}\n// stderr: ${err}`;
-          else if (out) evalCode += `\n\n// EXECUTION OUTPUT:\n// stdout: ${out}`;
-        }
-        aiResult = await aiEvaluate(evalCode, question.questionText, qLang, strictness, marks, modelAnswer);
+        aiResult = await aiEvaluate(studentCode, question.questionText, qLang, strictness, marks, modelAnswer, execInfo);
       } catch (err) {
         console.warn(`[AI-EVAL] Q${question._id}: AI review skipped (${err.message})`);
       }
@@ -533,12 +843,13 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
 
     if (comparisonResult && comparisonResult.compared && comparisonScore > 0) {
       if (aiResult) {
-        // Blend execution comparison (70%) with AI code quality (30%)
-        const combined = comparisonScore >= 95
-          ? comparisonScore // Don't downgrade 100% passing code
-          : Math.round(comparisonScore * 0.7 + aiResult.score * 0.3);
+        // If execution accuracy is 100%, preserve full score and enrich feedback with AI review
+        // If execution is partial or differed, blend execution accuracy (50%) with AI logic review (50%)
+        const combined = comparisonScore >= 100
+          ? 100
+          : Math.round(comparisonScore * 0.5 + aiResult.score * 0.5);
         qScore = Math.round((combined / 100) * marks);
-        feedback = `${comparisonFeedback} AI review: ${aiResult.feedback}`;
+        feedback = `${comparisonFeedback} AI logic & accuracy review: ${aiResult.feedback}`;
       } else {
         qScore = Math.round((comparisonScore / 100) * marks);
         feedback = comparisonFeedback;
@@ -547,7 +858,7 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
       qScore = Math.round((aiResult.score / 100) * marks);
       feedback = aiResult.feedback;
     } else {
-      // Heuristic analysis with execution awareness
+      // Heuristic analysis focused strictly on logic and accuracy
       const execResult = directExec || comparisonResult?.studentOutput;
       const h = analyzeCode(studentCode, qLang, question.questionText, execResult);
       qScore = Math.round((h.score / 100) * marks);
