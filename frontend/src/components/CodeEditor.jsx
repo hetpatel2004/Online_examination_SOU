@@ -177,20 +177,13 @@ export default function CodeEditor({
     }
   };
 
-  // Anti-cheat protection: Block pasting external code
+  // Copy & Paste (Ctrl+C, Ctrl+V, Ctrl+X) are fully enabled during practical exams
   const handlePaste = (e) => {
-    e.preventDefault();
-    toast.warning('⚠️ Pasting external code is disabled during the examination!', {
-      autoClose: 3500
-    });
+    // Allowed - native paste executes cleanly
   };
 
-  // Anti-cheat protection: Block copying out code
   const handleCopy = (e) => {
-    e.preventDefault();
-    toast.warning('⚠️ Copying code is disabled during the examination!', {
-      autoClose: 2500
-    });
+    // Allowed - native copy executes cleanly
   };
 
   // Load starter template
@@ -336,10 +329,7 @@ export default function CodeEditor({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
-          onPaste={handlePaste}
-          onCopy={handleCopy}
-          onCut={(e) => e.preventDefault()}
-          placeholder={`// Enter your ${language} solution here...\n// Press Tab to indent (4 spaces)\n// Click 'Compile & Run' to test your code`}
+          placeholder={`// Enter your ${language} solution here...\n// Press Tab to indent (4 spaces)\n// Ctrl+C and Ctrl+V are enabled\n// Click 'Compile & Run' to test your code`}
           spellCheck="false"
           autoCapitalize="off"
           autoComplete="off"
@@ -352,6 +342,9 @@ export default function CodeEditor({
         <div className="ide-footer-left">
           <span className="ide-status-indicator"></span>
           <span>{running ? 'Compiling in sandbox...' : 'Ready'}</span>
+          <span style={{ marginLeft: '12px', color: '#38A169', fontSize: '11px', fontWeight: 600 }}>
+            📋 Ctrl+C / Ctrl+V Enabled
+          </span>
         </div>
         <div className="ide-footer-right">
           <span>{lineCount} lines</span>

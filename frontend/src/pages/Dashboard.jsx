@@ -27,8 +27,10 @@ const Dashboard = () => {
 
   const [countdown, setCountdown] = useState(null);
   const [countdownExam, setCountdownExam] = useState(null);
-  const timerRef = useRef(null);
   const isDisqualifyingRef = useRef(false);
+  const [tabWarnings, setTabWarnings] = useState(0);
+  const tabWarningsRef = useRef(0);
+  const MAX_TAB_WARNINGS = 3;
 
   const [uploadingFile, setUploadingFile] = useState(false);
 
@@ -232,44 +234,82 @@ const Dashboard = () => {
     fetchSubmissions();
   }, [takingExam, submission]);
 
-  // Anti-cheat: Listen for tab switching (visibilitychange) or window blur
+  // Anti-cheat: Monitor tab switching (visibilitychange) with a 3-strike warning system.
+  // NOTE: window.blur is deliberately NOT used so that device notifications (e.g. laptop low battery
+  // alerts, system dialogs) or accidentally opening the developer console will NEVER disqualify the student.
   useEffect(() => {
     if (!takingExam || submission) {
       isDisqualifyingRef.current = false;
       return;
     }
 
+    let hideStartTime = null;
+    let awayTimeout = null;
+
     const handleVisibilityChange = () => {
       if (document.hidden || document.visibilityState === 'hidden') {
-        disqualifyCurrentExam('Switched browser tab or minimized window');
+        hideStartTime = Date.now();
+        // If student navigates away and stays away for more than 25 seconds continuously, disqualify
+        awayTimeout = setTimeout(() => {
+          if (document.hidden || document.visibilityState === 'hidden') {
+            disqualifyCurrentExam('Left the examination tab for more than 25 seconds');
+          }
+        }, 25000);
+      } else {
+        // Tab became visible again
+        if (awayTimeout) {
+          clearTimeout(awayTimeout);
+          awayTimeout = null;
+        }
+
+        if (hideStartTime) {
+          const durationAway = Date.now() - hideStartTime;
+          hideStartTime = null;
+
+          // Only count as a violation if genuinely away for more than 1 second (avoiding momentary flickers)
+          if (durationAway >= 1000) {
+            tabWarningsRef.current += 1;
+            const currentWarnings = tabWarningsRef.current;
+            setTabWarnings(currentWarnings);
+
+            if (currentWarnings < MAX_TAB_WARNINGS) {
+              const remaining = MAX_TAB_WARNINGS - currentWarnings;
+              toast.warn(
+                `⚠️ Warning ${currentWarnings}/${MAX_TAB_WARNINGS}: Leaving the exam tab is not allowed! You have ${remaining} warning${remaining > 1 ? 's' : ''} remaining before disqualification.`,
+                { autoClose: 7000, toastId: `tab-warn-${currentWarnings}` }
+              );
+            } else {
+              disqualifyCurrentExam(`Switched browser tabs ${currentWarnings} times (exceeded limit of ${MAX_TAB_WARNINGS} warnings)`);
+            }
+          }
+        }
       }
     };
 
-    const handleWindowBlur = () => {
-      // Do not trigger if user interacted with an internal preview iframe
-      if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-        return;
+    // Block accidental DevTools keyboard shortcuts (e.g. F12, Ctrl+Shift+I) from opening console
+    const handleGlobalKeyDown = (e) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key))
+      ) {
+        // Prevent accidental opening of DevTools — does NOT disqualify student
+        e.preventDefault();
       }
-      setTimeout(() => {
-        if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-          return;
-        }
-        if (document.hidden || !document.hasFocus()) {
-          disqualifyCurrentExam('Left exam window or switched application');
-        }
-      }, 150);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('keydown', handleGlobalKeyDown);
 
     return () => {
+      if (awayTimeout) clearTimeout(awayTimeout);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, [takingExam, submission, disqualifyCurrentExam]);
 
   const startExam = async (exam) => {
+    tabWarningsRef.current = 0;
+    setTabWarnings(0);
     const existingSub = submissions[exam._id];
     if (existingSub && existingSub.status === 'disqualified') {
       checkSubmission(exam);
@@ -511,9 +551,9 @@ const Dashboard = () => {
 
         {/* PROCTORING TAB CHANGE WARNING BANNER */}
         <div style={{
-          background: '#FFF3CD',
-          border: '1px solid #FFEBAA',
-          color: '#856404',
+          background: tabWarnings > 0 ? '#FFEBEE' : '#FFF3CD',
+          border: tabWarnings > 0 ? '1px solid #FFCDD2' : '1px solid #FFEBAA',
+          color: tabWarnings > 0 ? '#C62828' : '#856404',
           padding: '12px 18px',
           borderRadius: '8px',
           marginBottom: '20px',
@@ -523,10 +563,13 @@ const Dashboard = () => {
           fontSize: '14px',
           fontWeight: '500'
         }}>
-          <span style={{ fontSize: '22px' }}>⚠️</span>
-          <span>
-            <strong>Proctoring Notice:</strong> Switching browser tabs, opening new windows, or minimizing this window will <strong>instantly disqualify you from this exam</strong> with a score of 0.
-          </span>
+          <span style={{ fontSize: '22px' }}>{tabWarnings > 0 ? '🚨' : '🛡️'}</span>
+          <div style={{ flex: 1 }}>
+            <strong>Proctoring Active:</strong> Please remain on this exam screen. You have <strong>{MAX_TAB_WARNINGS - tabWarnings} of {MAX_TAB_WARNINGS} warnings</strong> remaining for tab switching. Device notifications (e.g. laptop battery alerts) will not disqualify you.
+            <span style={{ display: 'block', fontSize: '12px', color: '#2E7D32', marginTop: '4px', fontWeight: 600 }}>
+              ✓ Copy &amp; Paste (Ctrl+C / Ctrl+V) is fully allowed during practical coding.
+            </span>
+          </div>
         </div>
 
         {loadingQuestions ? (
