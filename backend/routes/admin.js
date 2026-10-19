@@ -899,6 +899,23 @@ router.post('/exams/:examId/questions', auth, adminOnly, async (req, res) => {
     const lastQuestion = await Question.findOne({ examId: req.params.examId }).sort({ order: -1 });
     const order = lastQuestion ? lastQuestion.order + 1 : 1;
 
+    let finalModelAnswer = questionType === 'practical' ? (modelAnswer || '') : '';
+    let finalTestCases = questionType === 'practical' && Array.isArray(testCases) ? testCases : [];
+
+    // Auto-generate model answer and test cases for practical questions if not provided
+    if (questionType === 'practical' && (!finalModelAnswer || finalTestCases.length === 0)) {
+      try {
+        const { generatePracticalSolution } = require('../services/solutionGenerator');
+        const generated = await generatePracticalSolution(questionText);
+        if (!finalModelAnswer && generated.modelAnswer) finalModelAnswer = generated.modelAnswer;
+        if (finalTestCases.length === 0 && Array.isArray(generated.testCases)) {
+          finalTestCases = generated.testCases;
+        }
+      } catch (genErr) {
+        console.warn('[ADMIN] Solution auto-generation note:', genErr.message);
+      }
+    }
+
     const question = new Question({
       examId: req.params.examId,
       questionText,
@@ -907,8 +924,8 @@ router.post('/exams/:examId/questions', auth, adminOnly, async (req, res) => {
       correctAnswer: questionType === 'mcq' ? correctAnswer : '',
       marks: marks || 1,
       order,
-      modelAnswer: questionType === 'practical' ? (modelAnswer || '') : '',
-      testCases: questionType === 'practical' && Array.isArray(testCases) ? testCases : [],
+      modelAnswer: finalModelAnswer,
+      testCases: finalTestCases,
     });
 
     await question.save();
@@ -944,9 +961,22 @@ router.put('/exams/:examId/questions/:questionId', auth, adminOnly, async (req, 
     if (questionType) question.questionType = questionType;
     if (options) question.options = options;
     if (correctAnswer !== undefined) question.correctAnswer = correctAnswer;
-    if (marks) question.marks = marks;
     if (modelAnswer !== undefined) question.modelAnswer = modelAnswer;
     if (testCases !== undefined && Array.isArray(testCases)) question.testCases = testCases;
+
+    // Auto-generate for practical questions if modelAnswer is missing
+    if (question.questionType === 'practical' && (!question.modelAnswer || !question.testCases || question.testCases.length === 0)) {
+      try {
+        const { generatePracticalSolution } = require('../services/solutionGenerator');
+        const generated = await generatePracticalSolution(question.questionText);
+        if (!question.modelAnswer && generated.modelAnswer) question.modelAnswer = generated.modelAnswer;
+        if ((!question.testCases || question.testCases.length === 0) && Array.isArray(generated.testCases)) {
+          question.testCases = generated.testCases;
+        }
+      } catch (genErr) {
+        console.warn('[ADMIN] Update auto-generation note:', genErr.message);
+      }
+    }
 
     await question.save();
     res.json({ question });
@@ -1070,6 +1100,24 @@ router.post('/exams/:examId/questions/bulk', auth, adminOnly, async (req, res) =
         ? 'MCQ CSV format: questionText,optionA,optionB,optionC,optionD,correctAnswer,marks'
         : 'Practical CSV format: questionText,marks';
       return res.status(400).json({ message: 'No valid questions found. ' + hint });
+    }
+
+    // Auto-generate model answer and test cases for practical questions if not provided
+    if (exam.examType === 'practical') {
+      const { generatePracticalSolution } = require('../services/solutionGenerator');
+      for (const q of questionsData) {
+        if (!q.modelAnswer || !q.testCases || q.testCases.length === 0) {
+          try {
+            const generated = await generatePracticalSolution(q.questionText);
+            if (!q.modelAnswer && generated.modelAnswer) q.modelAnswer = generated.modelAnswer;
+            if ((!q.testCases || q.testCases.length === 0) && Array.isArray(generated.testCases)) {
+              q.testCases = generated.testCases;
+            }
+          } catch (genErr) {
+            console.warn('[ADMIN] Bulk auto-generation note:', genErr.message);
+          }
+        }
+      }
     }
 
     // Bulk insert

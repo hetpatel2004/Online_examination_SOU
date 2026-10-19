@@ -736,8 +736,22 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
       continue;
     }
 
-    const modelAnswer = question.modelAnswer || '';
-    const testCases = Array.isArray(question.testCases) ? question.testCases : [];
+    let modelAnswer = question.modelAnswer || '';
+    let testCases = Array.isArray(question.testCases) ? question.testCases : [];
+
+    // Auto-generate model answer & test cases if missing so verification and comparison always succeed
+    if (!modelAnswer && !isNonExec) {
+      try {
+        const { generatePracticalSolution } = require('./solutionGenerator');
+        const autoSol = await generatePracticalSolution(question.questionText, qLang);
+        if (autoSol.modelAnswer) modelAnswer = autoSol.modelAnswer;
+        if (testCases.length === 0 && Array.isArray(autoSol.testCases) && autoSol.testCases.length > 0) {
+          testCases = autoSol.testCases;
+        }
+      } catch (genErr) {
+        console.warn(`[AI-EVAL] Auto solution generation note: ${genErr.message}`);
+      }
+    }
 
     // ── 1. MODEL ANSWER / TESTCASES COMPARISON ──
     let comparisonResult = null;
@@ -935,6 +949,7 @@ function _fallbackEvaluate(questions, answers, defaultLanguage) {
 module.exports = {
   evaluateSubmission,
   analyzeCode,
+  callAI,
   isNonExecutableLanguage,
   looksLikeFrontendCode,
   hasAIKey,

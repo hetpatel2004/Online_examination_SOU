@@ -1694,12 +1694,16 @@ const AdminDashboard = () => {
                       <>
                         <strong style={{color:'#D89B00',fontSize:'13px',display:'block',marginBottom:'4px'}}>💻 Practical Questions CSV Format:</strong>
                         <code style={{background:'#f5f5f5',padding:'3px 8px',borderRadius:'4px',display:'inline-block',marginBottom:'6px',fontSize:'12px'}}>
-                          questionText, marks, modelAnswer
+                          questionText, marks
                         </code><br/>
                         <span style={{color:'#666'}}>
                           Example:<br/>
-                          <code>{'"Write a Python function to reverse a string",10,"def rev(s): return s[::-1]"'}</code><br/>
-                          <code>{'"Write a program to find factorial of a number",10,"def fact(n): return 1 if n<=1 else n*fact(n-1)"'}</code>
+                          <code>{'"Write a Python function to reverse a string",10'}</code><br/>
+                          <code>{'"Write a Python program to calculate factorial of a number",10'}</code><br/>
+                          <code>{'"Write a program to check whether a given string is a palindrome",10'}</code>
+                        </span><br/>
+                        <span style={{color:'#2E7D32',fontSize:'11px',fontWeight:600,marginTop:'4px',display:'inline-block'}}>
+                          ✨ AI automatically generates the model answer, expected output, and test cases from the question statement!
                         </span>
                       </>
                     ) : (
@@ -1725,7 +1729,7 @@ const AdminDashboard = () => {
                     </summary>
                     <div style={{fontSize:'11px',color:'#888',marginBottom:'6px',lineHeight:'1.5'}}>
                       {managingExam.examType === 'practical'
-                        ? '[{"questionText":"Write a program to reverse a string","marks":10,"modelAnswer":"def rev(s): return s[::-1]","testCases":[{"input":"hello","expectedOutput":"olleh"}]}]'
+                        ? '[{"questionText":"Write a Python function to reverse a string","marks":10}]'
                         : '[{"questionText":"What is HTML?","options":["Language","Framework","Database","OS"],"correctAnswer":"Language","marks":1}]'
                       }
                     </div>
@@ -1736,7 +1740,7 @@ const AdminDashboard = () => {
                     value={bulkUploadText}
                     onChange={(e) => setBulkUploadText(e.target.value)}
                     placeholder={managingExam.examType === 'practical'
-                      ? 'Paste CSV here or use file upload above...\n\nquestionText,marks,modelAnswer\n"Write a Python function to reverse a string",10,"def rev(s): return s[::-1]"\n"Write a Python function to find factorial of a number",10,"def fact(n): return 1 if n <= 1 else n * fact(n-1)"'
+                      ? 'Paste CSV here or use file upload above...\n\nquestionText,marks\n"Write a Python function to reverse a string",10\n"Write a Python program to calculate factorial of a number",10\n"Write a program to check whether a given string is a palindrome",10'
                       : 'Paste CSV here or use file upload above...\n\nquestionText,optionA,optionB,optionC,optionD,correctAnswer,marks\n"What is HTML?","Language","Framework","Database","OS","Language",1'
                     }
                     rows="8"
@@ -1832,7 +1836,7 @@ const AdminDashboard = () => {
                           rows="6"
                           style={{width:'100%',padding:'10px',borderRadius:'8px',border:'1px solid #ddd',fontFamily:'monospace',fontSize:'13px',resize:'vertical',background:'#F8FAFC'}}
                         />
-                        <span className="field-hint">Student code is evaluated against this reference solution code and test cases.</span>
+                        <span className="field-hint" style={{color:'#2E7D32'}}>✨ Optional — leave empty and AI will automatically generate the model answer, expected output, and test cases for you!</span>
                       </div>
                       <div className="form-group">
                         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
