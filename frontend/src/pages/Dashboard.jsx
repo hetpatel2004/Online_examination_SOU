@@ -27,6 +27,7 @@ const Dashboard = () => {
 
   const [countdown, setCountdown] = useState(null);
   const [countdownExam, setCountdownExam] = useState(null);
+  const timerRef = useRef(null);
   const isDisqualifyingRef = useRef(false);
   const [tabWarnings, setTabWarnings] = useState(0);
   const tabWarningsRef = useRef(0);
