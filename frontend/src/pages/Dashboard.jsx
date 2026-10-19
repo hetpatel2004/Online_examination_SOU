@@ -391,18 +391,23 @@ const Dashboard = () => {
         totalMarks: subData.totalMarks,
         score: subData.score,
         status: subData.status || 'submitted',
-        evaluationMethod: subData.evaluationMethod || null,
+        evaluationMethod: subData.evaluationMethod || takingExam.evaluationMethod || null,
         correctnessScore: subData.correctnessScore,
         qualityScore: subData.qualityScore,
         executionTime: subData.executionTime,
         memoryUsed: subData.memoryUsed,
         aiFeedback: subData.aiFeedback,
+        questionScores: subData.questionScores || [],
+        codeBreakdown: subData.codeBreakdown || [],
+        annotatedCode: subData.annotatedCode || '',
         passed: subData.passed,
       });
       setExamQuestions([]);
       setAnswers({});
-      // Start result countdown if resultDate is set
-      if (takingExam.resultDate) {
+      const isPublished = !takingExam.resultDate || new Date() >= new Date(takingExam.resultDate);
+      setResultPublished(isPublished);
+      // Start result countdown if resultDate is set in future
+      if (takingExam.resultDate && !isPublished) {
         startResultCountdown(takingExam);
       }
       fetchSubmissions();
@@ -667,7 +672,7 @@ const Dashboard = () => {
       );
     }
 
-    const isAIEvaluated = submission.evaluationMethod === 'ai';
+    const isAIEvaluated = submission.evaluationMethod === 'ai' || takingExam?.evaluationMethod === 'ai';
     return (
       <div className="admin-section">
         <div className="section-header-row">
@@ -711,10 +716,60 @@ const Dashboard = () => {
                         {submission.passed ? '✅ Passed' : '❌ Not Passed'}
                       </span>
                     </div>
+
+                    {/* Component-Level Marks Breakdown Table */}
+                    {submission.codeBreakdown && submission.codeBreakdown.length > 0 && (
+                      <div className="ai-breakdown-section">
+                        <h4>📊 Code Component Marks Breakdown</h4>
+                        <div className="ai-breakdown-table-wrapper">
+                          <table className="ai-breakdown-table">
+                            <thead>
+                              <tr>
+                                <th>Component / Construct</th>
+                                <th>Code Snippet</th>
+                                <th>Marks</th>
+                                <th>Status</th>
+                                <th>Evaluation Remarks</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {submission.codeBreakdown.map((item, bIdx) => (
+                                <tr key={bIdx} className={`status-row-${item.status || 'correct'}`}>
+                                  <td className="comp-name"><strong>{item.component}</strong></td>
+                                  <td className="comp-snippet">
+                                    <code>{item.codeSnippet || '—'}</code>
+                                  </td>
+                                  <td className="comp-marks">
+                                    <span className="marks-pill">{item.awardedMarks} / {item.maxMarks}</span>
+                                  </td>
+                                  <td>
+                                    <span className={`status-badge ${item.status || 'correct'}`}>
+                                      {item.status === 'correct' ? '✅ Correct' : item.status === 'partial' ? '⚠️ Partial' : '❌ Missing / Flawed'}
+                                    </span>
+                                  </td>
+                                  <td className="comp-comment">{item.comment || '—'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Annotated Code Block */}
+                    {submission.annotatedCode && (
+                      <div className="ai-annotated-code-section">
+                        <h4>📝 Annotated Code with Line-by-Line Marks</h4>
+                        <pre className="ai-annotated-code-block">
+                          <code>{submission.annotatedCode}</code>
+                        </pre>
+                      </div>
+                    )}
+
                     {submission.aiFeedback && (
                       <div className="ai-student-feedback">
-                        <h4>Feedback</h4>
-                        <p>{submission.aiFeedback}</p>
+                        <h4>💡 AI Evaluator Summary</h4>
+                        <div className="ai-feedback-text" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{submission.aiFeedback}</div>
                       </div>
                     )}
                   </div>

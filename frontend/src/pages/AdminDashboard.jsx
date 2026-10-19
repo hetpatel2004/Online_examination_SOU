@@ -2283,11 +2283,60 @@ const AdminDashboard = () => {
                                       </div>
                                     )}
 
+                                    {/* AI Component-Level Marks Breakdown */}
+                                    {sub.codeBreakdown && sub.codeBreakdown.length > 0 && (
+                                      <div className="ai-breakdown-section" style={{ marginTop: '16px' }}>
+                                        <h5>📊 Code Component Marks Breakdown</h5>
+                                        <div className="ai-breakdown-table-wrapper">
+                                          <table className="ai-breakdown-table">
+                                            <thead>
+                                              <tr>
+                                                <th>Component / Construct</th>
+                                                <th>Code Snippet</th>
+                                                <th>Marks</th>
+                                                <th>Status</th>
+                                                <th>Remarks</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {sub.codeBreakdown.map((item, bIdx) => (
+                                                <tr key={bIdx} className={`status-row-${item.status || 'correct'}`}>
+                                                  <td className="comp-name"><strong>{item.component}</strong></td>
+                                                  <td className="comp-snippet">
+                                                    <code>{item.codeSnippet || '—'}</code>
+                                                  </td>
+                                                  <td className="comp-marks">
+                                                    <span className="marks-pill">{item.awardedMarks} / {item.maxMarks}</span>
+                                                  </td>
+                                                  <td>
+                                                    <span className={`status-badge ${item.status || 'correct'}`}>
+                                                      {item.status === 'correct' ? '✅ Correct' : item.status === 'partial' ? '⚠️ Partial' : '❌ Missing'}
+                                                    </span>
+                                                  </td>
+                                                  <td className="comp-comment">{item.comment || '—'}</td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Annotated Code Block */}
+                                    {sub.annotatedCode && (
+                                      <div className="ai-annotated-code-section" style={{ marginTop: '16px' }}>
+                                        <h5>📝 Annotated Code with Line-by-Line Marks</h5>
+                                        <pre className="admin-code-block" style={{ background: '#1e293b', color: '#f8fafc', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: '1.5' }}>
+                                          <code>{sub.annotatedCode}</code>
+                                        </pre>
+                                      </div>
+                                    )}
+
                                     {/* AI Feedback */}
                                     {sub.aiFeedback && (
-                                      <div className="ai-feedback-section">
-                                        <h5>AI Feedback</h5>
-                                        <div className="ai-feedback-content">{sub.aiFeedback}</div>
+                                      <div className="ai-feedback-section" style={{ marginTop: '16px' }}>
+                                        <h5>💡 AI Feedback & Summary</h5>
+                                        <div className="ai-feedback-content" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{sub.aiFeedback}</div>
                                       </div>
                                     )}
                                   </div>

@@ -4924,12 +4924,221 @@ body {
   margin-bottom: 8px;
 }
 
-.ai-student-feedback p {
+.ai-student-feedback p,
+.ai-student-feedback .ai-feedback-text {
   font-size: 13px;
   line-height: 1.6;
   color: #555;
   white-space: pre-wrap;
 }
+
+/* ==============================================
+   AI CODE COMPONENT BREAKDOWN & ANNOTATED CODE
+   ============================================== */
+
+.ai-breakdown-section {
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ai-breakdown-section h4,
+.ai-breakdown-section h5,
+.ai-annotated-code-section h4,
+.ai-annotated-code-section h5 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-breakdown-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.ai-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.ai-breakdown-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.ai-breakdown-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.ai-breakdown-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ai-breakdown-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.ai-breakdown-table .comp-name {
+  color: #1e293b;
+  min-width: 160px;
+}
+
+.ai-breakdown-table .comp-snippet code {
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  display: inline-block;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-breakdown-table .comp-marks {
+  white-space: nowrap;
+}
+
+.marks-pill {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.correct {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge.partial {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status-badge.missing {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-row-correct {
+  border-left: 3px solid #22c55e;
+}
+
+.status-row-partial {
+  border-left: 3px solid #f59e0b;
+}
+
+.status-row-missing {
+  border-left: 3px solid #ef4444;
+}
+
+.ai-breakdown-table .comp-comment {
+  color: #64748b;
+  font-size: 12px;
+  min-width: 200px;
+}
+
+/* Annotated Code Block */
+.ai-annotated-code-section {
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  margin-top: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ai-annotated-code-block {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  border: 1px solid #1e293b;
+  margin: 0;
+}
+
+.ai-annotated-code-block code {
+  color: #38bdf8;
+  font-family: inherit;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .ai-breakdown-section,
+[data-theme="dark"] .ai-annotated-code-section {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .ai-breakdown-section h4,
+[data-theme="dark"] .ai-breakdown-section h5,
+[data-theme="dark"] .ai-annotated-code-section h4,
+[data-theme="dark"] .ai-annotated-code-section h5 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .ai-breakdown-table th {
+  background: #0f172a;
+  color: #94a3b8;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .ai-breakdown-table td {
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .ai-breakdown-table .comp-name {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .ai-breakdown-table .comp-snippet code {
+  background: #0f172a;
+  color: #38bdf8;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .ai-breakdown-table tbody tr:hover {
+  background-color: #0f172a;
+}
+
 
 /* ==============================================
    THEME TOGGLE & DARK MODE OVERRIDES

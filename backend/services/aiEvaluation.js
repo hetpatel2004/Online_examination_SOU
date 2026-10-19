@@ -504,11 +504,286 @@ function evaluateSyntaxValidity(code, language) {
   return Math.min(maxSyntax, Math.max(2, syntaxPoints));
 }
 
+// Decomposes code into logical components and produces a granular construct-by-construct mark breakdown
+// Example: 45 marks total -> 22 marks for condition: if (num < 0) return "Undefined"; 23 marks for loop: for (let i = 2; i <= num; i++) result *= i;
+function decomposeCodeComponents(code, language, questionText = '', maxMarks = 45, logicScore = 45, accuracyScore = 45, executionResult = null) {
+  const marks = maxMarks && Number(maxMarks) > 0 ? Number(maxMarks) : 1;
+  if (!code || !code.trim()) {
+    return {
+      codeBreakdown: [{
+        component: 'Submission',
+        codeSnippet: '(No code submitted)',
+        maxMarks: marks,
+        awardedMarks: 0,
+        status: 'missing',
+        comment: 'No code submitted for this question'
+      }],
+      annotatedCode: `No code submitted (0/${marks} marks)`,
+      awardedMarks: 0,
+      maxMarks: marks,
+    };
+  }
+
+  const lines = code.split(/\r?\n/);
+  const lang = (language || '').toLowerCase().trim();
+  const qTextLower = (questionText || '').toLowerCase();
+
+  // Pattern detection for components
+  const condRegex = /^\s*(?:if\s*\(|if\s+|elif\s+|else\s+if\s*\(|\?.*:)/;
+  const loopRegex = /^\s*(?:for\s*\(|for\s+|while\s*\(|while\s+|do\s*\{|\.forEach|\.map)/;
+  const funcRegex = /^\s*(?:function\b|def\b|class\b|const\s+\w+\s*=\s*(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>|(?:public|private|static)?\s*\w+\s+\w+\s*\([^)]*\)\s*\{)/;
+  const returnRegex = /^\s*(?:return\b|console\.log|print\s*\(|printf|System\.out)/;
+
+  const foundComponents = [];
+  const lineAnnotations = {};
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*')) return;
+
+    if (condRegex.test(trimmed)) {
+      foundComponents.push({
+        type: 'condition',
+        name: 'Boundary & Edge Case Condition',
+        lineIndex: idx,
+        codeSnippet: trimmed,
+      });
+    } else if (loopRegex.test(trimmed)) {
+      foundComponents.push({
+        type: 'loop',
+        name: 'Core Iteration / Computation Loop',
+        lineIndex: idx,
+        codeSnippet: trimmed,
+      });
+    } else if (funcRegex.test(trimmed)) {
+      foundComponents.push({
+        type: 'function',
+        name: 'Function Interface & Signature',
+        lineIndex: idx,
+        codeSnippet: trimmed,
+      });
+    } else if (returnRegex.test(trimmed)) {
+      foundComponents.push({
+        type: 'return',
+        name: 'Return Value & Output',
+        lineIndex: idx,
+        codeSnippet: trimmed,
+      });
+    }
+  });
+
+  // Check for ternary condition inside single line or assignment
+  if (!foundComponents.some(c => c.type === 'condition')) {
+    const ternaryLine = lines.findIndex(l => /\?[^:]+:/.test(l));
+    if (ternaryLine !== -1) {
+      foundComponents.push({
+        type: 'condition',
+        name: 'Boundary & Edge Case Condition (Ternary)',
+        lineIndex: ternaryLine,
+        codeSnippet: lines[ternaryLine].trim(),
+      });
+    }
+  }
+
+  // Check for recursion if no loop
+  if (!foundComponents.some(c => c.type === 'loop')) {
+    const fnComp = foundComponents.find(c => c.type === 'function');
+    const fnName = fnComp?.codeSnippet.match(/(?:function|def)\s+([a-zA-Z0-9_]+)/)?.[1];
+    if (fnName) {
+      const recLine = lines.findIndex((l, idx) => idx !== fnComp.lineIndex && new RegExp(`\\b${fnName}\\s*\\(`).test(l));
+      if (recLine !== -1) {
+        foundComponents.push({
+          type: 'loop',
+          name: 'Recursive Self-Call & Step Logic',
+          lineIndex: recLine,
+          codeSnippet: lines[recLine].trim(),
+        });
+      }
+    }
+  }
+
+  // Problem requirements context
+  const questionExpectsCondition = /\b(negative|undefined|<|<=|>|>=|if|boundary|corner|edge|palindrome|prime|even|odd)\b/i.test(qTextLower);
+  const questionExpectsLoopOrAlgorithm = /\b(loop|for|while|factorial|fibonacci|reverse|sort|search|sum|matrix|multiply)\b/i.test(qTextLower);
+
+  const condComp = foundComponents.find(c => c.type === 'condition');
+  const loopComp = foundComponents.find(c => c.type === 'loop');
+  const funcComp = foundComponents.find(c => c.type === 'function');
+  const retComp = foundComponents.find(c => c.type === 'return');
+
+  let hasRuntimeError = false;
+  if (executionResult && (executionResult.stderr || executionResult.exitCode !== 0)) {
+    const err = executionResult.stderr || '';
+    if (err.includes('Error') || err.includes('error:') || executionResult.exitCode !== 0) {
+      hasRuntimeError = true;
+    }
+  }
+
+  const breakdown = [];
+
+  // CASE 1: Both condition and loop present
+  if (condComp && loopComp) {
+    const condMarks = Math.floor(marks / 2); // e.g., 22 out of 45
+    const loopMarks = marks - condMarks;    // e.g., 23 out of 45
+
+    const condAwarded = hasRuntimeError ? Math.max(0, condMarks - 5) : condMarks;
+    const loopAwarded = hasRuntimeError ? Math.max(0, loopMarks - 10) : loopMarks;
+
+    breakdown.push({
+      component: 'Boundary & Edge Case Condition',
+      codeSnippet: condComp.codeSnippet,
+      maxMarks: condMarks,
+      awardedMarks: condAwarded,
+      status: condAwarded === condMarks ? 'correct' : 'partial',
+      comment: condAwarded === condMarks 
+        ? 'Correctly verifies boundary/edge conditions and handles edge cases'
+        : 'Boundary condition present but runtime error occurred'
+    });
+    lineAnnotations[condComp.lineIndex] = `${condAwarded} marks for this condition ${condComp.codeSnippet}`;
+
+    breakdown.push({
+      component: 'Core Computation Loop / Iteration',
+      codeSnippet: loopComp.codeSnippet,
+      maxMarks: loopMarks,
+      awardedMarks: loopAwarded,
+      status: loopAwarded === loopMarks ? 'correct' : 'partial',
+      comment: loopAwarded === loopMarks 
+        ? 'Correctly implements iterative computation logic'
+        : 'Loop logic present but runtime error encountered'
+    });
+    lineAnnotations[loopComp.lineIndex] = `${loopAwarded} marks for this loop ${loopComp.codeSnippet}`;
+
+    if (funcComp) {
+      lineAnnotations[funcComp.lineIndex] = `${marks} marks for this ${funcComp.codeSnippet}`;
+    }
+  } else if (!condComp && loopComp && questionExpectsCondition) {
+    // Condition required but missing
+    const condMarks = Math.floor(marks / 2);
+    const loopMarks = marks - condMarks;
+    const loopAwarded = hasRuntimeError ? Math.max(0, loopMarks - 10) : loopMarks;
+
+    breakdown.push({
+      component: 'Boundary & Edge Case Condition',
+      codeSnippet: '(Missing boundary/edge case check)',
+      maxMarks: condMarks,
+      awardedMarks: 0,
+      status: 'missing',
+      comment: `Missing condition check for negative inputs or boundary cases (0/${condMarks} marks)`
+    });
+
+    breakdown.push({
+      component: 'Core Computation Loop / Iteration',
+      codeSnippet: loopComp.codeSnippet,
+      maxMarks: loopMarks,
+      awardedMarks: loopAwarded,
+      status: loopAwarded === loopMarks ? 'correct' : 'partial',
+      comment: `Core computation loop logic verified (${loopAwarded}/${loopMarks} marks)`
+    });
+    lineAnnotations[loopComp.lineIndex] = `${loopAwarded} marks for this loop ${loopComp.codeSnippet}`;
+
+    if (funcComp) {
+      lineAnnotations[funcComp.lineIndex] = `${loopAwarded}/${marks} marks for this ${funcComp.codeSnippet}`;
+    }
+  } else if (condComp && !loopComp && questionExpectsLoopOrAlgorithm) {
+    // Loop required but missing
+    const condMarks = Math.floor(marks / 2);
+    const loopMarks = marks - condMarks;
+    const condAwarded = condMarks;
+
+    breakdown.push({
+      component: 'Boundary & Edge Case Condition',
+      codeSnippet: condComp.codeSnippet,
+      maxMarks: condMarks,
+      awardedMarks: condAwarded,
+      status: 'correct',
+      comment: `Condition logic verified (${condAwarded}/${condMarks} marks)`
+    });
+    lineAnnotations[condComp.lineIndex] = `${condAwarded} marks for this condition ${condComp.codeSnippet}`;
+
+    breakdown.push({
+      component: 'Core Computation Loop / Iteration',
+      codeSnippet: '(Missing core computation loop/algorithm)',
+      maxMarks: loopMarks,
+      awardedMarks: 0,
+      status: 'missing',
+      comment: `Missing iterative computation logic (0/${loopMarks} marks)`
+    });
+  } else if (loopComp) {
+    // Only loop present
+    const loopAwarded = hasRuntimeError ? Math.max(0, marks - 10) : marks;
+    breakdown.push({
+      component: 'Core Computation Loop / Algorithm',
+      codeSnippet: loopComp.codeSnippet,
+      maxMarks: marks,
+      awardedMarks: loopAwarded,
+      status: loopAwarded === marks ? 'correct' : 'partial',
+      comment: `Computation logic verified (${loopAwarded}/${marks} marks)`
+    });
+    lineAnnotations[loopComp.lineIndex] = `${loopAwarded} marks for this loop ${loopComp.codeSnippet}`;
+    if (funcComp) {
+      lineAnnotations[funcComp.lineIndex] = `${loopAwarded} marks for this ${funcComp.codeSnippet}`;
+    }
+  } else if (condComp) {
+    // Only condition present
+    breakdown.push({
+      component: 'Conditional Branching & Logic',
+      codeSnippet: condComp.codeSnippet,
+      maxMarks: marks,
+      awardedMarks: marks,
+      status: 'correct',
+      comment: `Conditional logic verified (${marks}/${marks} marks)`
+    });
+    lineAnnotations[condComp.lineIndex] = `${marks} marks for this condition ${condComp.codeSnippet}`;
+    if (funcComp) {
+      lineAnnotations[funcComp.lineIndex] = `${marks} marks for this ${funcComp.codeSnippet}`;
+    }
+  } else {
+    // Single line / expression / built-in
+    const awarded = hasRuntimeError ? Math.max(0, marks - 10) : marks;
+    breakdown.push({
+      component: 'Core Solution Expression',
+      codeSnippet: (code.split('\n')[0] || code).trim(),
+      maxMarks: marks,
+      awardedMarks: awarded,
+      status: awarded === marks ? 'correct' : 'partial',
+      comment: 'Solution statement directly addresses problem requirements'
+    });
+  }
+
+  // Construct annotated code lines
+  const annotatedLines = lines.map((line, idx) => {
+    if (lineAnnotations[idx]) {
+      const indent = line.match(/^\s*/)[0];
+      return `${indent}${lineAnnotations[idx]}`;
+    }
+    return line;
+  });
+
+  const totalAwarded = breakdown.reduce((sum, b) => sum + b.awardedMarks, 0);
+
+  return {
+    codeBreakdown: breakdown,
+    annotatedCode: annotatedLines.join('\n'),
+    awardedMarks: Math.min(marks, totalAwarded),
+    maxMarks: marks
+  };
+}
+
 // Question-first, logic-driven heuristic evaluation (0-100)
 // Evaluates problem requirements, applied logic, functional accuracy, and syntax.
 // NEVER judges or penalizes code based on length or line count!
-function analyzeCode(code, language, questionText = '', executionResult = null) {
-  if (!code || !code.trim()) return { score: 0, feedback: 'No code submitted' };
+function analyzeCode(code, language, questionText = '', executionResult = null, marks = 100) {
+  const qMarks = marks && Number(marks) > 0 ? Number(marks) : 100;
+  if (!code || !code.trim()) {
+    return {
+      score: 0,
+      awardedMarks: 0,
+      maxMarks: qMarks,
+      codeBreakdown: [],
+      annotatedCode: `No code submitted (0/${qMarks} marks)`,
+      feedback: 'No code submitted'
+    };
+  }
 
   const requirements = extractProblemRequirements(questionText);
   const logicEval = evaluateStudentLogic(code, requirements, language);
@@ -517,13 +792,19 @@ function analyzeCode(code, language, questionText = '', executionResult = null) 
 
   const totalScore = Math.min(100, Math.max(0, logicEval.score + accuracyEval.score + syntaxScore));
 
+  const decomp = decomposeCodeComponents(code, language, questionText, qMarks, logicEval.score, accuracyEval.score, executionResult);
+
   const feedbackParts = [];
   if (logicEval.observations.length > 0) feedbackParts.push(logicEval.observations.join(', '));
   if (accuracyEval.notes.length > 0) feedbackParts.push(accuracyEval.notes.join(', '));
-  feedbackParts.push(`Logic: ${logicEval.score}/45, Accuracy: ${accuracyEval.score}/45, Syntax: ${syntaxScore}/10 (Final: ${totalScore}/100)`);
+  feedbackParts.push(`Logic: ${logicEval.score}/45, Accuracy: ${accuracyEval.score}/45, Syntax: ${syntaxScore}/10 (${decomp.awardedMarks}/${qMarks} marks)`);
 
   return {
     score: totalScore,
+    awardedMarks: decomp.awardedMarks,
+    maxMarks: qMarks,
+    codeBreakdown: decomp.codeBreakdown,
+    annotatedCode: decomp.annotatedCode,
     logicScore: logicEval.score,
     accuracyScore: accuracyEval.score,
     syntaxScore: syntaxScore,
@@ -582,6 +863,7 @@ async function callAI(messages) {
 // Sends question + model answer + student code to AI and parses structured evaluation
 // Follows strict question-first, logic-based, and accuracy-focused evaluation with ZERO length bias!
 async function aiEvaluate(studentCode, questionText, language, strictness, marks, modelAnswer, execInfo = null) {
+  const qMarks = marks && Number(marks) > 0 ? Number(marks) : 1;
   const strictNote = strictness === 'hard'
     ? '\nHARD MODE: Strict scrutiny on corner cases, algorithmic complexity, boundary conditions, and accuracy.'
     : strictness === 'easy'
@@ -608,13 +890,14 @@ CRITICAL RULES (NON-NEGOTIABLE):
    - PHASE 4: SYNTAX & LANGUAGE VALIDITY
      * Check valid syntax in the target programming language (${language}).
 
-SCORING BREAKDOWN (Total 100 points):
-- Logic & Algorithmic Approach: 45 points (sound logic that directly addresses what the question asks)
-- Functional Accuracy & Correctness: 45 points (accuracy of the solution in producing expected results and satisfying requirements)
-- Language Syntax & Structure: 10 points (syntactically valid code in the given language)
-
-NOTE ON REFERENCE SOLUTION (MODEL ANSWER):
-If a reference solution is provided, treat it ONLY as one example of correct behavior. DO NOT penalize the student if they used a different, valid algorithm, paradigm, or coding style.
+3. COMPONENT-LEVEL MARK BREAKDOWN (TOTAL ${qMarks} MARKS):
+   - You MUST divide the question's TOTAL MARKS (${qMarks}) across the logical components of the student's solution.
+   - Example (45 marks total for a factorial function):
+     * Total: 45 marks for function factorial(num) {
+     * 22 marks for condition: if (num < 0) return "Undefined";
+     * 23 marks for loop: for (let i = 2; i <= num; i++) result *= i;
+   - The sum of "maxMarks" in "codeBreakdown" MUST EXACTLY equal ${qMarks}.
+   - Award marks (0 to maxMarks) to each component based on logic correctness.
 
 RESPONSE FORMAT:
 You MUST respond with ONLY a valid JSON object in this exact schema (no markdown formatting, no code blocks):
@@ -626,6 +909,27 @@ You MUST respond with ONLY a valid JSON object in this exact schema (no markdown
   "accuracyScore": 0-45,
   "syntaxScore": 0-10,
   "score": 0-100,
+  "totalMarks": ${qMarks},
+  "awardedMarks": 0-${qMarks},
+  "codeBreakdown": [
+    {
+      "component": "Boundary & Edge Case Condition",
+      "codeSnippet": "code construct",
+      "maxMarks": 22,
+      "awardedMarks": 22,
+      "status": "correct",
+      "comment": "Accurately handles negative/edge inputs"
+    },
+    {
+      "component": "Core Computation Loop",
+      "codeSnippet": "code construct",
+      "maxMarks": 23,
+      "awardedMarks": 23,
+      "status": "correct",
+      "comment": "Accurately computes iterative logic"
+    }
+  ],
+  "annotatedCode": "${qMarks} marks for function factorial(num) {\\n    22 marks for this condition if (num < 0) return \\"Undefined\\";\\n    let result = 1;\\n    23 marks for this loop for (let i = 2; i <= num; i++) result *= i;\\n    return result;\\n}\\n\\nconsole.log(factorial(5)); // 120",
   "feedback": "Clear, constructive feedback explaining the logic and accuracy of the submission"
 }
 ${strictNote}`;
@@ -633,6 +937,7 @@ ${strictNote}`;
   const userSections = [
     `QUESTION STATEMENT:\n${questionText}`,
     `TARGET LANGUAGE:\n${language}`,
+    `QUESTION TOTAL MARKS:\n${qMarks}`,
   ];
 
   if (modelAnswer && modelAnswer.trim()) {
@@ -646,7 +951,7 @@ ${strictNote}`;
   }
 
   userSections.push(`STUDENT SUBMISSION:\n\`\`\`${language}\n${studentCode}\n\`\`\``);
-  userSections.push(`EVALUATION INSTRUCTION:\nReview the question first, inspect the logic applied by the student to solve that question, and evaluate the accuracy of the answer. Remember: NEVER judge by code length (a 1-line correct solution deserves full marks). Provide your JSON evaluation:`);
+  userSections.push(`EVALUATION INSTRUCTION:\nReview the question first, inspect the logic applied by the student to solve that question, allocate the ${qMarks} marks across code components, and evaluate the accuracy. Remember: NEVER judge by code length (a 1-line correct solution deserves full marks). Provide your JSON evaluation:`);
 
   const msgs = [
     { role: 'system', content: systemPrompt },
@@ -666,6 +971,40 @@ ${strictNote}`;
   }
   finalScore = Math.min(100, Math.max(0, Math.round(finalScore)));
 
+  let codeBreakdown = Array.isArray(parsed.codeBreakdown) ? parsed.codeBreakdown : [];
+  let annotatedCode = typeof parsed.annotatedCode === 'string' ? parsed.annotatedCode.trim() : '';
+
+  // Validate or scale breakdown to ensure maxMarks sum to qMarks
+  if (codeBreakdown.length > 0) {
+    const rawSum = codeBreakdown.reduce((sum, b) => sum + (Number(b.maxMarks) || 0), 0);
+    if (rawSum > 0 && rawSum !== qMarks) {
+      let runningMax = 0;
+      codeBreakdown.forEach((b, idx) => {
+        if (idx === codeBreakdown.length - 1) {
+          b.maxMarks = Math.max(1, qMarks - runningMax);
+        } else {
+          b.maxMarks = Math.max(1, Math.round((Number(b.maxMarks || 1) / rawSum) * qMarks));
+          runningMax += b.maxMarks;
+        }
+        b.awardedMarks = Math.min(b.maxMarks, Math.round(((Number(b.awardedMarks) || 0) / (Number(b.maxMarks) || 1)) * b.maxMarks));
+      });
+    }
+  } else {
+    const decomp = decomposeCodeComponents(studentCode, language, questionText, qMarks, Number(parsed.logicScore) || 45, Number(parsed.accuracyScore) || 45, execInfo);
+    codeBreakdown = decomp.codeBreakdown;
+    if (!annotatedCode) annotatedCode = decomp.annotatedCode;
+  }
+
+  if (!annotatedCode) {
+    const decomp = decomposeCodeComponents(studentCode, language, questionText, qMarks, Number(parsed.logicScore) || 45, Number(parsed.accuracyScore) || 45, execInfo);
+    annotatedCode = decomp.annotatedCode;
+  }
+
+  const computedAwarded = codeBreakdown.reduce((sum, b) => sum + (Number(b.awardedMarks) || 0), 0);
+  const finalAwardedMarks = Number.isInteger(Number(parsed.awardedMarks)) && Number(parsed.awardedMarks) <= qMarks && Number(parsed.awardedMarks) >= 0
+    ? Number(parsed.awardedMarks)
+    : computedAwarded;
+
   const feedbackParts = [];
   if (parsed.studentLogic) feedbackParts.push(`Logic: ${parsed.studentLogic}`);
   if (parsed.accuracyAssessment) feedbackParts.push(`Accuracy: ${parsed.accuracyAssessment}`);
@@ -673,6 +1012,10 @@ ${strictNote}`;
 
   return {
     score: finalScore,
+    totalMarks: qMarks,
+    awardedMarks: finalAwardedMarks,
+    codeBreakdown,
+    annotatedCode,
     logicScore: parsed.logicScore,
     accuracyScore: parsed.accuracyScore,
     syntaxScore: parsed.syntaxScore,
@@ -715,6 +1058,9 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
   const expectedOutput = [];
   const studentOutput = [];
   const feedbacks = [];
+  const questionScores = [];
+  const allCodeBreakdowns = [];
+  const allAnnotatedCode = [];
   let executionTime = 0;
   let memoryUsed = '';
 
@@ -732,7 +1078,31 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
       generatedSolution.push({ questionId: question._id, solution: question.modelAnswer || '' });
       expectedOutput.push({ questionId: question._id, output: '' });
       studentOutput.push({ questionId: question._id, output: '', error: 'No code submitted' });
-      feedbacks.push(`Q: No code submitted (0/${marks} marks).`);
+      questionScores.push({
+        questionId: question._id,
+        score: 0,
+        maxMarks: marks,
+        feedback: 'No code submitted',
+        codeBreakdown: [{
+          component: 'Submission',
+          codeSnippet: '(No code submitted)',
+          maxMarks: marks,
+          awardedMarks: 0,
+          status: 'missing',
+          comment: 'No code submitted for this question'
+        }],
+        annotatedCode: `No code submitted (0/${marks} marks)`,
+      });
+      allCodeBreakdowns.push({
+        questionId: question._id,
+        component: 'Submission',
+        codeSnippet: '(No code submitted)',
+        maxMarks: marks,
+        awardedMarks: 0,
+        status: 'missing',
+        comment: 'No code submitted for this question'
+      });
+      feedbacks.push(`Q${questions.indexOf(question) + 1} (${marks}m): No code submitted (0/${marks} marks).`);
       continue;
     }
 
@@ -763,7 +1133,7 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
         comparisonResult = await compareOutputs(studentCode, modelAnswer, qLang, testCases);
         if (comparisonResult && comparisonResult.compared) {
           if (comparisonResult.nonExecutable) {
-            const h = analyzeCode(studentCode, qLang, question.questionText);
+            const h = analyzeCode(studentCode, qLang, question.questionText, null, marks);
             const sim = comparisonResult.codeSimilarity || 0;
             // For non-executable (HTML/CSS), emphasize semantic logic & structure (70%) and reference similarity (30%)
             comparisonScore = Math.min(100, Math.round((h.score / 100) * 70 + sim * 30));
@@ -790,7 +1160,7 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
               comparisonFeedback = `Test cases: ${comparisonResult.testSummary.passed}/${comparisonResult.testSummary.total} passed (${outScore}% accuracy).`;
             } else {
               // Output differed or failed -> evaluate logic applied by student
-              const h = analyzeCode(studentCode, qLang, question.questionText, comparisonResult.studentOutput);
+              const h = analyzeCode(studentCode, qLang, question.questionText, comparisonResult.studentOutput, marks);
               comparisonScore = Math.min(60, h.score);
               comparisonFeedback = `Output differed from expected. Student applied logic score: ${comparisonScore}/100.`;
             }
@@ -851,37 +1221,74 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
       studentOutput.push({ questionId: question._id, output: '', error: '' });
     }
 
-    // ── 5. COMPUTE FINAL QUESTION SCORE ──
+    // ── 5. COMPUTE FINAL QUESTION SCORE & COMPONENT BREAKDOWN ──
     let qScore = 0;
     let feedback = '';
+    let qBreakdown = [];
+    let qAnnotatedCode = '';
 
     if (comparisonResult && comparisonResult.compared && comparisonScore > 0) {
       if (aiResult) {
-        // If execution accuracy is 100%, preserve full score and enrich feedback with AI review
-        // If execution is partial or differed, blend execution accuracy (50%) with AI logic review (50%)
         const combined = comparisonScore >= 100
           ? 100
           : Math.round(comparisonScore * 0.5 + aiResult.score * 0.5);
         qScore = Math.round((combined / 100) * marks);
         feedback = `${comparisonFeedback} AI logic & accuracy review: ${aiResult.feedback}`;
+        qBreakdown = aiResult.codeBreakdown;
+        qAnnotatedCode = aiResult.annotatedCode;
       } else {
         qScore = Math.round((comparisonScore / 100) * marks);
         feedback = comparisonFeedback;
+        const h = analyzeCode(studentCode, qLang, question.questionText, comparisonResult.studentOutput, marks);
+        qBreakdown = h.codeBreakdown;
+        qAnnotatedCode = h.annotatedCode;
       }
     } else if (aiResult) {
-      qScore = Math.round((aiResult.score / 100) * marks);
+      qScore = aiResult.awardedMarks !== undefined ? aiResult.awardedMarks : Math.round((aiResult.score / 100) * marks);
       feedback = aiResult.feedback;
+      qBreakdown = aiResult.codeBreakdown;
+      qAnnotatedCode = aiResult.annotatedCode;
     } else {
-      // Heuristic analysis focused strictly on logic and accuracy
       const execResult = directExec || comparisonResult?.studentOutput;
-      const h = analyzeCode(studentCode, qLang, question.questionText, execResult);
-      qScore = Math.round((h.score / 100) * marks);
+      const h = analyzeCode(studentCode, qLang, question.questionText, execResult, marks);
+      qScore = h.awardedMarks !== undefined ? h.awardedMarks : Math.round((h.score / 100) * marks);
       feedback = h.feedback;
+      qBreakdown = h.codeBreakdown;
+      qAnnotatedCode = h.annotatedCode;
     }
 
     qScore = Math.min(marks, Math.max(0, qScore));
     totalScore += qScore;
-    feedbacks.push(`Q${questions.indexOf(question) + 1} (${marks}m): ${feedback} → ${qScore}/${marks}`);
+
+    // Attach questionId to breakdown items
+    const formattedBreakdown = (qBreakdown || []).map(b => ({
+      questionId: question._id,
+      component: b.component || '',
+      codeSnippet: b.codeSnippet || '',
+      maxMarks: b.maxMarks || 0,
+      awardedMarks: b.awardedMarks || 0,
+      status: b.status || 'correct',
+      comment: b.comment || '',
+    }));
+
+    allCodeBreakdowns.push(...formattedBreakdown);
+    if (qAnnotatedCode) allAnnotatedCode.push(qAnnotatedCode);
+
+    questionScores.push({
+      questionId: question._id,
+      score: qScore,
+      maxMarks: marks,
+      feedback,
+      codeBreakdown: formattedBreakdown,
+      annotatedCode: qAnnotatedCode,
+    });
+
+    const breakdownSummary = formattedBreakdown.length > 0
+      ? `\n\nComponent Breakdown:\n` + formattedBreakdown.map(b => `  • [${b.awardedMarks}/${b.maxMarks} marks] ${b.component}: ${b.codeSnippet} (${b.comment})`).join('\n')
+      : '';
+    const annotatedSummary = qAnnotatedCode ? `\n\nAnnotated Code:\n${qAnnotatedCode}` : '';
+
+    feedbacks.push(`Q${questions.indexOf(question) + 1} (${marks}m): ${feedback}${breakdownSummary}${annotatedSummary} → ${qScore}/${marks}`);
   }
 
   const finalMarks = Math.min(totalScore, totalPossible);
@@ -899,6 +1306,9 @@ async function _evaluate(questions, answers, defaultLanguage, strictness, useAI)
     finalMarks,
     totalMarks: totalPossible,
     aiFeedback: feedbacks.join('\n\n'),
+    questionScores,
+    codeBreakdown: allCodeBreakdowns,
+    annotatedCode: allAnnotatedCode.join('\n\n'),
     executionTime: Math.round(executionTime),
     memoryUsed,
     status: 'evaluated',
@@ -910,6 +1320,9 @@ function _fallbackEvaluate(questions, answers, defaultLanguage) {
   let totalScore = 0;
   let totalPossible = 0;
   const feedbacks = ['Auto evaluation completed'];
+  const questionScores = [];
+  const allCodeBreakdowns = [];
+  const allAnnotatedCode = [];
 
   for (const question of questions) {
     const answerObj = (answers || []).find(a => String(a.questionId) === String(question._id));
@@ -919,14 +1332,50 @@ function _fallbackEvaluate(questions, answers, defaultLanguage) {
     totalPossible += marks;
 
     if (!studentCode) {
+      questionScores.push({
+        questionId: question._id,
+        score: 0,
+        maxMarks: marks,
+        feedback: 'No code submitted',
+        codeBreakdown: [],
+        annotatedCode: `No code submitted (0/${marks} marks)`,
+      });
       feedbacks.push(`Q${questions.indexOf(question) + 1}: No code submitted (0/${marks})`);
       continue;
     }
 
-    const h = analyzeCode(studentCode, qLang, question.questionText);
-    const qScore = Math.min(marks, Math.round((h.score / 100) * marks));
+    const h = analyzeCode(studentCode, qLang, question.questionText, null, marks);
+    const qScore = Math.min(marks, h.awardedMarks !== undefined ? h.awardedMarks : Math.round((h.score / 100) * marks));
     totalScore += qScore;
-    feedbacks.push(`Q${questions.indexOf(question) + 1}: ${h.feedback} → ${qScore}/${marks}`);
+
+    const formattedBreakdown = (h.codeBreakdown || []).map(b => ({
+      questionId: question._id,
+      component: b.component || '',
+      codeSnippet: b.codeSnippet || '',
+      maxMarks: b.maxMarks || 0,
+      awardedMarks: b.awardedMarks || 0,
+      status: b.status || 'correct',
+      comment: b.comment || '',
+    }));
+
+    allCodeBreakdowns.push(...formattedBreakdown);
+    if (h.annotatedCode) allAnnotatedCode.push(h.annotatedCode);
+
+    questionScores.push({
+      questionId: question._id,
+      score: qScore,
+      maxMarks: marks,
+      feedback: h.feedback,
+      codeBreakdown: formattedBreakdown,
+      annotatedCode: h.annotatedCode,
+    });
+
+    const breakdownSummary = formattedBreakdown.length > 0
+      ? `\n\nComponent Breakdown:\n` + formattedBreakdown.map(b => `  • [${b.awardedMarks}/${b.maxMarks} marks] ${b.component}: ${b.codeSnippet} (${b.comment})`).join('\n')
+      : '';
+    const annotatedSummary = h.annotatedCode ? `\n\nAnnotated Code:\n${h.annotatedCode}` : '';
+
+    feedbacks.push(`Q${questions.indexOf(question) + 1}: ${h.feedback}${breakdownSummary}${annotatedSummary} → ${qScore}/${marks}`);
   }
 
   const pct = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
@@ -940,6 +1389,9 @@ function _fallbackEvaluate(questions, answers, defaultLanguage) {
     finalMarks: Math.min(totalScore, totalPossible),
     totalMarks: totalPossible,
     aiFeedback: feedbacks.join('\n\n'),
+    questionScores,
+    codeBreakdown: allCodeBreakdowns,
+    annotatedCode: allAnnotatedCode.join('\n\n'),
     executionTime: 0,
     memoryUsed: '',
     status: 'evaluated',

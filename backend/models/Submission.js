@@ -43,7 +43,7 @@ const submissionSchema = new mongoose.Schema({
     default: 0
   },
 
-  // Per-question scores assigned by admin (for practical exams - manual grading)
+  // Per-question scores assigned by admin (manual) or AI evaluation
   questionScores: [{
     questionId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -53,10 +53,26 @@ const submissionSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    maxMarks: {
+      type: Number,
+      default: 0
+    },
     feedback: {
       type: String,
       default: ''
-    }
+    },
+    annotatedCode: {
+      type: String,
+      default: ''
+    },
+    codeBreakdown: [{
+      component: { type: String, default: '' },
+      codeSnippet: { type: String, default: '' },
+      maxMarks: { type: Number, default: 0 },
+      awardedMarks: { type: Number, default: 0 },
+      status: { type: String, default: 'correct' },
+      comment: { type: String, default: '' }
+    }]
   }],
 
   // Total marks possible
@@ -175,6 +191,26 @@ const submissionSchema = new mongoose.Schema({
 
   // AI-generated feedback (human-readable summary)
   aiFeedback: {
+    type: String,
+    default: ''
+  },
+
+  // Component-level mark breakdowns across practical questions
+  codeBreakdown: [{
+    questionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Question'
+    },
+    component: { type: String, default: '' },
+    codeSnippet: { type: String, default: '' },
+    maxMarks: { type: Number, default: 0 },
+    awardedMarks: { type: Number, default: 0 },
+    status: { type: String, default: 'correct' },
+    comment: { type: String, default: '' }
+  }],
+
+  // Annotated code showing construct/component marks
+  annotatedCode: {
     type: String,
     default: ''
   }

@@ -278,6 +278,9 @@ router.post('/:examId/submit', auth, async (req, res) => {
           executionTime: evalResult.executionTime,
           memoryUsed: evalResult.memoryUsed,
           aiFeedback: evalResult.aiFeedback,
+          questionScores: evalResult.questionScores || [],
+          codeBreakdown: evalResult.codeBreakdown || [],
+          annotatedCode: evalResult.annotatedCode || '',
           evaluationMethod: 'ai',
           evaluationStrictness: exam.evaluationStrictness || 'medium',
         };
@@ -341,6 +344,9 @@ router.post('/:examId/submit', auth, async (req, res) => {
       responseSubmission.executionTime = savedSubmission.executionTime || 0;
       responseSubmission.memoryUsed = savedSubmission.memoryUsed || '';
       responseSubmission.aiFeedback = savedSubmission.aiFeedback || '';
+      responseSubmission.questionScores = savedSubmission.questionScores || [];
+      responseSubmission.codeBreakdown = savedSubmission.codeBreakdown || [];
+      responseSubmission.annotatedCode = savedSubmission.annotatedCode || '';
       responseSubmission.passed = savedSubmission.totalMarks > 0 && (savedSubmission.score / savedSubmission.totalMarks) >= 0.5;
     }
 
@@ -464,7 +470,7 @@ router.get('/:examId/submission', auth, async (req, res) => {
     }
 
     const now = new Date();
-    const resultPublished = exam.resultDate && now >= new Date(exam.resultDate);
+    const resultPublished = !exam.resultDate || now >= new Date(exam.resultDate);
 
     const resultObj = submission.toObject();
 
