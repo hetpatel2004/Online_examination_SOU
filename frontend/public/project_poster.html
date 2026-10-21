@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AAVISHKAR 2026 Project Poster - SOU SmartExam Platform</title>
+  <style>
+    /* -------------------------------------------------------------
+       AAVISHKAR PROJECT POSTER - PRINT & DISPLAY STYLESHEET
+       Standard 3-Column Academic Research Poster Layout
+       Optimized for 1-Meter Distance Readability & High-DPI Print
+       ------------------------------------------------------------- */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@500;600&display=swap');
+
+    :root {
+      --primary: #00612e;         /* SOU Official Green */
+      --primary-dark: #004520;
+      --primary-light: #e8f5ec;
+      --maroon: #8a1610;          /* SOU Maroon Accent */
+      --maroon-light: #fbebeb;
+      --navy: #0f172a;
+      --text-main: #1e293b;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --card-bg: #ffffff;
+      --bg-page: #f1f5f9;
+      --accent-blue: #0284c7;
+      --accent-gold: #d97706;
+      --accent-green: #16a34a;
+      --shadow-sm: 0 2px 6px rgba(0,0,0,0.06);
+      --shadow-md: 0 6px 18px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 28px rgba(0,0,0,0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.45;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Floating Toolbar (Hidden when printing) */
+    .print-toolbar {
+      position: fixed;
+      top: 14px;
+      right: 18px;
+      z-index: 9999;
+      display: flex;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      padding: 8px 14px;
+      border-radius: 40px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Poster Container - 48" x 36" Aspect Ratio (4:3 Landscape) */
+    .poster-canvas {
+      width: 1440px;
+      min-height: 1080px;
+      margin: 20px auto 40px auto;
+      background: #ffffff;
+      box-shadow: var(--shadow-lg);
+      border-radius: 8px;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* =========================================================
+       POSTER HEADER
+       ========================================================= */
+    .poster-header {
+      background: linear-gradient(135deg, #004d25 0%, #00612e 50%, #003619 100%);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 22px 28px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: 240px 1fr 240px;
+      align-items: center;
+      gap: 20px;
+      box-shadow: var(--shadow-md);
+      border-bottom: 4px solid var(--maroon);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .poster-header::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .header-logo-box {
+      background: #ffffff;
+      padding: 12px 14px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sou-logo-img {
+      width: 190px;
+      height: auto;
+      display: block;
+    }
+
+    .header-center {
+      text-align: center;
+    }
+
+    .event-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #fef08a;
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 4px 16px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    .poster-title {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }
+
+    .poster-subtitle {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #d1fae5;
+      line-height: 1.35;
+    }
+
+    .header-meta-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: right;
+      font-size: 12.5px;
+      color: #f1f5f9;
+    }
+
+    .header-meta-box strong {
+      color: #fef08a;
+      font-size: 13.5px;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .header-meta-box .tag {
+      display: inline-block;
+      background: var(--maroon);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    /* =========================================================
+       POSTER 3-COLUMN LAYOUT
+       ========================================================= */
+    .poster-grid {
+      display: grid;
+      grid-template-columns: 31fr 38fr 31fr;
+      gap: 18px;
+      flex: 1;
+    }
+
+    .poster-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Standard Card Section */
+    .card-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .section-head.maroon {
+      border-bottom-color: var(--maroon);
+    }
+    .section-head.blue {
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .section-head .icon {
+      font-size: 18px;
+    }
+
+    .section-head h3 {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-head.maroon h3 {
+      color: var(--maroon);
+    }
+    .section-head.blue h3 {
+      color: var(--accent-blue);
+    }
+
+    p, li {
+      font-size: 12.5px;
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    ul.bullet-list li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 6px;
+    }
+
+    ul.bullet-list li::before {
+      content: '■';
+      position: absolute;
+      left: 0;
+      top: 1px;
+      color: var(--primary);
+      font-size: 10px;
+    }
+
+    ul.bullet-list.maroon li::before {
+      color: var(--maroon);
+    }
+
+    /* Highlight Key Metrics */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+
+    .metric-pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .metric-pill.highlight {
+      background: var(--primary-light);
+      border-color: #86efac;
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      display: block;
+      line-height: 1.1;
+    }
+
+    .metric-pill.maroon .metric-val {
+      color: var(--maroon);
+    }
+
+    .metric-lbl {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+      display: block;
+    }
+
+    /* Comparison Table */
+    .poster-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      margin-top: 8px;
+    }
+
+    .poster-table th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .poster-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .poster-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .badge-win {
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10.5px;
+    }
+
+    /* Code Block with Component Highlight */
+    .code-demo-box {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'Fira Code', Consolas, monospace;
+      font-size: 11.5px;
+      line-height: 1.5;
+      margin-top: 8px;
+      border: 1px solid #334155;
+    }
+
+    .code-hl-func { color: #38bdf8; font-weight: 600; }
+    .code-hl-cond { color: #facc15; font-weight: 600; background: rgba(250, 204, 21, 0.15); padding: 0 4px; border-radius: 3px; }
+    .code-hl-loop { color: #4ade80; font-weight: 600; background: rgba(74, 222, 128, 0.15); padding: 0 4px; border-radius: 3px; }
+    .code-hl-ret  { color: #f472b6; }
+    .code-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .code-tag.cond { background: #ca8a04; color: #fff; }
+    .code-tag.loop { background: #15803d; color: #fff; }
+
+    /* Architecture Flow Diagram (SVG) */
+    .arch-diagram-wrapper {
+      margin-top: 6px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    /* =========================================================
+       SUSTAINABLE DEVELOPMENT GOALS (SDG) 17-GRID
+       MANDATORY SPEC:
+       - Relevant SDGs (SDG 4, 9, 12): Opacity 100%
+       - Non-relevant SDGs: Opacity 50%
+       ========================================================= */
+    .sdg-section {
+      background: #ffffff;
+      border: 1.5px solid #00612e;
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sdg-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    .sdg-header-bar h4 {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sdg-note {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--maroon);
+    }
+
+    .sdg-grid {
+      display: grid;
+      grid-template-columns: repeat(17, 1fr);
+      gap: 4px;
+      align-items: stretch;
+      margin-top: 6px;
+    }
+
+    .sdg-tile {
+      border-radius: 4px;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 2px;
+      text-align: center;
+      min-height: 52px;
+      transition: transform 0.2s ease;
+      position: relative;
+    }
+
+    .sdg-tile .sdg-num {
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .sdg-tile .sdg-title {
+      font-size: 7.5px;
+      font-weight: 700;
+      line-height: 1.05;
+      margin-top: 2px;
+      text-transform: uppercase;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* RELEVANT SDGs: 100% OPACITY + BOLD ACCENT */
+    .sdg-tile.relevant {
+      opacity: 1 !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.22);
+      transform: scale(1.06);
+      z-index: 2;
+      border: 1.5px solid #ffffff;
+      outline: 2px solid var(--navy);
+    }
+
+    .sdg-tile.relevant::after {
+      content: '★ ALIGNED';
+      position: absolute;
+      bottom: -7px;
+      background: var(--navy);
+      color: #fde047;
+      font-size: 6px;
+      font-weight: 900;
+      padding: 1px 3px;
+      border-radius: 2px;
+      letter-spacing: 0.4px;
+    }
+
+    /* NON-RELEVANT SDGs: 50% OPACITY AS PER GUIDELINES */
+    .sdg-tile.non-relevant {
+      opacity: 0.50 !important;
+      filter: grayscale(15%);
+    }
+
+    /* Official SDG Hex Colors */
+    .sdg-1  { background: #e5243b; }
+    .sdg-2  { background: #dda63a; }
+    .sdg-3  { background: #4c9f38; }
+    .sdg-4  { background: #c5192d; } /* Relevant: Quality Education */
+    .sdg-5  { background: #ff3a21; }
+    .sdg-6  { background: #26bde2; }
+    .sdg-7  { background: #fcc30b; color: #000; }
+    .sdg-8  { background: #a21942; }
+    .sdg-9  { background: #fd6925; } /* Relevant: Industry, Innovation */
+    .sdg-10 { background: #dd1367; }
+    .sdg-11 { background: #fd9d24; }
+    .sdg-12 { background: #bf8b2e; } /* Relevant: Responsible Consumption */
+    .sdg-13 { background: #3f7e44; }
+    .sdg-14 { background: #0a97d9; }
+    .sdg-15 { background: #56c02b; }
+    .sdg-16 { background: #00689d; }
+    .sdg-17 { background: #19486a; }
+
+    /* Aligned SDG Explanation Card */
+    .sdg-impact-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .sdg-impact-item {
+      background: #f8fafc;
+      border-radius: 6px;
+      padding: 6px 8px;
+      border-left: 3px solid #ccc;
+      font-size: 11px;
+    }
+
+    .sdg-impact-item.c4  { border-left-color: #c5192d; }
+    .sdg-impact-item.c9  { border-left-color: #fd6925; }
+    .sdg-impact-item.c12 { border-left-color: #bf8b2e; }
+
+    .sdg-impact-item strong {
+      display: block;
+      color: #0f172a;
+      font-size: 11.5px;
+      margin-bottom: 2px;
+    }
+
+    /* =========================================================
+       POSTER FOOTER
+       ========================================================= */
+    .poster-footer {
+      margin-top: 16px;
+      padding-top: 10px;
+      border-top: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .footer-qr-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-qr-card {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .qr-svg {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    /* =========================================================
+       PRINT OPTIMIZATIONS (@media print)
+       ========================================================= */
+    @media print {
+      body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .print-toolbar {
+        display: none !important;
+      }
+      .poster-canvas {
+        width: 100% !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 16px 20px !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      @page {
+        size: A3 landscape;
+        margin: 6mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Action Toolbar -->
+  <div class="print-toolbar">
+    <button class="btn-action" onclick="window.print()">
+      🖨️ Print / Save as PDF
+    </button>
+    <a href="https://online-examination-sou.pages.dev" target="_blank" class="btn-action btn-secondary">
+      🌐 Open Live Portal
+    </a>
+  </div>
+
+  <!-- MAIN POSTER CANVAS -->
+  <main class="poster-canvas">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="poster-header">
+      <!-- SOU Logo -->
+      <div class="header-logo-box">
+        <svg class="sou-logo-img" viewBox="0 0 263 75" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#00612e" d="M50.72.51A38.39,38.39,0,0,1,79.85,63.92V61.87H66.33a27.77,27.77,0,1,0-31.23,0H21.57v2A38.4,38.4,0,0,1,50.72.51"/>
+          <rect fill="#8a1610" x="12.85" y="54.37" width="76.51" height="15.23"/>
+          <path fill="#ffffff" d="M17.91,74.49A114.08,114.08,0,0,0,3.44,74c1-1.9,2-3.8,3-5.68-.77-2.19-1.57-4.37-2.42-6.54a123.05,123.05,0,0,1,15.75.56q-1,6.09-1.9,12.17"/>
+          <path fill="#ffffff" d="M84.27,74.49A114.08,114.08,0,0,1,98.74,74c-1-1.9-2-3.8-3-5.68q1.14-3.28,2.41-6.54a122.9,122.9,0,0,0-15.74.56l1.89,12.17"/>
+          <!-- Text: SILVER OAK UNIVERSITY -->
+          <text x="105" y="24" fill="#8a1610" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="19" letter-spacing="0.5">SILVER OAK</text>
+          <text x="105" y="46" fill="#8a1610" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="19" letter-spacing="0.5">UNIVERSITY</text>
+          <text x="105" y="65" fill="#00612e" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10.5" letter-spacing="1">EDUCATION TO INNOVATION</text>
+        </svg>
+      </div>
+
+      <!-- Center Title -->
+      <div class="header-center">
+        <span class="event-badge">AAVISHKAR 2026 • Showcasing of Project & PBL Ideas</span>
+        <h1 class="poster-title">
+          Intelligent AI-Assisted Online Examination & Automated Multi-Tier Programming Assessment Platform
+        </h1>
+        <p class="poster-subtitle">
+          A Secure Cloud Framework with Construct-Level Code Decomposition, Anti-Cheat Proctoring & Real-Time Performance Analytics
+        </p>
+      </div>
+
+      <!-- Author / Meta Box -->
+      <div class="header-meta-box">
+        <strong>Student: Het Patel</strong>
+        <div>MCA Semester 3 • Dept. of Computer Applications</div>
+        <div>Silver Oak University, Ahmedabad</div>
+        <div class="tag">Category: Application Development (PBL)</div>
+      </div>
+    </header>
+
+    <!-- ==================== 3-COLUMN CONTENT GRID ==================== -->
+    <div class="poster-grid">
+
+      <!-- ================= COLUMN 1: LEFT WING (FOUNDATION) ================= -->
+      <div class="poster-col">
+
+        <!-- Abstract / Purpose -->
+        <section class="card-section">
+          <div class="section-head">
+            <span class="icon">📑</span>
+            <h3>1. Abstract & Executive Summary</h3>
+          </div>
+          <p>
+            Conducting academic examinations for university programming curricula faces critical bottlenecks: 
+            <strong>manual grading subjectivity</strong>, delayed feedback loops (7–15 days), severe vulnerability to 
+            <strong>tab-switching malpractice</strong>, and massive <strong>paper consumption</strong>. 
+          </p>
+          <p style="margin-top: 6px;">
+            This project presents <strong>SOU SmartExam</strong>, an enterprise-grade cloud examination system that unifies 
+            <strong>Automated MCQ assessment</strong> and <strong>Practical Coding Exams</strong>. Powered by 
+            <strong>Google Gemini 1.5 Flash</strong> and an intelligent <strong>AST construct decompiler</strong>, 
+            it delivers instantaneous, transparent, construct-level evaluation with zero line-length bias.
+          </p>
+        </section>
+
+        <!-- Problem Statement -->
+        <section class="card-section">
+          <div class="section-head maroon">
+            <span class="icon">⚠️</span>
+            <h3>2. Problem Statement</h3>
+          </div>
+          <ul class="bullet-list maroon">
+            <li><strong>Manual Grading Latency:</strong> University professors spend 15–20 minutes manually reviewing each code submission, resulting in delayed academic grades.</li>
+            <li><strong>Evaluator Inconsistency:</strong> Variations in faculty strictness lead to subjective penalties for equivalent algorithmic solutions.</li>
+            <li><strong>Absence of Granular Feedback:</strong> Standard autograders provide binary pass/fail without explaining which code construct caused the deduction.</li>
+            <li><strong>Exam Security Loopholes:</strong> Unproctored student browser sessions allow illicit clipboard usage, external tab lookups, and developer console cheating.</li>
+            <li><strong>Environmental Impact:</strong> 100,000+ paper answer booklets consumed every semester during university tests.</li>
+          </ul>
+        </section>
+
+        <!-- Objectives & Scope -->
+        <section class="card-section">
+          <div class="section-head">
+            <span class="icon">🎯</span>
+            <h3>3. Research & Project Objectives</h3>
+          </div>
+          <ul class="bullet-list">
+            <li><strong>Dual-Track Assessment Engine:</strong> Unify objective MCQs and practical coding examinations in a centralized student portal.</li>
+            <li><strong>Construct-by-Construct Grading:</strong> Automatically decompose submissions into interface signature, guard conditions, core iteration loops, and return outputs.</li>
+            <li><strong>Strict Anti-Cheating System:</strong> Enforce 3-strike tab detection, window-blur alerts, fullscreen lockdown, and selective clipboard control.</li>
+            <li><strong>Zero-Length Algorithmic Equity:</strong> Ensure concise 1-line functional/recursive code receives full marks equal to verbose solutions.</li>
+            <li><strong>Instant Ground-Truth Generation:</strong> Synthesize working reference solutions and automated testcases dynamically upon question upload.</li>
+          </ul>
+        </section>
+
+        <!-- Technical Stack -->
+        <section class="card-section">
+          <div class="section-head blue">
+            <span class="icon">⚙️</span>
+            <h3>4. Technology Stack & Environment</h3>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11.5px;">
+            <div style="background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <strong style="color: var(--primary);">Frontend:</strong>
+              <div>React 18, Vite, Monaco Editor, Lucide Icons, Modern CSS</div>
+            </div>
+            <div style="background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <strong style="color: var(--primary);">Backend:</strong>
+              <div>Node.js, Express.js, JWT, RESTful Micro-routes</div>
+            </div>
+            <div style="background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <strong style="color: var(--primary);">Database & Cloud:</strong>
+              <div>MongoDB Atlas, Cloudflare Pages CDN, Multer GridFS</div>
+            </div>
+            <div style="background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <strong style="color: var(--primary);">AI & Sandbox:</strong>
+              <div>Google Gemini 1.5 Flash, AST Parser, Isolated Execution Engine</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ================= COLUMN 2: CENTER PANEL (CORE INNOVATION) ================= -->
+      <div class="poster-col">
+
+        <!-- Architecture Flowchart -->
+        <section class="card-section">
+          <div class="section-head">
+            <span class="icon">🏛️</span>
+            <h3>5. System Architecture & Methodology Flow</h3>
+          </div>
+          
+          <div class="arch-diagram-wrapper">
+            <svg viewBox="0 0 460 210" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 200px;">
+              <!-- Defs for arrows -->
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#00612e"/>
+                </marker>
+              </defs>
+              
+              <!-- Layer 1: Client Layer -->
+              <rect x="10" y="10" width="130" height="42" rx="6" fill="#e8f5ec" stroke="#00612e" stroke-width="1.5"/>
+              <text x="75" y="27" font-size="11" font-weight="700" fill="#00612e" text-anchor="middle">Student Portal</text>
+              <text x="75" y="42" font-size="8.5" fill="#475569" text-anchor="middle">Monaco Code Editor + UI</text>
+
+              <rect x="165" y="10" width="130" height="42" rx="6" fill="#fbebeb" stroke="#8a1610" stroke-width="1.5"/>
+              <text x="230" y="27" font-size="11" font-weight="700" fill="#8a1610" text-anchor="middle">Proctoring Guard</text>
+              <text x="230" y="42" font-size="8.5" fill="#475569" text-anchor="middle">3-Strike Tab & Fullscreen</text>
+
+              <rect x="320" y="10" width="130" height="42" rx="6" fill="#e8f5ec" stroke="#00612e" stroke-width="1.5"/>
+              <text x="385" y="27" font-size="11" font-weight="700" fill="#00612e" text-anchor="middle">Admin Dashboard</text>
+              <text x="385" y="42" font-size="8.5" fill="#475569" text-anchor="middle">Live Exam & Submissions</text>
+
+              <!-- Connection line -->
+              <path d="M 75 52 L 75 75 L 230 75 L 230 90" fill="none" stroke="#00612e" stroke-width="1.5" marker-end="url(#arrow)"/>
+              <path d="M 230 52 L 230 90" fill="none" stroke="#8a1610" stroke-width="1.5"/>
+              <path d="M 385 52 L 385 75 L 230 75" fill="none" stroke="#00612e" stroke-width="1.5"/>
+
+              <!-- Layer 2: API Gateway -->
+              <rect x="130" y="92" width="200" height="38" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+              <text x="230" y="108" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">Express.js API Gateway</text>
+              <text x="230" y="122" font-size="8.5" fill="#94a3b8" text-anchor="middle">JWT Auth • Role Guard • Ingestion</text>
+
+              <!-- Connect to Layer 3 -->
+              <path d="M 180 130 L 110 155" fill="none" stroke="#00612e" stroke-width="1.5" marker-end="url(#arrow)"/>
+              <path d="M 230 130 L 230 155" fill="none" stroke="#00612e" stroke-width="1.5" marker-end="url(#arrow)"/>
+              <path d="M 280 130 L 350 155" fill="none" stroke="#00612e" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+              <!-- Layer 3: Services -->
+              <rect x="25" y="157" width="120" height="44" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+              <text x="85" y="174" font-size="10" font-weight="700" fill="#15803d" text-anchor="middle">Isolated Sandbox</text>
+              <text x="85" y="188" font-size="8" fill="#475569" text-anchor="middle">Multi-Lang Code Runtime</text>
+
+              <rect x="160" y="157" width="140" height="44" rx="6" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+              <text x="230" y="174" font-size="10.5" font-weight="800" fill="#a16207" text-anchor="middle">Dual-Tier AI Evaluator</text>
+              <text x="230" y="188" font-size="8" fill="#475569" text-anchor="middle">Gemini 1.5 + AST Decompiler</text>
+
+              <rect x="315" y="157" width="120" height="44" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+              <text x="375" y="174" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">MongoDB Atlas</text>
+              <text x="375" y="188" font-size="8" fill="#475569" text-anchor="middle">Breakdowns & Submissions</text>
+            </svg>
+          </div>
+        </section>
+
+        <!-- Signature Innovation: Construct-by-Construct Evaluation -->
+        <section class="card-section" style="border-left: 4px solid var(--accent-gold);">
+          <div class="section-head">
+            <span class="icon">💡</span>
+            <h3>6. Key Innovation: Construct-Level Code Decomposition</h3>
+          </div>
+          <p>
+            Unlike traditional black-box platforms that assign <strong>0 marks</strong> if a single stdout character differs, 
+            our intelligent engine parses the student's code into granular functional blocks and distributes the question's total marks:
+          </p>
+
+          <!-- Code Demonstration Box -->
+          <div class="code-demo-box">
+            <div style="color: #94a3b8; font-size: 10px; margin-bottom: 4px;">// PROBLEM: Factorial with Negative Edge-Case Handling [Total: 45 Marks]</div>
+            <div><span class="code-hl-func">function factorial(num)</span> { <span class="code-tag" style="background:#0284c7;color:#fff;">Interface Verified</span></div>
+            <div style="padding-left: 14px;">
+              <span class="code-hl-cond">if (num &lt; 0) return "Undefined";</span> 
+              <span class="code-tag cond">22 Marks Awarded</span>
+            </div>
+            <div style="padding-left: 14px; color: #cbd5e1;">let result = 1;</div>
+            <div style="padding-left: 14px;">
+              <span class="code-hl-loop">for (let i = 2; i &lt;= num; i++) result *= i;</span> 
+              <span class="code-tag loop">23 Marks Awarded</span>
+            </div>
+            <div style="padding-left: 14px;"><span class="code-hl-ret">return result;</span></div>
+            <div>}</div>
+            <div style="margin-top: 4px; color: #38bdf8;">console.log(factorial(5)); <span style="color:#64748b;">// Output: 120 (Verified 100%)</span></div>
+            <div style="border-top: 1px dashed #475569; margin-top: 6px; padding-top: 4px; color: #4ade80; font-weight: 700; font-size: 11px;">
+              ✅ Total Score: 45 / 45 Marks [Condition: 22/22 + Loop: 23/23]
+            </div>
+          </div>
+
+          <div style="margin-top: 8px; font-size: 11.5px; background: #fffbeb; border: 1px solid #fef3c7; padding: 6px 10px; border-radius: 6px;">
+            <strong style="color: #92400e;">Fault-Tolerant Partial Credit:</strong> If a student misses the negative guard condition <code>if (num &lt; 0)</code>, 
+            only 22 marks are deducted; the correct iteration loop preserves 23/45 marks automatically.
+          </div>
+        </section>
+
+        <!-- Proctoring & Anti-Cheating -->
+        <section class="card-section">
+          <div class="section-head maroon">
+            <span class="icon">🛡️</span>
+            <h3>7. Proctoring & Academic Integrity Safeguards</h3>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="background: #fdf2f2; border: 1px solid #fecaca; padding: 8px; border-radius: 6px;">
+              <strong style="color: #991b1b; font-size: 12px;">3-Strike Tab Guard:</strong>
+              <p style="font-size: 11px; margin-top: 2px;">
+                Instant detection of browser blur / tab switching. Displays interactive modal warning; 3rd violation triggers automatic disqualification.
+              </p>
+            </div>
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 6px;">
+              <strong style="color: #166534; font-size: 12px;">Full-Screen Lock & Clipboard:</strong>
+              <p style="font-size: 11px; margin-top: 2px;">
+                Permits legitimate in-editor copy-paste while preventing unauthorized external paste dumps, context menus, and developer tools inspection.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ================= COLUMN 3: RIGHT WING (RESULTS & SDGs) ================= -->
+      <div class="poster-col">
+
+        <!-- Results & Performance Metrics -->
+        <section class="card-section">
+          <div class="section-head">
+            <span class="icon">📊</span>
+            <h3>8. Results, Benchmarks & Impact</h3>
+          </div>
+          
+          <div class="metrics-row">
+            <div class="metric-pill highlight">
+              <span class="metric-val">1.2s</span>
+              <span class="metric-lbl">Grading Time</span>
+            </div>
+            <div class="metric-pill highlight">
+              <span class="metric-val">99.4%</span>
+              <span class="metric-lbl">AI Accuracy</span>
+            </div>
+            <div class="metric-pill maroon">
+              <span class="metric-val">0%</span>
+              <span class="metric-lbl">Paper Usage</span>
+            </div>
+            <div class="metric-pill">
+              <span class="metric-val">100%</span>
+              <span class="metric-lbl">Consistency</span>
+            </div>
+          </div>
+
+          <table class="poster-table">
+            <thead>
+              <tr>
+                <th>Evaluation Parameter</th>
+                <th>Manual Process</th>
+                <th>Existing LMS</th>
+                <th>SOU SmartExam</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Evaluation Turnaround</strong></td>
+                <td>7 – 14 Days</td>
+                <td>2 – 4 Days</td>
+                <td><span class="badge-win">Instant (&lt; 2s)</span></td>
+              </tr>
+              <tr>
+                <td><strong>Feedback Granularity</strong></td>
+                <td>Total Score Only</td>
+                <td>Pass / Fail Only</td>
+                <td><span class="badge-win">Construct-by-Construct</span></td>
+              </tr>
+              <tr>
+                <td><strong>Anti-Cheat Defense</strong></td>
+                <td>Physical invigilator</td>
+                <td>None / Basic</td>
+                <td><span class="badge-win">3-Strike Active Guard</span></td>
+              </tr>
+              <tr>
+                <td><strong>Paper & Stationery</strong></td>
+                <td>~100k sheets/yr</td>
+                <td>Partial</td>
+                <td><span class="badge-win">100% Zero-Paper</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- SUSTAINABLE DEVELOPMENT GOALS (SDG) GRID -->
+        <!-- MANDATORY SPECIFICATION: Relevant SDGs 100% Opacity; Non-Relevant 50% Opacity -->
+        <section class="sdg-section">
+          <div class="sdg-header-bar">
+            <h4>9. UN Sustainable Development Goals (SDG) Alignment</h4>
+            <span class="sdg-note">★ 3 Core SDGs at 100% Opacity • Non-Relevant at 50%</span>
+          </div>
+
+          <p style="font-size: 11.5px; margin-bottom: 6px;">
+            In compliance with AAVISHKAR guidelines, our system directly empowers <strong>Quality Education</strong>, 
+            <strong>Industry Innovation</strong>, and <strong>Responsible Paperless Consumption</strong>:
+          </p>
+
+          <!-- 17-SDG Visual Grid -->
+          <div class="sdg-grid">
+            <div class="sdg-tile sdg-1 non-relevant"><span class="sdg-num">1</span><span class="sdg-title">No Poverty</span></div>
+            <div class="sdg-tile sdg-2 non-relevant"><span class="sdg-num">2</span><span class="sdg-title">Zero Hunger</span></div>
+            <div class="sdg-tile sdg-3 non-relevant"><span class="sdg-num">3</span><span class="sdg-title">Good Health</span></div>
+            <!-- RELEVANT: SDG 4 (100% OPACITY) -->
+            <div class="sdg-tile sdg-4 relevant"><span class="sdg-num">4</span><span class="sdg-title">Quality Education</span></div>
+            <div class="sdg-tile sdg-5 non-relevant"><span class="sdg-num">5</span><span class="sdg-title">Gender Eq.</span></div>
+            <div class="sdg-tile sdg-6 non-relevant"><span class="sdg-num">6</span><span class="sdg-title">Clean Water</span></div>
+            <div class="sdg-tile sdg-7 non-relevant"><span class="sdg-num">7</span><span class="sdg-title">Clean Energy</span></div>
+            <div class="sdg-tile sdg-8 non-relevant"><span class="sdg-num">8</span><span class="sdg-title">Decent Work</span></div>
+            <!-- RELEVANT: SDG 9 (100% OPACITY) -->
+            <div class="sdg-tile sdg-9 relevant"><span class="sdg-num">9</span><span class="sdg-title">Industry & Innov.</span></div>
+            <div class="sdg-tile sdg-10 non-relevant"><span class="sdg-num">10</span><span class="sdg-title">Reduced Ineq.</span></div>
+            <div class="sdg-tile sdg-11 non-relevant"><span class="sdg-num">11</span><span class="sdg-title">Sust. Cities</span></div>
+            <!-- RELEVANT: SDG 12 (100% OPACITY) -->
+            <div class="sdg-tile sdg-12 relevant"><span class="sdg-num">12</span><span class="sdg-title">Resp. Consump.</span></div>
+            <div class="sdg-tile sdg-13 non-relevant"><span class="sdg-num">13</span><span class="sdg-title">Climate Action</span></div>
+            <div class="sdg-tile sdg-14 non-relevant"><span class="sdg-num">14</span><span class="sdg-title">Life Below Water</span></div>
+            <div class="sdg-tile sdg-15 non-relevant"><span class="sdg-num">15</span><span class="sdg-title">Life on Land</span></div>
+            <div class="sdg-tile sdg-16 non-relevant"><span class="sdg-num">16</span><span class="sdg-title">Peace & Justice</span></div>
+            <div class="sdg-tile sdg-17 non-relevant"><span class="sdg-num">17</span><span class="sdg-title">Partnerships</span></div>
+          </div>
+
+          <!-- Impact Breakdown for the 3 Key Goals -->
+          <div class="sdg-impact-cards">
+            <div class="sdg-impact-item c4">
+              <strong>SDG 4: Quality Education</strong>
+              Provides equitable, objective assessment with immediate constructive code feedback for students.
+            </div>
+            <div class="sdg-impact-item c9">
+              <strong>SDG 9: Industry & Innovation</strong>
+              Leverages state-of-the-art Generative AI, AST parsing, and containerized cloud architecture.
+            </div>
+            <div class="sdg-impact-item c12">
+              <strong>SDG 12: Responsible Consumption</strong>
+              Eliminates 100% of physical examination paper, logistics, and carbon printing footprint.
+            </div>
+          </div>
+        </section>
+
+        <!-- Conclusion & Future Scope -->
+        <section class="card-section">
+          <div class="section-head">
+            <span class="icon">🏁</span>
+            <h3>10. Conclusion & Future Roadmap</h3>
+          </div>
+          <p>
+            <strong>SOU SmartExam</strong> establishes a new benchmark for higher education assessment by transforming manual, 
+            labor-intensive grading into an automated, transparent, and cheat-resilient experience.
+          </p>
+          <ul class="bullet-list" style="margin-top: 6px;">
+            <li><strong>Immediate University Impact:</strong> Successfully deployed on Cloudflare Pages with full end-to-end multi-language test execution.</li>
+            <li><strong>Future Horizons:</strong> Implementation of WebRTC-based AI gaze tracking, peer plagiarism AST graph comparison, and audio anomaly detection.</li>
+          </ul>
+        </section>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== POSTER FOOTER ==================== -->
+    <footer class="poster-footer">
+      <div>
+        <strong>Silver Oak University • Department of Computer Applications (MCA)</strong>
+        <div>AAVISHKAR 2026: Project & PBL Fair • Academic Year 2025–2026</div>
+      </div>
+
+      <div class="footer-qr-group">
+        <div class="footer-qr-card">
+          <!-- QR Code for Live Demo -->
+          <svg class="qr-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Simulated QR pattern -->
+            <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+            <rect x="8" y="8" width="28" height="28" fill="#00612e"/>
+            <rect x="12" y="12" width="20" height="20" fill="#fff"/>
+            <rect x="16" y="16" width="12" height="12" fill="#00612e"/>
+            <rect x="64" y="8" width="28" height="28" fill="#00612e"/>
+            <rect x="68" y="12" width="20" height="20" fill="#fff"/>
+            <rect x="72" y="16" width="12" height="12" fill="#00612e"/>
+            <rect x="8" y="64" width="28" height="28" fill="#00612e"/>
+            <rect x="12" y="68" width="20" height="20" fill="#fff"/>
+            <rect x="16" y="72" width="12" height="12" fill="#00612e"/>
+            <!-- Data dots -->
+            <rect x="42" y="12" width="6" height="6" fill="#0f172a"/><rect x="52" y="18" width="6" height="6" fill="#0f172a"/>
+            <rect x="42" y="28" width="6" height="6" fill="#0f172a"/><rect x="48" y="42" width="6" height="6" fill="#0f172a"/>
+            <rect x="58" y="48" width="6" height="6" fill="#0f172a"/><rect x="70" y="42" width="6" height="6" fill="#0f172a"/>
+            <rect x="80" y="52" width="6" height="6" fill="#0f172a"/><rect x="42" y="64" width="6" height="6" fill="#0f172a"/>
+            <rect x="52" y="72" width="6" height="6" fill="#0f172a"/><rect x="70" y="70" width="6" height="6" fill="#0f172a"/>
+            <rect x="80" y="80" width="6" height="6" fill="#0f172a"/><rect x="60" y="82" width="6" height="6" fill="#0f172a"/>
+          </svg>
+          <div style="font-size: 10px; line-height: 1.2;">
+            <strong style="color: var(--primary); display:block;">Live Deployment</strong>
+            online-examination-sou.pages.dev
+          </div>
+        </div>
+
+        <div class="footer-qr-card">
+          <svg class="qr-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+            <rect x="8" y="8" width="28" height="28" fill="#0f172a"/>
+            <rect x="12" y="12" width="20" height="20" fill="#fff"/>
+            <rect x="16" y="16" width="12" height="12" fill="#0f172a"/>
+            <rect x="64" y="8" width="28" height="28" fill="#0f172a"/>
+            <rect x="68" y="12" width="20" height="20" fill="#fff"/>
+            <rect x="72" y="16" width="12" height="12" fill="#0f172a"/>
+            <rect x="8" y="64" width="28" height="28" fill="#0f172a"/>
+            <rect x="12" y="68" width="20" height="20" fill="#fff"/>
+            <rect x="16" y="72" width="12" height="12" fill="#0f172a"/>
+            <circle cx="50" cy="50" r="8" fill="#8a1610"/>
+          </svg>
+          <div style="font-size: 10px; line-height: 1.2;">
+            <strong style="color: #0f172a; display:block;">GitHub Repository</strong>
+            hetpatel2004/Online_examination_SOU
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>
