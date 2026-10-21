@@ -1,5 +1,6 @@
 # Data Flow Diagrams (DFD) — Level 0, Level 1 & Level 2
-**Project**: SOU SmartExam — Online Examination & Intelligent Assessment Platform  
+**Project**: ACUMEN — AI-Driven Code Understanding & Monitored Examination Network  
+**Subtitle**: Intelligent Practical Code Assessment & Real-Time Integrity Guardian  
 **Institution**: Silver Oak University (SOU), Ahmedabad  
 **Author**: Het Patel (MCA Semester 3)
 
@@ -19,7 +20,7 @@ flowchart TD
         CommsService["📱 SMS (Fast2SMS) & Email (SMTP) Gateway"]
     end
 
-    Process0(("0.0 SOU SmartExam Platform"))
+    Process0(("0.0 ACUMEN Platform"))
 
     Student -->|"Credentials, Exam Answers, Code Submissions, Tab Telemetry"| Process0
     Process0 -->|"Auth Token, Exam Questions, Sandbox Output, Annotated Scorecard"| Student

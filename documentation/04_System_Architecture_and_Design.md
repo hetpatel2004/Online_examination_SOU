@@ -1,5 +1,6 @@
 # Software Architecture & System Design Document
-**Project**: SOU SmartExam — Online Examination & Intelligent Assessment Platform  
+**Project**: ACUMEN — AI-Driven Code Understanding & Monitored Examination Network  
+**Subtitle**: Intelligent Practical Code Assessment & Real-Time Integrity Guardian  
 **Institution**: Silver Oak University (SOU), Ahmedabad  
 **Author**: Het Patel (MCA Semester 3)
 
@@ -7,7 +8,7 @@
 
 ## 1. High-Level 3-Tier Architectural Overview
 
-SOU SmartExam is engineered as a decoupled, resilient, cloud-native 3-tier architecture designed to sustain high concurrent student exam traffic while providing sub-2-second automated AI grading.
+ACUMEN is engineered as a decoupled, resilient, cloud-native 3-tier architecture designed to sustain high concurrent student exam traffic while providing sub-2-second automated AI grading.
 
 ```mermaid
 flowchart TD

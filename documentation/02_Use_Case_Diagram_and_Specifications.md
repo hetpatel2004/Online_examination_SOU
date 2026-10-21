@@ -1,5 +1,6 @@
 # Use Case Diagram & System Specifications
-**Project**: SOU SmartExam — Online Examination & Intelligent Assessment Platform  
+**Project**: ACUMEN — AI-Driven Code Understanding & Monitored Examination Network  
+**Subtitle**: Intelligent Practical Code Assessment & Real-Time Integrity Guardian  
 **Institution**: Silver Oak University (SOU), Ahmedabad  
 **Author**: Het Patel (MCA Semester 3)
 

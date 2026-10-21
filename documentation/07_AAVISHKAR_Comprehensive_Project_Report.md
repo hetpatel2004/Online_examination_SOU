@@ -1,5 +1,7 @@
-# Project Technical Report: SOU SmartExam
+# Project Technical Report: ACUMEN
 ### AAVISHKAR 2026 — Showcasing of Project & PBL Ideas
+**ACUMEN: AI-Driven Code Understanding & Monitored Examination Network**  
+**Subtitle: Intelligent Practical Code Assessment & Real-Time Integrity Guardian**  
 **Department of Computer Applications • Silver Oak University, Ahmedabad**
 
 ---
@@ -7,20 +9,21 @@
 ```
 ========================================================================================
                           SILVER OAK UNIVERSITY
-                     College of Computer Application
+               Silver Oak College of Computer Applications (SOCCA)
              AAVISHKAR 2026: SHOWCASING OF PROJECT & PBL IDEAS
+                             TEAM ID: SOCCA-18
 
                            PROJECT REPORT ON:
-        "INTELLIGENT AI-ASSISTED ONLINE EXAMINATION AND AUTOMATED 
-          MULTI-TIER PROGRAMMING ASSESSMENT PLATFORM (SOU SMARTEXAM)"
+        "ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK"
+        (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)
 
                     Submitted in Partial Fulfillment of 
-                 Master of Computer Applications (MCA) Degree
+             Master of Science in Information Technology (M.Sc. IT) Degree
 
-Submitted by:                                            Under the Guidance of:
-Het Patel                                                Department Faculty Mentors
-Enrollment No: 23010101                                  Department of Computer Applications
-Semester: 3, MCA                                         Silver Oak University
+Submitted by (Team SOCCA-18):                            Under the Guidance of:
+1. Het K Patel       (Enrollment: 2504070200049)         Department Faculty Mentors
+2. Dharmik Makwana   (Enrollment: 2504070200012)         College of Computer Applications
+Semester: 3, M.Sc. IT                                    Silver Oak University
 
 Academic Year: 2025 – 2026
 ========================================================================================
@@ -29,7 +32,7 @@ Academic Year: 2025 – 2026
 ---
 
 ## Abstract
-Traditional academic examination workflows in tertiary computer science education are constrained by manual grading subjectivity, substantial turnaround latencies (7 to 14 days), high stationery costs, and persistent vulnerabilities to unauthorized web browsing. This project develops **SOU SmartExam**, an enterprise cloud examination ecosystem that automates both multiple-choice (MCQ) and practical programming assessments. The system integrates **Google Gemini 1.5 Flash** with an intelligent **Abstract Syntax Tree (AST) heuristic decompiler** to decompose student code submissions into discrete logical constructs (interfaces, boundary conditions, core iteration loops, and return expressions) and assign granular scores with zero line-length bias. An active **3-strike proctoring guard** enforces fullscreen focus and detects tab switching in real time. Deployed on Cloudflare Pages and MongoDB Atlas, empirical benchmarks demonstrate an evaluation latency of **1.2 seconds**, **99.4% grading accuracy**, and a **100% paperless reduction** in university stationery waste.
+Traditional academic examination workflows in tertiary computer science education are constrained by manual grading subjectivity, substantial turnaround latencies (7 to 14 days), high stationery costs, and persistent vulnerabilities to unauthorized web browsing. This project develops **ACUMEN** (AI-Driven Code Understanding & Monitored Examination Network), an enterprise cloud examination ecosystem that automates both multiple-choice (MCQ) and practical programming assessments. The system integrates **Google Gemini 1.5 Flash** with an intelligent **Abstract Syntax Tree (AST) heuristic decompiler** to decompose student code submissions into discrete logical constructs (interfaces, boundary conditions, core iteration loops, and return expressions) and assign granular scores with zero line-length bias. An active **3-strike proctoring guard** enforces fullscreen focus and detects tab switching in real time. Deployed on Cloudflare Pages and MongoDB Atlas, empirical benchmarks demonstrate an evaluation latency of **1.2 seconds**, **99.4% grading accuracy**, and a **100% paperless reduction** in university stationery waste.
 
 ---
 
@@ -46,13 +49,13 @@ Traditional academic examination workflows in tertiary computer science educatio
 ---
 
 ## 1. Introduction & Motivation
-Programming examinations form the foundation of technical pedagogy. However, assessing hundreds of handwritten or manual digital coding submissions creates an unsustainable burden on university faculties. Furthermore, conventional automated autograders function as brittle black boxes—deducting 100% of the question marks if a student makes a trivial formatting error, regardless of whether their algorithmic logic is completely sound. SOU SmartExam addresses these structural challenges through a fault-tolerant, construct-level evaluation paradigm that evaluates student code just as an expert computer science professor would.
+Programming examinations form the foundation of technical pedagogy. However, assessing hundreds of handwritten or manual digital coding submissions creates an unsustainable burden on university faculties. Furthermore, conventional automated autograders function as brittle black boxes—deducting 100% of the question marks if a student makes a trivial formatting error, regardless of whether their algorithmic logic is completely sound. ACUMEN addresses these structural challenges through a fault-tolerant, construct-level evaluation paradigm that evaluates student code just as an expert computer science professor would.
 
 ---
 
 ## 2. Problem Analysis & Existing System Limitations
 
-| Parameter | Traditional Manual Grading | Existing Online LMS | SOU SmartExam (Proposed) |
+| Parameter | Traditional Manual Grading | Existing Online LMS | ACUMEN (Proposed) |
 | :--- | :--- | :--- | :--- |
 | **Grading Latency** | 15–20 minutes / student | 30–60 seconds (I/O only) | **1.2 seconds (AST + AI)** |
 | **Grading Depth** | Subjective / Human variance | Binary Pass / Fail tests | **Granular Construct Marks** |

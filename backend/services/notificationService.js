@@ -327,7 +327,7 @@ async function notifyExamReminder(exam) {
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f8faf9;border-radius:12px">
             <div style="text-align:center;margin-bottom:24px">
               <h2 style="color:#176B3A;margin:0">Silver Oak University</h2>
-              <p style="color:#667085;margin:4px 0 0">Online Examination System</p>
+              <p style="color:#667085;margin:4px 0 0">ACUMEN — AI-Driven Code Understanding &amp; Monitored Examination Network</p>
             </div>
             <div style="background:white;padding:24px;border-radius:12px;border:1px solid #D9E2DC">
               <h3 style="color:#176B3A;margin:0 0 16px">📝 Exam Scheduled!</h3>
@@ -340,9 +340,9 @@ async function notifyExamReminder(exam) {
                 <tr><td style="padding:8px 12px;border:1px solid #D9E2DC;background:#E8F3EC;font-weight:600;color:#176B3A">Duration</td><td style="padding:8px 12px;border:1px solid #D9E2DC">${exam.duration} minutes</td></tr>
                 <tr><td style="padding:8px 12px;border:1px solid #D9E2DC;background:#E8F3EC;font-weight:600;color:#176B3A">Type</td><td style="padding:8px 12px;border:1px solid #D9E2DC">${exam.examType === 'mcq' ? 'MCQ' : 'Practical'}</td></tr>
               </table>
-              <p style="color:#667085;font-size:13px;margin:16px 0 0">Please log in to the examination portal before the scheduled time. Make sure you have a stable internet connection.</p>
+              <p style="color:#667085;font-size:13px;margin:16px 0 0">Please log in to the ACUMEN portal before the scheduled time. Make sure you have a stable internet connection.</p>
             </div>
-            <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — Online Examination System</p>
+            <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — ACUMEN Network</p>
           </div>`
         });
         if (result.sent) sent++;
@@ -351,7 +351,7 @@ async function notifyExamReminder(exam) {
       if (student.phone) {
         const smsResult = await sendSMS({
           to: student.phone,
-          message: `SOU Exam Reminder: ${exam.subjectName} on ${formatDate(exam.date)} at ${formatTime(exam.time)}. Duration: ${exam.duration} mins. Please login to the portal on time.`
+          message: `SOU ACUMEN Exam Reminder: ${exam.subjectName} on ${formatDate(exam.date)} at ${formatTime(exam.time)}. Duration: ${exam.duration} mins. Please login to ACUMEN on time.`
         });
         if (smsResult.sent) smsSent++;
       }
@@ -380,11 +380,11 @@ async function notifyResultPublished(exam) {
       if (sub.studentId.email && transport) {
         const result = await sendEmail({
           to: sub.studentId.email,
-          subject: `📊 Results Published: ${exam.subjectName}`,
+          subject: `📊 Results Published: ${exam.subjectName} (ACUMEN)`,
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f8faf9;border-radius:12px">
             <div style="text-align:center;margin-bottom:24px">
               <h2 style="color:#176B3A;margin:0">Silver Oak University</h2>
-              <p style="color:#667085;margin:4px 0 0">Online Examination System</p>
+              <p style="color:#667085;margin:4px 0 0">ACUMEN — AI-Driven Code Understanding &amp; Monitored Examination Network</p>
             </div>
             <div style="background:white;padding:24px;border-radius:12px;border:1px solid #D9E2DC">
               <h3 style="color:#176B3A;margin:0 0 16px">📊 Results Published!</h3>
@@ -397,7 +397,7 @@ async function notifyResultPublished(exam) {
               </table>
               <p style="margin-top:16px;text-align:center"><a href="${process.env.FRONTEND_URL || 'https://online-examination-sou.vercel.app'}/dashboard" style="display:inline-block;padding:12px 24px;background:#176B3A;color:white;text-decoration:none;border-radius:8px;font-weight:600">View Full Results</a></p>
             </div>
-            <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — Online Examination System</p>
+            <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — ACUMEN Network</p>
           </div>`
         });
         if (result.sent) sent++;
@@ -406,7 +406,7 @@ async function notifyResultPublished(exam) {
       if (sub.studentId.phone) {
         const smsResult = await sendSMS({
           to: sub.studentId.phone,
-          message: `SOU Result: ${exam.subjectName} — Score ${sub.score}/${sub.totalMarks}. Login to portal to view full results.`
+          message: `SOU ACUMEN Result: ${exam.subjectName} — Score ${sub.score}/${sub.totalMarks}. Login to portal to view full results.`
         });
         if (smsResult.sent) smsSent++;
       }
@@ -424,11 +424,11 @@ async function notifyResultPublished(exam) {
 async function notifyAdminCredentials({ to, name, enrollmentNumber, password, role }) {
   return sendEmail({
     to,
-    subject: '🎉 Your SOU Examination System Login Credentials',
+    subject: '🎉 Your SOU ACUMEN System Login Credentials',
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f8faf9;border-radius:12px">
       <div style="text-align:center;margin-bottom:24px">
         <h2 style="color:#176B3A;margin:0">Silver Oak University</h2>
-        <p style="color:#667085;margin:4px 0 0">Online Examination System — Account Created</p>
+        <p style="color:#667085;margin:4px 0 0">ACUMEN Examination Network — Account Created</p>
       </div>
       <div style="background:white;padding:24px;border-radius:12px;border:1px solid #D9E2DC">
         <h3 style="color:#176B3A;margin:0 0 16px">Dear <strong>${name}</strong>,</h3>
@@ -440,7 +440,7 @@ async function notifyAdminCredentials({ to, name, enrollmentNumber, password, ro
         </table>
         <p style="color:#667085;font-size:13px;margin:16px 0 0">Please log in at the administration portal and change your password for security. Do not share these credentials with anyone.</p>
       </div>
-      <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — Online Examination System</p>
+      <p style="color:#667085;font-size:12px;text-align:center;margin-top:16px">Silver Oak University — ACUMEN Network</p>
     </div>`
   });
 }

@@ -63,14 +63,16 @@ const Home = () => {
       {/* ============ HERO SECTION (original) ============ */}
       <section className="hero-section">
         <div className="hero-content">
-          <div className="badge">Online Examination Portal</div>
+          <div className="badge">ACUMEN • Intelligent Assessment Platform</div>
           <h1>Silver Oak University</h1>
-          <h2>Online Examination System</h2>
+          <h2>ACUMEN: AI-Driven Code Understanding &amp; Monitored Examination Network</h2>
+          <p className="hero-tagline" style={{ color: '#16a34a', fontWeight: '700', fontSize: '1.05rem', margin: '4px 0 12px 0' }}>
+            Intelligent Practical Code Assessment &amp; Real-Time Integrity Guardian
+          </p>
           <p className="hero-desc">
             Carrying forward the legacy of the renowned Silver Oak Group of Institutes, 
-            SOU stands tall as one of the best private universities in Gujarat. 
-            True to its motto, <strong>"Gyanam Parmam Bhushanam"</strong> (Knowledge is the highest virtue), 
-            we don't just teach - we inspire.
+            ACUMEN combines construct-level AI code decomposition with active anti-malpractice proctoring.
+            True to our university motto, <strong>"Gyanam Parmam Bhushanam"</strong> (Knowledge is the highest virtue).
           </p>
           <div className="hero-stats">
             <div className="stat-item">

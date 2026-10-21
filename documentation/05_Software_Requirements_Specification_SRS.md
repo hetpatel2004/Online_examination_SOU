@@ -1,5 +1,6 @@
 # Software Requirements Specification (SRS)
-**Project**: SOU SmartExam — Online Examination & Intelligent Assessment Platform  
+**Project**: ACUMEN — AI-Driven Code Understanding & Monitored Examination Network  
+**Subtitle**: Intelligent Practical Code Assessment & Real-Time Integrity Guardian  
 **Standard**: IEEE 830-1998 Compliant  
 **Institution**: Silver Oak University (SOU), Ahmedabad  
 **Author**: Het Patel (MCA Semester 3)
@@ -9,7 +10,7 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-This Software Requirements Specification (SRS) details the functional and non-functional requirements for the **SOU SmartExam Platform**, an enterprise-level online examination and automated assessment system designed for Silver Oak University.
+This Software Requirements Specification (SRS) details the functional and non-functional requirements for **ACUMEN** (AI-Driven Code Understanding & Monitored Examination Network), an enterprise-level online examination and automated assessment system designed for Silver Oak University.
 
 ### 1.2 Scope of the Software
 The platform supports:

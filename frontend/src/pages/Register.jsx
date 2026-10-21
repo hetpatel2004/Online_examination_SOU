@@ -139,8 +139,11 @@ const Register = () => {
         <div className="sidebar-content">
           <Link to="/" className="back-home">&larr; Back to Home</Link>
           <h2>Silver Oak University</h2>
-          <h3>Online Examination Portal</h3>
-          <p>Register with your enrollment number to access the examination platform.</p>
+          <h3>ACUMEN Portal</h3>
+          <p style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: '600', marginBottom: '8px' }}>
+            AI-Driven Code Understanding &amp; Monitored Examination Network
+          </p>
+          <p>Register with your enrollment number to access the ACUMEN platform.</p>
           <div className="sidebar-features">
             <div className="sidebar-feature">
               <span>&#10003;</span>

@@ -1,6 +1,9 @@
-# 📚 Online Examination Portal (Silver Oak University) - Complete Documentation Suite
+# 📚 ACUMEN - AI-Driven Code Understanding & Monitored Examination Network
+### Intelligent Practical Code Assessment & Real-Time Integrity Guardian
+**Silver Oak University • Silver Oak College of Computer Applications (SOCCA)**  
+**Team SOCCA-18**: Het K Patel (`2504070200049`) & Dharmik Makwana (`2504070200012`) | **Program**: M.Sc. IT Semester 3  
 
-Welcome to the central documentation and design repository for the **AI-Augmented Cloud Examination & Automated Code Evaluation System (AAVISHKAR 2026)**.
+Welcome to the central documentation and design repository for **ACUMEN** for **AAVISHKAR 2026**.
 
 This folder is positioned at the root directory alongside `frontend/` and `backend/` to provide a complete, standalone documentation package for students, evaluators, project guides, and developers.
 

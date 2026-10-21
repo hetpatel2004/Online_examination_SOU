@@ -1,5 +1,6 @@
 # REST API Reference & Endpoint Documentation
-**Project**: SOU SmartExam — Online Examination & Intelligent Assessment Platform  
+**Project**: ACUMEN — AI-Driven Code Understanding & Monitored Examination Network  
+**Subtitle**: Intelligent Practical Code Assessment & Real-Time Integrity Guardian  
 **Base URL**: `https://api.online-examination-sou.pages.dev/api` (or `http://localhost:5000/api`)  
 **Authorization**: `Bearer <JWT_TOKEN>` in HTTP Header  
 **Content-Type**: `application/json`

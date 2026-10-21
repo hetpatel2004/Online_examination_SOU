@@ -1,7 +1,7 @@
 {
-  "name": "online-examination-sou-backend",
+  "name": "acumen-backend",
   "version": "1.0.0",
-  "description": "Backend API for SOU Online Examination System",
+  "description": "ACUMEN: AI-Driven Code Understanding & Monitored Examination Network Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -127,7 +127,10 @@ const Login = () => {
         <div className="sidebar-content">
           <Link to="/" className="back-home">&larr; Back to Home</Link>
           <h2>Silver Oak University</h2>
-          <h3>Online Examination Portal</h3>
+          <h3>ACUMEN Portal</h3>
+          <p style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: '600', marginBottom: '8px' }}>
+            AI-Driven Code Understanding &amp; Monitored Examination Network
+          </p>
           <p>
             Login with your enrollment number and password.
           </p>
@@ -152,7 +155,7 @@ const Login = () => {
       <div className="auth-form-container">
         <div className="auth-form-wrapper">
           <h2>Welcome Back!</h2>
-          <p className="auth-subtitle">Login to access your examination portal</p>
+          <p className="auth-subtitle">Login to access ACUMEN Examination Network</p>
           
           {/* Error message display */}
           {error && <div className="error-message">{error}</div>}
