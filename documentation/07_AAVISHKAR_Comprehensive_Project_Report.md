@@ -144,7 +144,7 @@ Across 50 benchmark test cases containing clean recursive solutions, 1-line stan
 ---
 
 ## 7. Conclusion & Future Enhancements
-SOU SmartExam demonstrates the practical viability of AI-driven, construct-level assessment in university computer science programs. Future development will integrate WebRTC AI gaze tracking, facial landmark proctoring, and automated curriculum integration with university ERP systems.
+ACUMEN demonstrates the practical viability of AI-driven, construct-level assessment in university computer science programs. Future development will integrate WebRTC AI gaze tracking, facial landmark proctoring, and automated curriculum integration with university ERP systems.
 
 ---
 

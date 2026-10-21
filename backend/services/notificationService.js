@@ -448,8 +448,8 @@ async function notifyAdminCredentials({ to, name, enrollmentNumber, password, ro
 async function sendTestEmail(to) {
   return sendEmail({
     to,
-    subject: 'Test Email — SOU Examination System',
-    html: '<h2>✅ Test email from SOU Examination System</h2><p>If you received this, email notifications are working.</p>'
+    subject: 'Test Email — SOU ACUMEN Examination Network',
+    html: '<h2>✅ Test email from SOU ACUMEN Examination Network</h2><p>If you received this, email notifications are working.</p>'
   });
 }
 

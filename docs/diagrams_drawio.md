@@ -1,4 +1,6 @@
-# Online Examination System (SOU) — Draw.io Diagram Codes
+# ACUMEN — Draw.io Diagram Codes
+### AI-Driven Code Understanding & Monitored Examination Network
+**Silver Oak University • Team SOCCA-18 (M.Sc. IT Sem 3)**
 
 This document contains diagram codes ready to paste directly into **[draw.io](https://app.diagrams.net/)**.
 
@@ -322,7 +324,7 @@ actor "Student" as student
 actor "Faculty Admin" as admin
 actor "Super Admin" as superadmin
 
-rectangle "Online Examination System (SOU)" {
+rectangle "ACUMEN System (SOU)" {
   ' Common
   usecase "Login & Authenticate" as UC_Login
   usecase "Change Password" as UC_CP
