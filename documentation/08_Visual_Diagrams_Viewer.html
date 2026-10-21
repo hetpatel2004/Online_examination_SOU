@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOU SmartExam - Visual System Diagrams & Architecture Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #00612e;
+      --primary-dark: #004520;
+      --maroon: #8a1610;
+      --navy: #0f172a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      padding: 20px 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    header h1 { font-size: 22px; font-weight: 800; }
+    header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: #0f172a;
+      padding: 10px 30px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: rgba(255,255,255,0.1);
+      color: #94a3b8;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0,97,46,0.4);
+    }
+    .content-area {
+      max-width: 1400px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .tab-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .tab-panel.active { display: block; }
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .mermaid-box {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 8px;
+      padding: 20px;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>SOU SmartExam — Interactive Visual Diagrams Viewer</h1>
+    <p>Department of Computer Applications • Silver Oak University (SOU) • AAVISHKAR 2026</p>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('tab-erd')">1. ER Diagram (Database)</button>
+    <button class="tab-btn" onclick="showTab('tab-usecase')">2. Use Case Diagram</button>
+    <button class="tab-btn" onclick="showTab('tab-dfd0')">3. DFD Level 0 (Context)</button>
+    <button class="tab-btn" onclick="showTab('tab-dfd1')">4. DFD Level 1 (System)</button>
+    <button class="tab-btn" onclick="showTab('tab-dfd2')">5. DFD Level 2 (AI Evaluation)</button>
+    <button class="tab-btn" onclick="showTab('tab-arch')">6. 3-Tier Architecture</button>
+  </nav>
+
+  <main class="content-area">
+
+    <!-- TAB 1: ERD -->
+    <div id="tab-erd" class="tab-panel active">
+      <h2 class="panel-title">Entity-Relationship Diagram (ERD) — Database Architecture</h2>
+      <div class="mermaid-box">
+        <div class="mermaid">
+erDiagram
+    COURSE ||--o{ SUBJECT : "offers"
+    COURSE ||--o{ USER : "enrolled in"
+    SUBJECT ||--o{ EXAM : "scheduled for"
+    EXAM ||--o{ QUESTION : "contains"
+    EXAM ||--o{ SUBMISSION : "receives"
+    USER ||--o{ SUBMISSION : "submits"
+    EXAM ||--o{ NOTIFICATION : "triggers"
+    USER ||--o{ NOTIFICATION : "receives"
+
+    COURSE {
+        string name
+        string code
+        string level
+        number totalSemesters
+    }
+    USER {
+        string name
+        string enrollmentNumber
+        string email
+        string role
+        string course
+    }
+    SUBJECT {
+        string name
+        string code
+        number semester
+    }
+    EXAM {
+        string date
+        string time
+        number duration
+        string examType
+        string evaluationMethod
+        string resultDate
+    }
+    QUESTION {
+        string questionText
+        number marks
+        string type
+        string modelAnswer
+    }
+    SUBMISSION {
+        number score
+        number totalMarks
+        string status
+        number correctnessScore
+        number qualityScore
+        string codeBreakdown
+        string annotatedCode
+    }
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: USE CASE -->
+    <div id="tab-usecase" class="tab-panel">
+      <h2 class="panel-title">Use Case Diagram — Actor & System Interactions</h2>
+      <div class="mermaid-box">
+        <div class="mermaid">
+flowchart LR
+    S["👨‍🎓 Student"]
+    A["👨‍🏫 Faculty / Admin"]
+    AI["🤖 AI Evaluator"]
+    PG["🚨 Proctoring Guard"]
+
+    subgraph Portal
+        U1["Login & Auth"]
+        U2["Schedule Exam"]
+        U3["Upload Questions"]
+        U4["Attempt Exam"]
+        U5["Code in Sandbox"]
+        U6["3-Strike Tab Guard"]
+        U7["AI Construct Evaluation"]
+        U8["Scorecard & Annotations"]
+    end
+
+    S --> U1
+    S --> U4
+    S --> U5
+    S --> U8
+    A --> U1
+    A --> U2
+    A --> U3
+    PG -.-> U6
+    U5 --> U7
+    AI -.-> U7
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DFD 0 -->
+    <div id="tab-dfd0" class="tab-panel">
+      <h2 class="panel-title">Data Flow Diagram (DFD Level 0) — Context Diagram</h2>
+      <div class="mermaid-box">
+        <div class="mermaid">
+flowchart TD
+    Student["👨‍🎓 Student"]
+    Faculty["👨‍🏫 Faculty / Admin"]
+    AIService["🤖 Google Gemini / OpenAI Cloud API"]
+    Comms["📱 SMS & Email Gateway"]
+    P0(("0.0 SOU SmartExam System"))
+
+    Student <-->|"Exam Answers / Annotated Scorecard"| P0
+    Faculty <-->|"Exams & Questions / Submissions Analytics"| P0
+    P0 <-->|"Prompt / JSON Construct Breakdown"| AIService
+    P0 -->|"Notifications"| Comms
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: DFD 1 -->
+    <div id="tab-dfd1" class="tab-panel">
+      <h2 class="panel-title">Data Flow Diagram (DFD Level 1) — System Decomposition</h2>
+      <div class="mermaid-box">
+        <div class="mermaid">
+flowchart TD
+    P1(("1.0 Authentication & RBAC"))
+    P2(("2.0 Curriculum & Exams"))
+    P3(("3.0 Proctoring Monitor"))
+    P4(("4.0 Sandbox Runtime"))
+    P5(("5.0 AI Code Evaluation"))
+    P6(("6.0 Result Publication"))
+
+    D1[("D1: Users")]
+    D2[("D2: Exams")]
+    D3[("D3: Questions")]
+    D4[("D4: Submissions")]
+
+    P1 <--> D1
+    P2 <--> D2
+    P2 <--> D3
+    P3 --> D4
+    P4 --> P5
+    P5 --> D4
+    D4 --> P6
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DFD 2 -->
+    <div id="tab-dfd2" class="tab-panel">
+      <h2 class="panel-title">Data Flow Diagram (DFD Level 2) — AI Code Evaluation Pipeline</h2>
+      <div class="mermaid-box">
+        <div class="mermaid">
+flowchart TD
+    Code["Student Code"]
+    P51(("5.1 Sandbox Execution"))
+    P52(("5.2 Semantic AI Review"))
+    P53(("5.3 AST Construct Parser"))
+    P54(("5.4 Mark Allocator"))
+    P55(("5.5 Annotator & Synthesizer"))
+    D5[("D5: Submissions")]
+
+    Code --> P51
+    Code --> P52
+    Code --> P53
+    P51 --> P54
+    P52 --> P54
+    P53 --> P54
+    P54 --> P55
+    P55 --> D5
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: ARCHITECTURE -->
+    <div id="tab-arch" class="tab-panel">
+      <h2 class="panel-title">Software Architecture — 3-Tier Cloud Architecture</h2>
+      <div class="mermaid-box">
+        <div class="mermaid">
+flowchart TD
+    subgraph Presentation Tier
+        React["React 18 SPA"]
+        Monaco["Monaco Code Editor"]
+        Proctor["Proctoring Guard"]
+    end
+    subgraph Application Tier
+        Express["Express.js API Gateway"]
+        Auth["JWT & RBAC Middleware"]
+        EvalEngine["AI & AST Evaluation Engine"]
+        Sandbox["Multi-Language Sandbox"]
+    end
+    subgraph Data Tier
+        Mongo[("MongoDB Atlas Cloud")]
+        Cloudflare["Cloudflare Pages CDN"]
+    end
+
+    React --> Express
+    Express --> Auth
+    Auth --> EvalEngine
+    Auth --> Sandbox
+    EvalEngine --> Mongo
+    Cloudflare --> React
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+  </script>
+</body>
+</html>
