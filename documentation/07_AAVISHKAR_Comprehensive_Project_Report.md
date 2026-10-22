@@ -21,7 +21,7 @@
              Master of Science in Information Technology (M.Sc. IT) Degree
 
 Submitted by (Team SOCCA-18):                            Under the Guidance of:
-1. Het K Patel       (Enrollment: 2504070200049)         Department Faculty Mentors
+1. Het K Patel       (Enrollment: 2504070200049)         Prof. Risha Tiwari (Project Mentor)
 2. Dharmik Makwana   (Enrollment: 2504070200012)         College of Computer Applications
 Semester: 3, M.Sc. IT                                    Silver Oak University
 
