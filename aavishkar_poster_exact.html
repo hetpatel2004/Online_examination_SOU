@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AAVISHKAR 2026 Project Poster - ACUMEN</title>
+  <style>
+    @page {
+      size: 1400px 1400px;
+      margin: 0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 1400px;
+      height: 1400px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111111;
+      padding: 22px 24px;
+      margin: 0 auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* 3-COLUMN MASTER GRID */
+    .poster-grid {
+      display: grid;
+      grid-template-columns: 345px 654px 345px;
+      gap: 16px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    /* CARD STYLING */
+    .card {
+      background: #ffffff;
+      border: 1px solid #8e8e8e;
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* SECTION HEADER PILL */
+    .pill-header {
+      background: #7a1a1a;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      padding: 6px 14px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .card-body {
+      font-size: 12px;
+      line-height: 1.44;
+      color: #111111;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
+    .card-body p {
+      margin-bottom: 7px;
+    }
+
+    /* ========================================================
+       CENTER COLUMN HEADER SECTION
+       ======================================================== */
+    .center-header-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logos-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 4px 6px 4px;
+    }
+
+    .sou-logo-wrapper {
+      width: 260px;
+      display: flex;
+      align-items: center;
+    }
+
+    .sou-logo-img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .naac-logo-wrapper {
+      width: 100px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* PROJECT TITLE & CODE PILLS */
+    .title-pill {
+      background: #7a1a1a;
+      color: #ffffff;
+      font-size: 32px;
+      font-weight: 900;
+      text-align: center;
+      padding: 7px 20px 8px 20px;
+      border-radius: 12px;
+      width: 84%;
+      margin: 4px auto 7px auto;
+      letter-spacing: 1px;
+    }
+
+    .title-sub {
+      font-size: 12.5px;
+      font-weight: bold;
+      display: block;
+      color: #fce7e7;
+      margin-top: 2px;
+      letter-spacing: 0.2px;
+    }
+
+    .project-code-pill {
+      background: #7a1a1a;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 900;
+      text-align: center;
+      padding: 6px 20px;
+      border-radius: 10px;
+      width: 74%;
+      margin: 0 auto 9px auto;
+      letter-spacing: 0.5px;
+    }
+
+    /* STUDENT / MENTOR TABLE */
+    .team-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2px;
+      background: #ffffff;
+      font-size: 12px;
+    }
+
+    .team-table th, .team-table td {
+      border: 1px solid #333333;
+      padding: 5px 8px;
+      text-align: center;
+    }
+
+    .team-table th {
+      background: #ffffff;
+      color: #000000;
+      font-weight: bold;
+      font-size: 12.5px;
+    }
+
+    .team-table td {
+      color: #000000;
+    }
+
+    /* METHODOLOGY LIST & PIPELINE */
+    .method-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      line-height: 1.42;
+    }
+
+    .method-list li {
+      margin-bottom: 5px;
+      text-align: left;
+    }
+
+    .method-list strong {
+      color: #000000;
+    }
+
+    .pipeline-container {
+      width: 100%;
+      padding: 2px 0 0 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* DATA ANALYSIS 2x2 GRID */
+    .data-analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .analysis-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      padding: 2px;
+      height: 100%;
+    }
+
+    .status-table {
+      width: 92%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin: auto;
+    }
+
+    .status-table th, .status-table td {
+      border: 1px solid #444444;
+      padding: 5px 10px;
+      text-align: left;
+    }
+
+    .status-table th {
+      background: #ffffff;
+      font-weight: bold;
+    }
+
+    .status-table td:nth-child(2) {
+      text-align: right;
+      font-weight: bold;
+    }
+
+    /* REFERENCES & SDGS */
+    .ref-list {
+      font-size: 11.2px;
+      line-height: 1.38;
+      margin-bottom: 8px;
+      color: #222222;
+    }
+
+    .ref-list div {
+      margin-bottom: 5px;
+    }
+
+    .sdg-section {
+      border-top: 1px solid #d0d0d0;
+      padding-top: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sdg-title {
+      font-weight: bold;
+      font-size: 13.5px;
+      color: #111111;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+
+    .sdg-grid-box {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poster-grid">
+
+    <!-- ========================================================
+         COLUMN 1 (LEFT COLUMN)
+         ======================================================== -->
+    <div class="column">
+      
+      <!-- CARD 1: PURPOSE -->
+      <div class="card" style="flex: 1.05; margin-bottom: 14px;">
+        <div class="pill-header">Purpose</div>
+        <div class="card-body">
+          <p>
+            This project aims to digitize and streamline faculty examination and evaluation processes traditionally handled manually. The system focuses on improving task tracking, communication, and scheduling within educational institutions.
+          </p>
+          <p>
+            By integrating modules like practical code evaluation, task management, meeting scheduling, leave handling, and reporting, the system enhances operational efficiency, transparency, and accountability. It reduces paperwork, minimizes human errors, and provides real-time insights for better decision-making in university examination management.
+          </p>
+        </div>
+      </div>
+
+      <!-- CARD 2: ABSTRACT -->
+      <div class="card" style="flex: 1.25; margin-bottom: 14px;">
+        <div class="pill-header">Abstract</div>
+        <div class="card-body">
+          <p>
+            The <strong>“ACUMEN”</strong> (AI-Driven Code Understanding &amp; Monitored Examination Network) system is a web-based solution designed to replace traditional manual record-keeping and subjective grading methods. It enables administrators to manage faculty, assign examination tasks, schedule practical lab sessions, and monitor student performance through a centralized platform.
+          </p>
+          <p>
+            Faculty members can update task status, verify multi-tier code submissions, apply for leave, and access real-time notifications efficiently. Powered by AST construct decomposition and AI analysis, student code is evaluated objectively on logic rather than code length. The system ensures better coordination, reduces delays, and improves productivity. It is scalable, user-friendly, and suitable for modern educational environments aiming for digital transformation.
+          </p>
+        </div>
+      </div>
+
+      <!-- CARD 3: LITERATURE SURVEY -->
+      <div class="card" style="flex: 1.2;">
+        <div class="pill-header">Literature Survey</div>
+        <div class="card-body">
+          <p>
+            Existing systems for academic evaluation and faculty management often rely on manual processes or partially digital solutions, leading to inefficiencies and lack of real-time updates. Research highlights the importance of automation in improving administrative workflows and reducing redundancy in higher education institutions.
+          </p>
+          <p>
+            Various studies suggest that centralized management systems enhance communication and decision-making. However, many systems lack integration of multiple modules such as automated practical code tracking, anti-cheating proctoring, leave management, and granular analytics. This project bridges that gap by providing a unified, efficient, and scalable solution.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         COLUMN 2 (CENTER COLUMN)
+         ======================================================== -->
+    <div class="column">
+      
+      <!-- TOP HEADER AREA -->
+      <div class="card" style="flex: 1.05; margin-bottom: 14px; padding: 10px 14px;">
+        <div class="center-header-box">
+          
+          <!-- LOGOS ROW -->
+          <div class="logos-row">
+            <!-- SOU LOGO -->
+            <div class="sou-logo-wrapper">
+              <img src="sou_logo.svg" alt="Silver Oak University" class="sou-logo-img">
+            </div>
+
+            <!-- NAAC LOGO -->
+            <div class="naac-logo-wrapper">
+              <svg viewBox="0 0 100 100" width="88" height="88">
+                <!-- Outer Golden Seal -->
+                <circle cx="50" cy="46" r="42" fill="#ffffff" stroke="#c59b27" stroke-width="4.5"/>
+                <circle cx="50" cy="46" r="37" fill="#ffffff" stroke="#e0b84c" stroke-width="1.5" stroke-dasharray="3,2"/>
+                <!-- Curved Text -->
+                <path id="curve" fill="none" d="M 18,46 A 32,32 0 0,1 82,46" />
+                <text font-size="6.2" font-weight="bold" fill="#000000" text-anchor="middle">
+                  <textPath href="#curve" startOffset="50%">ACCREDITED WITH GRADE</textPath>
+                </text>
+                <!-- Grade A+ -->
+                <text x="50" y="52" font-size="24" font-weight="900" fill="#a71919" text-anchor="middle" font-family="'Arial Black', sans-serif">A+</text>
+                <!-- Banner NAAC -->
+                <path d="M 16,68 L 22,63 L 78,63 L 84,68 L 81,77 L 50,77 L 19,77 Z" fill="#8b1818" stroke="#ffffff" stroke-width="1"/>
+                <text x="50" y="73.5" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="1.5">NAAC</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- PROJECT TITLE -->
+          <div class="title-pill">
+            ACUMEN
+            <span class="title-sub">AI-Driven Code Understanding &amp; Monitored Examination Network</span>
+          </div>
+
+          <!-- PROJECT CODE -->
+          <div class="project-code-pill">
+            Project Code - SOCCA-18
+          </div>
+
+          <!-- TEAM TABLE -->
+          <table class="team-table">
+            <thead>
+              <tr>
+                <th style="width: 8%;">Sr. No.</th>
+                <th style="width: 42%;">Name</th>
+                <th style="width: 25%;">Affiliation</th>
+                <th style="width: 25%;">Project Mentor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td style="font-weight: bold; text-align: left; padding-left: 12px;">Het K Patel <span style="font-size: 11px; font-weight: normal; color: #333;">(2504070200049)</span></td>
+                <td rowspan="2" style="font-weight: bold; line-height: 1.35;">
+                  I.MSC.IT<br><span style="font-weight: normal;">(SOCCA)</span>
+                </td>
+                <td rowspan="2" style="font-weight: bold; line-height: 1.35;">
+                  Prof. Ketan Nakum Sir
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td style="font-weight: bold; text-align: left; padding-left: 12px;">Dharmik Makwana <span style="font-size: 11px; font-weight: normal; color: #333;">(2504070200012)</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+      <!-- CARD 2: METHODOLOGY -->
+      <div class="card" style="flex: 1.25; margin-bottom: 14px;">
+        <div class="pill-header">Methodology</div>
+        <div class="card-body">
+          <ul class="method-list">
+            <li><strong>• Requirement Analysis:</strong> Identified problems in manual faculty management and examination evaluation.</li>
+            <li><strong>• System Design:</strong> Designed Admin, Faculty, and Student examination modules.</li>
+            <li><strong>• Development:</strong> Built using modern web technologies (React, Node.js, Express, MongoDB Atlas).</li>
+            <li><strong>• Implementation:</strong> Integrated features like task lifecycle, AST logic scoring, leave approval, and notifications.</li>
+            <li><strong>• Testing:</strong> Conducted functional, anti-cheating tab detection, and algorithmic usability testing.</li>
+            <li><strong>• Deployment:</strong> Cloudflare Pages and cloud API cluster for secure, real-time access.</li>
+          </ul>
+
+          <!-- PROCESS DIAGRAM (EXACT VECTOR FLOW) -->
+          <div class="pipeline-container">
+            <svg viewBox="0 0 580 95" width="100%" height="90">
+              <!-- Connecting Pipeline (Smooth Curve passing through nodes) -->
+              <path d="M 60,40 C 120,18 140,60 180,38 C 240,16 260,62 300,42 C 360,18 380,58 420,38 C 470,16 490,62 525,44" 
+                    fill="none" stroke="#6875f5" stroke-width="4.5" stroke-linecap="round"/>
+
+              <!-- Step 1: Requirement Analysis -->
+              <g transform="translate(60, 40)">
+                <circle r="22" fill="#f59e0b" stroke="#ffffff" stroke-width="3"/>
+                <!-- Icon: Magnifying Glass / Document -->
+                <path d="M -7,-9 L 3,-9 L 7,-5 L 7,8 L -7,8 Z" fill="#ffffff"/>
+                <circle cx="2" cy="2" r="5" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                <line x1="6" y1="6" x2="10" y2="10" stroke="#f59e0b" stroke-width="2"/>
+                <text y="35" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">Requirement</text>
+                <text y="46" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">Analysis</text>
+              </g>
+
+              <!-- Step 2: System Design -->
+              <g transform="translate(180, 38)">
+                <circle r="22" fill="#3b82f6" stroke="#ffffff" stroke-width="3"/>
+                <!-- Icon: </> -->
+                <text x="0" y="5" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="monospace">&lt;/&gt;</text>
+                <text y="35" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">System</text>
+                <text y="46" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">Design</text>
+              </g>
+
+              <!-- Step 3: Implementation -->
+              <g transform="translate(300, 42)">
+                <circle r="22" fill="#ec4899" stroke="#ffffff" stroke-width="3"/>
+                <!-- Icon: Gears -->
+                <circle cx="0" cy="0" r="7.5" fill="none" stroke="#ffffff" stroke-width="3"/>
+                <path d="M 0,-11 L 0,-8 M 0,8 L 0,11 M -11,0 L -8,0 M 8,0 L 11,0 M -8,-8 L -6,-6 M 6,6 L 8,8 M -8,8 L -6,6 M 6,-6 L 8,-8" stroke="#ffffff" stroke-width="2.5"/>
+                <text y="35" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">Implementation</text>
+              </g>
+
+              <!-- Step 4: Testing -->
+              <g transform="translate(420, 38)">
+                <circle r="22" fill="#10b981" stroke="#ffffff" stroke-width="3"/>
+                <!-- Icon: Shield / Check -->
+                <path d="M 0,-9 L 8,-5 L 8,2 C 8,7 0,10 0,10 C 0,10 -8,7 -8,2 L -8,-5 Z" fill="#ffffff"/>
+                <path d="M -4,1 L -1,4 L 4,-2" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+                <text y="35" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">Testing</text>
+              </g>
+
+              <!-- Step 5: Deployment -->
+              <g transform="translate(525, 44)">
+                <circle r="22" fill="#06b6d4" stroke="#ffffff" stroke-width="3"/>
+                <!-- Icon: Cloud / Web -->
+                <path d="M -6,4 C -9,4 -10,1 -8,-2 C -8,-6 -2,-8 2,-5 C 5,-7 10,-4 9,0 C 11,1 10,4 7,4 Z" fill="#ffffff"/>
+                <text y="35" font-size="9.5" font-weight="bold" fill="#000000" text-anchor="middle">Deployment</text>
+              </g>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CARD 3: DATA ANALYSIS -->
+      <div class="card" style="flex: 1.25;">
+        <div class="pill-header">Data Analysis (Data / Tables / Graphs / Images)</div>
+        <div class="data-analysis-grid">
+          
+          <!-- TOP LEFT: STATUS TABLE -->
+          <div class="analysis-cell">
+            <table class="status-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Assigned</td>
+                  <td>20</td>
+                </tr>
+                <tr>
+                  <td>In Progress</td>
+                  <td>15</td>
+                </tr>
+                <tr>
+                  <td>Completed</td>
+                  <td>10</td>
+                </tr>
+                <tr>
+                  <td>Verified</td>
+                  <td>5</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- TOP RIGHT: LINE CHART (Task Completion Over Time) -->
+          <div class="analysis-cell">
+            <svg viewBox="0 0 240 140" width="100%" height="135">
+              <text x="125" y="11" font-size="8.5" font-weight="bold" fill="#222222" text-anchor="middle">Task Completion Over Time</text>
+              <!-- Grid lines -->
+              <line x1="35" y1="25" x2="225" y2="25" stroke="#f0f0f0" stroke-width="1"/>
+              <line x1="35" y1="50" x2="225" y2="50" stroke="#f0f0f0" stroke-width="1"/>
+              <line x1="35" y1="75" x2="225" y2="75" stroke="#f0f0f0" stroke-width="1"/>
+              <line x1="35" y1="100" x2="225" y2="100" stroke="#f0f0f0" stroke-width="1"/>
+              <line x1="35" y1="115" x2="225" y2="115" stroke="#333333" stroke-width="1.2"/>
+              <line x1="35" y1="25" x2="35" y2="115" stroke="#333333" stroke-width="1.2"/>
+
+              <!-- Y-Axis Labels -->
+              <text x="30" y="28" font-size="7.5" fill="#444" text-anchor="end">12</text>
+              <text x="30" y="53" font-size="7.5" fill="#444" text-anchor="end">10</text>
+              <text x="30" y="78" font-size="7.5" fill="#444" text-anchor="end">6</text>
+              <text x="30" y="103" font-size="7.5" fill="#444" text-anchor="end">2</text>
+              <text x="12" y="70" font-size="7.5" fill="#444" text-anchor="middle" transform="rotate(-90 12 70)">Tasks Completed</text>
+
+              <!-- X-Axis Labels -->
+              <text x="40" y="126" font-size="7.5" fill="#444" text-anchor="middle">Day 1</text>
+              <text x="85" y="126" font-size="7.5" fill="#444" text-anchor="middle">Day 2</text>
+              <text x="130" y="126" font-size="7.5" fill="#444" text-anchor="middle">Day 3</text>
+              <text x="175" y="126" font-size="7.5" fill="#444" text-anchor="middle">Day 4</text>
+              <text x="215" y="126" font-size="7.5" fill="#444" text-anchor="middle">Day 5</text>
+              <text x="130" y="135" font-size="7" fill="#666" text-anchor="middle">Time</text>
+
+              <!-- Plot Line -->
+              <path d="M 40,110 L 85,75 L 130,55 L 175,38 L 215,28" fill="none" stroke="#0284c7" stroke-width="2.2"/>
+              <!-- Data Points -->
+              <circle cx="40" cy="110" r="3.2" fill="#0284c7"/>
+              <circle cx="85" cy="75" r="3.2" fill="#0284c7"/>
+              <circle cx="130" cy="55" r="3.2" fill="#0284c7"/>
+              <circle cx="175" cy="38" r="3.2" fill="#0284c7"/>
+              <circle cx="215" cy="28" r="3.2" fill="#0284c7"/>
+            </svg>
+          </div>
+
+          <!-- BOTTOM LEFT: PIE CHART (Assigned / In Progress / Completed) -->
+          <div class="analysis-cell">
+            <svg viewBox="0 0 200 135" width="100%" height="130">
+              <!-- Donut/Pie segments -->
+              <!-- Center at 85, 70, radius 46 -->
+              <!-- Segment 1: Assigned (44.4%) - Blue -->
+              <path d="M 85,70 L 85,24 A 46,46 0 0,1 128,86 Z" fill="#0284c7"/>
+              <!-- Segment 2: In Progress (33.3%) - Orange -->
+              <path d="M 85,70 L 128,86 A 46,46 0 0,1 47,97 Z" fill="#ea580c"/>
+              <!-- Segment 3: Completed (22.2%) - Green -->
+              <path d="M 85,70 L 47,97 A 46,46 0 0,1 85,24 Z" fill="#16a34a"/>
+
+              <!-- Labels -->
+              <text x="138" y="42" font-size="8" font-weight="bold" fill="#0284c7">Assigned</text>
+              <text x="96" y="55" font-size="7.5" font-weight="bold" fill="#ffffff">44.4%</text>
+
+              <text x="22" y="122" font-size="8" font-weight="bold" fill="#ea580c">In Progress</text>
+              <text x="70" y="90" font-size="7.5" font-weight="bold" fill="#ffffff">33.3%</text>
+
+              <text x="142" y="118" font-size="8" font-weight="bold" fill="#16a34a">Completed</text>
+              <text x="59" y="58" font-size="7.5" font-weight="bold" fill="#ffffff">22.2%</text>
+            </svg>
+          </div>
+
+          <!-- BOTTOM RIGHT: BAR CHART (Faculty Performance) -->
+          <div class="analysis-cell">
+            <svg viewBox="0 0 200 135" width="100%" height="130">
+              <text x="100" y="11" font-size="8.5" font-weight="bold" fill="#222222" text-anchor="middle">Faculty Performance</text>
+              
+              <!-- Axes -->
+              <line x1="30" y1="24" x2="30" y2="105" stroke="#333333" stroke-width="1.2"/>
+              <line x1="30" y1="105" x2="185" y2="105" stroke="#333333" stroke-width="1.2"/>
+
+              <!-- Grid -->
+              <line x1="30" y1="45" x2="185" y2="45" stroke="#f0f0f0" stroke-width="1"/>
+              <line x1="30" y1="65" x2="185" y2="65" stroke="#f0f0f0" stroke-width="1"/>
+              <line x1="30" y1="85" x2="185" y2="85" stroke="#f0f0f0" stroke-width="1"/>
+
+              <!-- Bars -->
+              <!-- Bar 1: Faculty A -->
+              <rect x="42" y="38" width="22" height="67" fill="#0284c7" rx="1"/>
+              <text x="53" y="116" font-size="6.8" fill="#333" text-anchor="middle">Faculty A</text>
+
+              <!-- Bar 2: Faculty B -->
+              <rect x="76" y="52" width="22" height="53" fill="#0284c7" rx="1"/>
+              <text x="87" y="116" font-size="6.8" fill="#333" text-anchor="middle">Faculty B</text>
+
+              <!-- Bar 3: Faculty C -->
+              <rect x="110" y="58" width="22" height="47" fill="#0284c7" rx="1"/>
+              <text x="121" y="116" font-size="6.8" fill="#333" text-anchor="middle">Faculty C</text>
+
+              <!-- Bar 4: ACUMEN -->
+              <rect x="144" y="30" width="22" height="75" fill="#0284c7" rx="1"/>
+              <text x="155" y="116" font-size="6.8" font-weight="bold" fill="#333" text-anchor="middle">ACUMEN</text>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         COLUMN 3 (RIGHT COLUMN)
+         ======================================================== -->
+    <div class="column">
+      
+      <!-- CARD 1: RESULTS & DISCUSSION -->
+      <div class="card" style="flex: 1.05; margin-bottom: 14px;">
+        <div class="pill-header">Results &amp; Discussion</div>
+        <div class="card-body">
+          <p>
+            The system demonstrated significant improvement in task management efficiency and communication between admin and faculty. Task tracking became more transparent, and delays were reduced due to real-time updates. Leave management and meeting scheduling were streamlined, minimizing conflicts.
+          </p>
+          <p>
+            The system proved reliable, user-friendly, and effective in handling multiple administrative operations simultaneously. Compared to traditional methods, it showed better accuracy, reduced workload, and enhanced productivity in faculty supervision and practical examination evaluation.
+          </p>
+        </div>
+      </div>
+
+      <!-- CARD 2: CONCLUSION & FUTURE SCOPE -->
+      <div class="card" style="flex: 1.25; margin-bottom: 14px;">
+        <div class="pill-header">Conclusion &amp; Future Scope</div>
+        <div class="card-body">
+          <p>
+            The “ACUMEN” system successfully provides a digital solution for faculty and examination management, improving efficiency and reducing manual workload. It ensures better coordination and transparency in institutional operations.
+          </p>
+          <p style="margin-top: 10px; margin-bottom: 4px; font-weight: bold;">
+            Future enhancements may include:
+          </p>
+          <p style="line-height: 1.5; margin-left: 6px;">
+            • AI-based task recommendations<br>
+            • Mobile application integration<br>
+            • Biometric attendance system<br>
+            • Advanced analytics and reporting<br>
+            • Cloud-based scalability
+          </p>
+        </div>
+      </div>
+
+      <!-- CARD 3: REFERENCES & SDGS -->
+      <div class="card" style="flex: 1.2;">
+        <div class="pill-header">References</div>
+        <div class="card-body" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+          
+          <div class="ref-list">
+            <div>[1] A. Kumar and R. Singh, “Smart Faculty Management System,” IEEE Xplore, 2022.</div>
+            <div>[2] S. Patel et al., “Automation Techniques in Educational Administration,” International Journal of Engineering Research &amp; Technology (IJERT), 2021.</div>
+          </div>
+
+          <!-- SDGS COVERED -->
+          <div class="sdg-section">
+            <div class="sdg-title">SDGs Covered</div>
+            <div class="sdg-grid-box">
+              <svg viewBox="0 0 280 180" width="100%" height="165">
+                <!-- 6 columns x 3 rows = 17 goals + logo -->
+                
+                <!-- Row 1 -->
+                <rect x="2" y="2" width="42" height="42" rx="4" fill="#E5243B" opacity="0.25"/>
+                <text x="6" y="14" font-size="8" font-weight="bold" fill="#333">1</text>
+
+                <rect x="48" y="2" width="42" height="42" rx="4" fill="#DDA63A" opacity="0.25"/>
+                <text x="52" y="14" font-size="8" font-weight="bold" fill="#333">2</text>
+
+                <rect x="94" y="2" width="42" height="42" rx="4" fill="#4C9F38" opacity="0.25"/>
+                <text x="98" y="14" font-size="8" font-weight="bold" fill="#333">3</text>
+
+                <!-- SDG 4: QUALITY EDUCATION (HIGHLIGHTED) -->
+                <rect x="140" y="2" width="42" height="42" rx="4" fill="#C5192D"/>
+                <text x="144" y="14" font-size="9" font-weight="900" fill="#ffffff">4</text>
+                <text x="161" y="23" font-size="6.2" font-weight="bold" fill="#ffffff" text-anchor="middle">QUALITY</text>
+                <text x="161" y="31" font-size="6.2" font-weight="bold" fill="#ffffff" text-anchor="middle">EDUCATION</text>
+                <!-- Book icon -->
+                <path d="M 153,38 L 161,35 L 169,38 L 169,34 L 161,32 L 153,34 Z" fill="#ffffff"/>
+
+                <rect x="186" y="2" width="42" height="42" rx="4" fill="#FF3A21" opacity="0.25"/>
+                <text x="190" y="14" font-size="8" font-weight="bold" fill="#333">5</text>
+
+                <rect x="232" y="2" width="42" height="42" rx="4" fill="#26BDE2" opacity="0.25"/>
+                <text x="236" y="14" font-size="8" font-weight="bold" fill="#333">6</text>
+
+                <!-- Row 2 -->
+                <rect x="2" y="48" width="42" height="42" rx="4" fill="#FCC30B" opacity="0.25"/>
+                <text x="6" y="60" font-size="8" font-weight="bold" fill="#333">7</text>
+
+                <!-- SDG 8: DECENT WORK (HIGHLIGHTED) -->
+                <rect x="48" y="48" width="42" height="42" rx="4" fill="#A21942"/>
+                <text x="52" y="60" font-size="9" font-weight="900" fill="#ffffff">8</text>
+                <text x="69" y="69" font-size="5.8" font-weight="bold" fill="#ffffff" text-anchor="middle">DECENT WORK &amp;</text>
+                <text x="69" y="77" font-size="5.8" font-weight="bold" fill="#ffffff" text-anchor="middle">ECONOMIC GROWTH</text>
+
+                <!-- SDG 9: INDUSTRY, INNOVATION (HIGHLIGHTED) -->
+                <rect x="94" y="48" width="42" height="42" rx="4" fill="#FD6925"/>
+                <text x="98" y="60" font-size="9" font-weight="900" fill="#ffffff">9</text>
+                <text x="115" y="69" font-size="5.5" font-weight="bold" fill="#ffffff" text-anchor="middle">INDUSTRY, INNOVATION</text>
+                <text x="115" y="77" font-size="5.5" font-weight="bold" fill="#ffffff" text-anchor="middle">&amp; INFRASTRUCTURE</text>
+
+                <rect x="140" y="48" width="42" height="42" rx="4" fill="#DD1367" opacity="0.25"/>
+                <text x="144" y="60" font-size="8" font-weight="bold" fill="#333">10</text>
+
+                <rect x="186" y="48" width="42" height="42" rx="4" fill="#FD9D24" opacity="0.25"/>
+                <text x="190" y="60" font-size="8" font-weight="bold" fill="#333">11</text>
+
+                <!-- SDG 12: RESPONSIBLE CONSUMPTION (HIGHLIGHTED) -->
+                <rect x="232" y="48" width="42" height="42" rx="4" fill="#BF8B2E"/>
+                <text x="236" y="60" font-size="9" font-weight="900" fill="#ffffff">12</text>
+                <text x="253" y="68" font-size="5.2" font-weight="bold" fill="#ffffff" text-anchor="middle">RESPONSIBLE</text>
+                <text x="253" y="75" font-size="5.2" font-weight="bold" fill="#ffffff" text-anchor="middle">CONSUMPTION</text>
+                <text x="253" y="82" font-size="5" font-weight="bold" fill="#ffffff" text-anchor="middle">&amp; PRODUCTION</text>
+
+                <!-- Row 3 -->
+                <rect x="2" y="94" width="42" height="42" rx="4" fill="#3F7E44" opacity="0.25"/>
+                <text x="6" y="106" font-size="8" font-weight="bold" fill="#333">13</text>
+
+                <rect x="48" y="94" width="42" height="42" rx="4" fill="#0A97D9" opacity="0.25"/>
+                <text x="52" y="106" font-size="8" font-weight="bold" fill="#333">14</text>
+
+                <rect x="94" y="94" width="42" height="42" rx="4" fill="#56C02B" opacity="0.25"/>
+                <text x="98" y="106" font-size="8" font-weight="bold" fill="#333">15</text>
+
+                <!-- SDG 16: PEACE, JUSTICE (HIGHLIGHTED) -->
+                <rect x="140" y="94" width="42" height="42" rx="4" fill="#00689D"/>
+                <text x="144" y="106" font-size="9" font-weight="900" fill="#ffffff">16</text>
+                <text x="161" y="115" font-size="5.5" font-weight="bold" fill="#ffffff" text-anchor="middle">PEACE, JUSTICE</text>
+                <text x="161" y="123" font-size="5.5" font-weight="bold" fill="#ffffff" text-anchor="middle">&amp; STRONG</text>
+                <text x="161" y="130" font-size="5.5" font-weight="bold" fill="#ffffff" text-anchor="middle">INSTITUTIONS</text>
+
+                <rect x="186" y="94" width="42" height="42" rx="4" fill="#19486A" opacity="0.25"/>
+                <text x="190" y="106" font-size="8" font-weight="bold" fill="#333">17</text>
+
+                <!-- UN SDG LOGO BOX -->
+                <g transform="translate(232, 94)">
+                  <rect width="42" height="42" rx="4" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+                  <circle cx="21" cy="21" r="14" fill="none" stroke="#26BDE2" stroke-width="2.5" stroke-dasharray="4,2"/>
+                  <circle cx="21" cy="21" r="10" fill="none" stroke="#FD6925" stroke-width="2.5" stroke-dasharray="3,1.5"/>
+                  <circle cx="21" cy="21" r="6" fill="#19486A"/>
+                </g>
+
+                <!-- BOTTOM LOGO TEXT -->
+                <g transform="translate(140, 155)">
+                  <!-- SDG Wreath Logo -->
+                  <circle cx="16" cy="10" r="9" fill="none" stroke="#009edb" stroke-width="2" stroke-dasharray="2.5,1.5"/>
+                  <text x="32" y="8" font-size="8.5" font-weight="bold" fill="#009edb" letter-spacing="0.5">SUSTAINABLE</text>
+                  <text x="32" y="16" font-size="8.5" font-weight="bold" fill="#009edb" letter-spacing="0.5">DEVELOPMENT</text>
+                  <text x="96" y="16" font-size="14" font-weight="900" fill="#009edb" letter-spacing="1">G ALS</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
