@@ -3,6 +3,10 @@
 build_report_html.py
 Generates the print-ready HTML file matching the exact academic report format for ACUMEN,
 then renders it into ACUMEN_Project_Report_Het_Patel.pdf via Chrome Headless print-to-pdf.
+Features:
+  - Guided By: Ms. Risha Tiwari (Assistant Professor, Dept. of CS)
+  - Full-page coverage for all diagrams (horizontal & vertical)
+  - Ultra-clear typography, high-res graphics, and clean margins.
 """
 
 import os
@@ -12,6 +16,7 @@ WORKSPACE_DIR = r"D:\Desktop\Online_examination_SOU"
 HTML_OUT = os.path.join(WORKSPACE_DIR, "ACUMEN_Project_Report_Print.html")
 PDF_OUT = os.path.join(WORKSPACE_DIR, "ACUMEN_Project_Report_Het_Patel.pdf")
 PDF_DOCS = os.path.join(WORKSPACE_DIR, "documentation", "ACUMEN_Project_Report_Het_Patel.pdf")
+CHROME_PATH = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
 html_content = """<!DOCTYPE html>
 <html lang="en">
@@ -21,7 +26,7 @@ html_content = """<!DOCTYPE html>
   <style>
     @page {
       size: A4 portrait;
-      margin: 18mm 16mm 18mm 16mm;
+      margin: 16mm 15mm 16mm 15mm;
       @bottom-right {
         content: counter(page);
         font-family: "Times New Roman", Times, serif;
@@ -178,6 +183,49 @@ html_content = """<!DOCTYPE html>
       color: #0F172A;
     }
 
+    /* FULL PAGE COVERAGE FOR DIAGRAMS */
+    .full-page-figure {
+      page-break-before: always;
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 86vh;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .full-page-figure.horizontal img {
+      width: 100%;
+      max-width: 100%;
+      max-height: 78vh;
+      object-fit: contain;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .full-page-figure.vertical img {
+      height: 82vh;
+      max-height: 82vh;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+
+    .full-page-figure .figure-caption {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #003366;
+      margin-top: 14px;
+      text-align: center;
+    }
+
     .figure-container {
       text-align: center;
       margin: 14px 0;
@@ -304,7 +352,7 @@ html_content = """<!DOCTYPE html>
       </div>
       <div class="col-right">
         <strong>Guided By:</strong><br>
-        <strong>Mr. Ketan Nakum</strong><br>
+        <strong>Ms. Risha Tiwari</strong><br>
         Assistant Professor<br>
         Department of Computer Science
       </div>
@@ -323,7 +371,7 @@ html_content = """<!DOCTYPE html>
   </div>
 
   <p style="font-size: 12pt; line-height: 1.5; text-align: justify;">
-    This is to certify that the project entitled <strong>“ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)”</strong> has been carried out by <strong>Het K Patel (Enrollment No: 2504070200049)</strong> under the supervision and guidance of <strong>Mr. Ketan Nakum</strong>, Assistant Professor, Department of Computer Science, in partial fulfillment of the requirements for the award of the degree of <strong>Master of Science in Information Technology (MSc IT), 3rd Semester</strong> in <strong>Software Project II (Course Code: IOM6043C)</strong> at Silver Oak College of Computer Application, Silver Oak University, Ahmedabad during the academic year 2026-2027.
+    This is to certify that the project entitled <strong>“ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)”</strong> has been carried out by <strong>Het K Patel (Enrollment No: 2504070200049)</strong> under the supervision and guidance of <strong>Ms. Risha Tiwari</strong>, Assistant Professor, Department of Computer Science, in partial fulfillment of the requirements for the award of the degree of <strong>Master of Science in Information Technology (MSc IT), 3rd Semester</strong> in <strong>Software Project II (Course Code: IOM6043C)</strong> at Silver Oak College of Computer Application, Silver Oak University, Ahmedabad during the academic year 2026-2027.
   </p>
 
   <table class="sig-table">
@@ -331,7 +379,7 @@ html_content = """<!DOCTYPE html>
       <td style="width: 50%;">
         ____________________________________<br>
         <strong>Internal Guide</strong><br>
-        Mr. Ketan Nakum<br>
+        Ms. Risha Tiwari<br>
         Assistant Professor, Dept. of CS
       </td>
       <td style="width: 50%; text-align: right;">
@@ -356,7 +404,7 @@ html_content = """<!DOCTYPE html>
   <!-- STUDENT DECLARATION -->
   <h1 style="font-size: 16pt; font-weight: bold; text-align: center; color: #0F172A; margin: 20px 0 16px 0;">STUDENT DECLARATION</h1>
   <p>
-    I, <strong>Het K Patel (Enrollment No: 2504070200049)</strong>, hereby declare that the project entitled <strong>“ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)”</strong> submitted to the Department of Computer Science, Silver Oak College of Computer Application (SOCCA), Silver Oak University, Ahmedabad, in partial fulfillment of the requirements for the award of Master of Science in Information Technology (MSc IT) Semester III for the course Software Project II (Course Code: IOM6043C) is an authentic record of original research and software engineering work carried out by me under the guidance of <strong>Mr. Ketan Nakum</strong>, Assistant Professor, Department of Computer Science.
+    I, <strong>Het K Patel (Enrollment No: 2504070200049)</strong>, hereby declare that the project entitled <strong>“ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)”</strong> submitted to the Department of Computer Science, Silver Oak College of Computer Application (SOCCA), Silver Oak University, Ahmedabad, in partial fulfillment of the requirements for the award of Master of Science in Information Technology (MSc IT) Semester III for the course Software Project II (Course Code: IOM6043C) is an authentic record of original research and software engineering work carried out by me under the supervision and guidance of <strong>Ms. Risha Tiwari</strong>, Assistant Professor, Department of Computer Science.
   </p>
   <p>
     I further declare that the matter embodied in this project report has not been submitted previously, in part or in full, to any other university, institute, or examining body for the award of any diploma, degree, associate-ship, fellowship, or other similar academic recognition.
@@ -380,7 +428,7 @@ html_content = """<!DOCTYPE html>
   <!-- ACKNOWLEDGMENT -->
   <h1 style="font-size: 16pt; font-weight: bold; text-align: center; color: #0F172A; margin: 20px 0 16px 0;">ACKNOWLEDGMENT</h1>
   <p>
-    The development and empirical validation of <strong>ACUMEN: AI-Driven Code Understanding & Monitored Examination Network</strong> has been an intellectually rewarding journey. I express my profound gratitude and deepest appreciation to my esteemed project guide, <strong>Mr. Ketan Nakum</strong>, Assistant Professor, Department of Computer Science, for his invaluable guidance, technical mentorship, continuous encouragement, and constructive critiques throughout each phase of this project. His deep insights into distributed software architecture, algorithmic code evaluation, and automated testing significantly shaped the direction and quality of this work.
+    The development and empirical validation of <strong>ACUMEN: AI-Driven Code Understanding & Monitored Examination Network</strong> has been an intellectually rewarding journey. I express my profound gratitude and deepest appreciation to my esteemed project guide, <strong>Ms. Risha Tiwari</strong>, Assistant Professor, Department of Computer Science, for her invaluable guidance, technical mentorship, continuous encouragement, and constructive critiques throughout each phase of this project. Her deep insights into distributed software architecture, algorithmic code evaluation, and automated testing significantly shaped the direction and quality of this work.
   </p>
   <p>
     I extend my sincere thanks to the Head of Department, Department of Computer Science, and the Principal of Silver Oak College of Computer Application (SOCCA) for granting me the institutional facilities, high-performance computing infrastructure, and academic environment essential for completing this software project.
@@ -773,36 +821,46 @@ html_content = """<!DOCTYPE html>
   <p>
     ACUMEN is architected using a decoupled, cloud-native Three-Tier Architecture comprising the Presentation Tier, the Application / Logic Tier, and the Data &amp; AI Intelligence Tier.
   </p>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_1_architecture.png" class="figure-img" alt="Architecture Diagram">
+  
+  <!-- FIGURE 4.1 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/figures/fig_4_1_architecture.png" alt="Architecture Diagram">
     <div class="figure-caption">Figure 4.1: System Architecture Diagram – Three-Tier Cloud &amp; AI Examination Architecture</div>
   </div>
 
   <h2 class="section-heading">4.2 Data Flow Diagrams</h2>
   <h3 class="subsection-heading">4.2.1 DFD Level 0 (Context Diagram)</h3>
   <p>Figure 4.2 illustrates the boundary-level context diagram showing student, instructor, and external Gemini AI interactions.</p>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_2_dfd_level_0.png" class="figure-img" alt="DFD Level 0">
+  
+  <!-- FIGURE 4.2 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/figures/fig_4_2_dfd_level_0.png" alt="DFD Level 0">
     <div class="figure-caption">Figure 4.2: Data Flow Diagram (Level 0) – Context-Level System Interaction Diagram</div>
   </div>
 
   <h3 class="subsection-heading">4.2.2 DFD Level 1 (Decomposed Process Workflow)</h3>
   <p>Figure 4.3 depicts the decomposition of ACUMEN into five core functional subsystems.</p>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_3_dfd_level_1.png" class="figure-img" alt="DFD Level 1">
+  
+  <!-- FIGURE 4.3 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/figures/fig_4_3_dfd_level_1.png" alt="DFD Level 1">
     <div class="figure-caption">Figure 4.3: Data Flow Diagram (Level 1) – Decomposed Functional Process Workflow</div>
   </div>
 
   <h3 class="subsection-heading">4.2.3 DFD Level 2 (AI Code Evaluation Subsystem)</h3>
   <p>Figure 4.4 details the internal processing pipeline of Subsystem 5.0 (AI Code Evaluation).</p>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_4_dfd_level_2.png" class="figure-img" alt="DFD Level 2">
+  
+  <!-- FIGURE 4.4 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/figures/fig_4_4_dfd_level_2.png" alt="DFD Level 2">
     <div class="figure-caption">Figure 4.4: Data Flow Diagram (Level 2) – Detailed AST &amp; AI Code Evaluation Subsystem</div>
   </div>
 
   <h2 class="section-heading">4.3 Entity-Relationship Diagram (ERD)</h2>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_5_erd.png" class="figure-img" alt="ERD">
+  
+  <!-- FIGURE 4.5 FULL PAGE VERTICAL -->
+  <div class="full-page-figure vertical">
+    <img src="documentation/figures/fig_4_5_erd.png" alt="ERD">
     <div class="figure-caption">Figure 4.5: Entity-Relationship (ER) Diagram – Complete Relational Schema &amp; Cardinality</div>
   </div>
 
@@ -898,20 +956,26 @@ html_content = """<!DOCTYPE html>
 
   <h2 class="section-heading">4.5 Unified Modeling Language (UML) Diagrams</h2>
   <h3 class="subsection-heading">4.5.1 Unified System Use Case Diagram</h3>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_6_use_case.png" class="figure-img" alt="Use Case Diagram">
+  
+  <!-- FIGURE 4.6 FULL PAGE VERTICAL -->
+  <div class="full-page-figure vertical">
+    <img src="documentation/figures/fig_4_6_use_case.png" alt="Use Case Diagram">
     <div class="figure-caption">Figure 4.6: Unified System Use Case Diagram – Candidate, Examiner, and Admin Workflows</div>
   </div>
 
   <h3 class="subsection-heading">4.5.2 Object-Oriented Domain Class Diagram</h3>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_7_class_diagram.png" class="figure-img" alt="Class Diagram">
+  
+  <!-- FIGURE 4.7 FULL PAGE VERTICAL -->
+  <div class="full-page-figure vertical">
+    <img src="documentation/figures/fig_4_7_class_diagram.png" alt="Class Diagram">
     <div class="figure-caption">Figure 4.7: Object-Oriented Domain Class Diagram – Core Architectural Entities &amp; Services</div>
   </div>
 
   <h3 class="subsection-heading">4.5.3 UML Sequence Diagram</h3>
-  <div class="figure-container">
-    <img src="documentation/figures/fig_4_8_sequence_diagram.png" class="figure-img" alt="Sequence Diagram">
+  
+  <!-- FIGURE 4.8 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/figures/fig_4_8_sequence_diagram.png" alt="Sequence Diagram">
     <div class="figure-caption">Figure 4.8: UML Sequence Diagram – Anti-Cheat Telemetry, Submission &amp; AI Assessment</div>
   </div>
 
@@ -941,8 +1005,10 @@ html_content = """<!DOCTYPE html>
   </ul>
 
   <h2 class="section-heading">5.3 ACUMEN 5-Stage Assessment Pipeline</h2>
-  <div class="figure-container">
-    <img src="documentation/methodology_pipeline.png" class="figure-img" alt="Methodology Pipeline">
+  
+  <!-- FIGURE 5.1 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/methodology_pipeline.png" alt="Methodology Pipeline">
     <div class="figure-caption">Figure 5.1: ACUMEN 5-Stage Assessment &amp; Telemetry Pipeline</div>
   </div>
 
@@ -1201,20 +1267,26 @@ export const CodeEditor: React.FC&lt;CodeEditorProps&gt; = ({ language, code, on
 
   <h2 class="section-heading">6.4 Performance Benchmarking &amp; Visual Analytics</h2>
   <p>Figure 6.1 displays the chronological distribution of student code submissions and automated test case executions across an active 90-minute examination window.</p>
-  <div class="figure-container">
-    <img src="documentation/chart_line.png" class="figure-img" alt="Line Chart">
+  
+  <!-- FIGURE 6.1 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/chart_line.png" alt="Line Chart">
     <div class="figure-caption">Figure 6.1: Submission &amp; Automated Test Execution Telemetry Over Time</div>
   </div>
 
   <p>Figure 6.2 illustrates the overall submission status breakdown and automated grade distribution across 120 simulated candidate submissions. Over 74% of candidates achieved passing grades, with 4.2% experiencing session lockouts due to repeated integrity violations.</p>
-  <div class="figure-container">
-    <img src="documentation/chart_pie.png" class="figure-img" alt="Pie Chart">
+  
+  <!-- FIGURE 6.2 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/chart_pie.png" style="max-height: 70vh;" alt="Pie Chart">
     <div class="figure-caption">Figure 6.2: Submission Status Breakdown &amp; Automated Grade Distribution</div>
   </div>
 
   <p>Figure 6.3 highlights the dramatic evaluation latency reduction achieved by ACUMEN compared to conventional manual academic grading. Whereas manual inspection requires an average of 12.5 minutes per student submission, ACUMEN's hybrid AI engine completes full evaluation in 11.8 seconds—a 98.4% acceleration.</p>
-  <div class="figure-container">
-    <img src="documentation/chart_bar.png" class="figure-img" alt="Bar Chart">
+  
+  <!-- FIGURE 6.3 FULL PAGE HORIZONTAL -->
+  <div class="full-page-figure horizontal">
+    <img src="documentation/chart_bar.png" alt="Bar Chart">
     <div class="figure-caption">Figure 6.3: Evaluation Latency Benchmark: Manual Academic Grading vs ACUMEN Engine</div>
   </div>
 
@@ -1263,7 +1335,7 @@ export const CodeEditor: React.FC&lt;CodeEditorProps&gt; = ({ language, code, on
   <h1 style="font-size: 16pt; font-weight: bold; text-align: center; color: #0F172A; margin: 20px 0 16px 0;">APPENDICES</h1>
   
   <h2 class="section-heading">Appendix A: Review 1 – Project Definition &amp; Requirement Approval Sheet</h2>
-  <p>Review 1 conducted during Week 4. Focus: Project scope definition, problem formulation, feasibility evaluation, and tech stack approval by Internal Guide Mr. Ketan Nakum.<br>Status: Approved with distinction.</p>
+  <p>Review 1 conducted during Week 4. Focus: Project scope definition, problem formulation, feasibility evaluation, and tech stack approval by Internal Guide Ms. Risha Tiwari.<br>Status: Approved with distinction.</p>
   <table class="academic-table" style="width: 70%;">
     <thead><tr><th>Evaluation Criteria</th><th>Max Marks</th><th>Marks Awarded</th></tr></thead>
     <tbody><tr><td>Review 1 Milestone Completion &amp; Guide Signoff</td><td>25</td><td class="status-pass">25</td></tr></tbody>
@@ -1294,7 +1366,30 @@ export const CodeEditor: React.FC&lt;CodeEditorProps&gt; = ({ language, code, on
 </html>
 """
 
-with open(HTML_OUT, "w", encoding="utf-8") as f:
-    f.write(html_content)
+def generate_pdf():
+    with open(HTML_OUT, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print(f"Print HTML saved: {HTML_OUT}")
 
-print(f"Print-ready HTML generated: {HTML_OUT}")
+    file_url = "file:///" + HTML_OUT.replace("\\", "/")
+    cmd = [
+        CHROME_PATH,
+        "--headless=new",
+        "--disable-gpu",
+        "--allow-file-access-from-files",
+        "--no-pdf-header-footer",
+        f"--print-to-pdf={PDF_OUT}",
+        file_url
+    ]
+    print("Compiling PDF with Chrome...")
+    subprocess.run(cmd, check=True)
+    print(f"PDF successfully rendered: {PDF_OUT}")
+
+    # Copy to documentation folder
+    import shutil
+    os.makedirs(os.path.dirname(PDF_DOCS), exist_ok=True)
+    shutil.copyfile(PDF_OUT, PDF_DOCS)
+    print(f"Copied PDF to: {PDF_DOCS}")
+
+if __name__ == "__main__":
+    generate_pdf()

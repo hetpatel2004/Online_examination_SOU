@@ -6,57 +6,68 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.3: Data Flow Diagram (Level 1) — Decomposed System Processes</div>
+    <div class="title">Figure 4.3: Data Flow Diagram (Level 1) – Decomposed Functional Process Workflow</div>
     <div class="mermaid">
-
 flowchart TD
-    subgraph Processes["System Subsystems"]
-        P1(("1.0 Authentication &<br/>Role-Based Access Control"))
-        P2(("2.0 Curriculum &<br/>Exam Management"))
-        P3(("3.0 Live Proctoring &<br/>Integrity Enforcement"))
-        P4(("4.0 Multi-Language<br/>Sandbox Runtime"))
-        P5(("5.0 AI & AST Code<br/>Evaluation Pipeline"))
-        P6(("6.0 Result Processing &<br/>Publication Engine"))
-    end
+    Student["👨‍🎓 Student"]
+    Faculty["👨‍🏫 Faculty / Admin"]
 
-    subgraph DataStores["MongoDB Physical Collections"]
-        D1[("D1: Users Collection")]
-        D2[("D2: Courses & Subjects")]
-        D3[("D3: Exams & Questions")]
-        D4[("D4: Submissions Collection")]
-    end
+    Process1["1.0<br/>Authentication & Role Verification"]
+    Process2["2.0<br/>Exam Schedule & Question Provisioning"]
+    Process3["3.0<br/>Monaco IDE & Real-Time Assessment Session"]
+    Process4["4.0<br/>Automated AST & Gemini AI Code Evaluation"]
+    Process5["5.0<br/>Result Collation, Analytics & Grade Dispatch"]
 
-    P1 <--> D1
-    P2 <--> D2
-    P2 <--> D3
-    P3 -->|"Record Blur / Auto-Disqualify"| D4
-    P4 -->|"Execution stdout/stderr"| P5
-    P5 -->|"Construct Marks & Line Annotations"| D4
-    D4 -->|"Published Scores & Scorecards"| P6
+    DB_Users[("D1: Users Store")]
+    DB_Exams[("D2: Exams & Questions Store")]
+    DB_Submissions[("D3: Submissions Store")]
+    DB_Telemetry[("D4: Telemetry & Audit Logs")]
+
+    GeminiEngine["🤖 Gemini 2.5 Flash AI"]
+
+    Student -->|"Credentials"| Process1
+    Faculty -->|"Admin Auth"| Process1
+    Process1 <-->|"Verify Hashes & Roles"| DB_Users
+
+    Process1 -->|"Session Token"| Process2
+    Process2 <-->|"Fetch Questions"| DB_Exams
+    Process2 -->|"Question Payloads"| Process3
+
+    Student -->|"Code & Telemetry Beacons"| Process3
+    Process3 -->|"Record Blur / Tab Events"| DB_Telemetry
+    Process3 -->|"Dispatched Code Payload"| Process4
+
+    Process4 <-->|"AST Extraction & LLM Prompting"| GeminiEngine
+    Process4 -->|"Persist Graded Scores & Feedback"| DB_Submissions
+
+    DB_Submissions -->|"Aggregate Scores"| Process5
+    Process5 -->|"Class Performance Rosters"| Faculty
+    Process5 -->|"Certified Marksheet"| Student
 
     </div>
   </div>
@@ -65,8 +76,14 @@ flowchart TD
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

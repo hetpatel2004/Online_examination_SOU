@@ -6,100 +6,118 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.7: Object-Oriented Class Diagram — Architecture & Domain Model</div>
+    <div class="title">Figure 4.7: Object-Oriented Domain Class Diagram – Core Architectural Entities & Services</div>
     <div class="mermaid">
-
 classDiagram
     class User {
-        +ObjectId _id
-        +String name
-        +String enrollmentNumber
+        +UUID id
         +String email
         +String passwordHash
         +String role
-        +String course
-        +Integer semester
-        +comparePassword(pwd) Boolean
-        +generateJWT() String
+        +String enrollmentNo
+        +register()
+        +login()
+        +verifyToken()
     }
 
     class Exam {
-        +ObjectId _id
-        +String subjectName
-        +String subjectCode
-        +String examType
-        +String evaluationMethod
-        +Integer duration
-        +Date date
-        +String status
-        +getAssignedStudents() List
+        +UUID id
+        +String title
+        +Integer durationMins
+        +DateTime startTime
+        +DateTime endTime
+        +Boolean isActive
+        +isLive()
+        +getQuestions()
     }
 
     class Question {
-        +ObjectId _id
-        +ObjectId examId
-        +String questionText
-        +Integer marks
-        +String type
-        +List options
-        +String modelAnswer
-        +List testCases
+        +UUID id
+        +UUID examId
+        +String title
+        +String problemStatement
+        +String[] allowedLanguages
+        +getTestCases()
+    }
+
+    class TestCase {
+        +UUID id
+        +UUID questionId
+        +String inputData
+        +String expectedOutput
+        +Boolean isHidden
+        +Integer points
+        +executeAgainst(code)
     }
 
     class Submission {
-        +ObjectId _id
-        +ObjectId examId
-        +ObjectId studentId
-        +Float score
-        +Float totalMarks
+        +UUID id
+        +UUID questionId
+        +UUID studentId
+        +String codeContent
+        +String language
+        +Integer testsPassed
+        +Float aiScore
+        +String aiFeedback
         +String status
-        +List answers
-        +Object codeBreakdown
-        +String annotatedCode
+        +evaluate()
+        +lockSession()
     }
 
-    class AIEvaluationService {
-        +evaluatePracticalCode(code, question, model) Object
-        +decomposeConstructs(code, lang) Object
-        +callGeminiAPI(prompt) String
-        +generateAnnotatedCode(code, feedback) String
+    class TelemetryLog {
+        +UUID id
+        +UUID submissionId
+        +String eventType
+        +Integer strikeNumber
+        +DateTime timestamp
+        +logViolation()
     }
 
-    class SandboxService {
-        +executeCode(code, lang, input) Object
-        +runDockerContainer(code, lang) Object
-        +validateOutput(actual, expected) Boolean
+    class AuthService {
+        +issueJWT(user)
+        +verifyRole(token, role)
+        +hashPassword(plain)
     }
 
+    class GeminiEvaluator {
+        +parseAST(code, lang)
+        +scoreSemanticLogic(code, problem)
+        +generateFeedback(ast, prompt)
+    }
+
+    User "1" --> "*" Exam : authors
     User "1" --> "*" Submission : submits
     Exam "1" *-- "*" Question : contains
-    Exam "1" --> "*" Submission : receives
-    Submission ..> AIEvaluationService : evaluated by
-    AIEvaluationService ..> SandboxService : runs via
+    Question "1" *-- "*" TestCase : defines
+    Question "1" --> "*" Submission : targets
+    Submission "1" *-- "*" TelemetryLog : tracks
+    Submission ..> GeminiEvaluator : calls
+    User ..> AuthService : authenticates
 
     </div>
   </div>
@@ -108,8 +126,14 @@ classDiagram
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

@@ -6,75 +6,73 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.8: UML Sequence Diagram — Student Exam Attempt & Anti-Cheat Flow</div>
+    <div class="title">Figure 4.8: UML Sequence Diagram – Anti-Cheat Telemetry, Submission & AI Assessment</div>
     <div class="mermaid">
-
 sequenceDiagram
     autonumber
-    actor Student
-    participant UI as React SPA (Client)
-    participant Guard as Proctoring Guard
-    participant API as Express API Gateway
-    participant AI as AI Evaluation Service
-    participant DB as MongoDB Atlas
+    actor Student as 👨‍🎓 Student
+    participant Browser as 💻 React 19 Client (Monaco)
+    participant Daemon as 🛡️ Proctoring Daemon
+    participant API as ⚙️ Express REST API
+    participant Judge as ⚡ Test Case Runner
+    participant Gemini as 🤖 Gemini 2.5 Flash LLM
+    participant DB as 🗄️ PostgreSQL Database
+    actor Faculty as 👨‍🏫 Faculty
 
-    Student->>UI: Enters Exam Portal & Authenticates
-    UI->>API: POST /api/auth/login (enrollment, password)
-    API->>DB: Verify bcrypt password & fetch user profile
-    DB-->>API: User details & role
-    API-->>UI: Signed JWT Token
+    Student->>Browser: Selects Exam & Starts Coding
+    Browser->>Daemon: Initiates Telemetry Listeners
     
-    Student->>UI: Clicks "Start Exam"
-    UI->>API: GET /api/exams/:id/questions
-    API->>DB: Query assigned randomized questions
-    DB-->>API: Question pool & model answers
-    API-->>UI: Returns questions (state loaded)
-
-    UI->>Guard: Request Fullscreen Lock & Register Blur Listeners
-    
-    alt Proctoring Violation (Tab Switch / Window Blur)
-        Student->>UI: Switches browser tab or presses Alt+Tab
-        Guard->>UI: Trigger window.blur / visibilitychange event
-        UI->>API: POST /api/exams/:id/disqualify (Violation: Tab Switch)
-        API->>DB: Mark Submission status='disqualified', score=0
-        DB-->>API: Confirmed
-        API-->>UI: Disqualification Recorded
-        UI-->>Student: Modal: "Disqualified due to tab switching malpractice"
-    else Normal Practical Code Submission
-        Student->>UI: Types algorithmic solution in Monaco Editor
-        Student->>UI: Clicks "Submit Exam"
-        UI->>API: POST /api/exams/:id/submit (Code payload)
-        API->>AI: Trigger AST Decomposition & Gemini 1.5 Review
-        AI-->>API: Granular Marks (Logic, Loop, Return) + Annotations
-        API->>DB: Save Submission (status='evaluated', score=X)
-        DB-->>API: Confirmed
-        API-->>UI: Submission Received (HTTP 200)
-        UI-->>Student: Display "Exam Completed & Graded Successfully"
+    rect rgb(254, 242, 242)
+        Note over Student, Daemon: Integrity Violation Interception
+        Student->>Browser: Switches Tab / Alt-Tab (Blur)
+        Daemon->>Daemon: Increment Strike Count (Strike = 1)
+        Daemon-->>Student: Display Warning Toast Alert
+        Daemon->>API: POST /api/telemetry/log (tab_switch)
+        API->>DB: INSERT into telemetry_logs
     end
+
+    Student->>Browser: Enters Final Code & Clicks Submit
+    Browser->>API: POST /api/exam/submit {code, questionId}
+    API->>DB: INSERT into submissions (status='evaluating')
+    
+    par Parallel Dynamic & Static Assessment
+        API->>Judge: Run Code against Test Cases
+        Judge-->>API: Test Pass Ratio: 5/5 Passed (60 pts)
+    and
+        API->>Gemini: Analyze AST & Semantic Logic
+        Gemini-->>API: Logic Sound: O(N) Complexity (40 pts)
+    end
+
+    API->>API: Compute Aggregate Score (100/100)
+    API->>DB: UPDATE submissions (score=100, status='graded')
+    API-->>Browser: Return Final Scorecard & AI Feedback
+    Browser-->>Student: Display Certified Results
+    DB-->>Faculty: Real-Time Grade Update on Dashboard
 
     </div>
   </div>
@@ -83,8 +81,14 @@ sequenceDiagram
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

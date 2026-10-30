@@ -6,77 +6,83 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.6: Unified System Use Case Diagram — Candidate, Faculty & Admin Roles</div>
+    <div class="title">Figure 4.6: Unified System Use Case Diagram – Candidate, Examiner, and Admin Workflows</div>
     <div class="mermaid">
-
 flowchart LR
-    Student["👨‍🎓 Student"]
-    Faculty["👨‍🏫 Faculty Admin"]
-    SuperAdmin["🛡️ Super Admin"]
-    AI["🤖 AI Evaluator"]
-    Guard["🚨 Proctoring Guard"]
+    subgraph Actors["System Actors"]
+        Student["👨‍🎓 Student / Examinee"]
+        Faculty["👨‍🏫 Faculty / Examiner"]
+        Admin["🛡️ System Administrator"]
+    end
 
-    subgraph ACUMEN["ACUMEN Examination System"]
-        UC1["Login & Authenticate"]
-        UC2["View Assigned Exams (by Sem)"]
-        UC3["Attempt MCQ / Coding Exam"]
-        UC4["Fullscreen Lock & Blur Monitor"]
-        UC5["Execute Code in Live Sandbox"]
-        UC6["Submit Exam Responses"]
-        UC7["View Scorecard & Line Feedback"]
-        UC8["Schedule Exam & Set Timers"]
-        UC9["Upload Question Pool & CSV"]
-        UC10["Trigger AI Code Evaluation"]
-        UC11["Export Results to Excel/CSV"]
-        UC12["Manage Faculty & Students"]
-        UC13["System Audit Logs & Analytics"]
+    subgraph StudentUseCases["Student Assessment Workflows"]
+        UC1["Sign In & Verify SOU Enrollment"]
+        UC2["Access Timed Practical Examination"]
+        UC3["Write & Compile in Monaco IDE"]
+        UC4["Run Visible Test Cases"]
+        UC5["Submit Final Code for Evaluation"]
+        UC6["Receive Proctoring Strike Warnings"]
+        UC7["View Instant Score & AI Feedback"]
+    end
+
+    subgraph FacultyUseCases["Faculty / Examiner Workflows"]
+        UC8["Create & Schedule Exams"]
+        UC9["Add Questions & Dynamic Test Cases"]
+        UC10["Monitor Live Student Telemetry"]
+        UC11["Review Automated AI Grade Reports"]
+        UC12["Override / Adjust Partial Credit"]
+        UC13["Export Class Marksheets (CSV/PDF)"]
+    end
+
+    subgraph AdminUseCases["System Admin Workflows"]
+        UC14["User Account & Role Management"]
+        UC15["Audit Trail & System Health Logs"]
+        UC16["Cloudflare & Database Monitoring"]
     end
 
     Student --> UC1
     Student --> UC2
     Student --> UC3
+    Student --> UC4
     Student --> UC5
     Student --> UC6
     Student --> UC7
 
-    UC3 -.->|includes| UC4
-    Guard -.->|enforces| UC4
-
-    Faculty --> UC1
     Faculty --> UC8
     Faculty --> UC9
     Faculty --> UC10
     Faculty --> UC11
+    Faculty --> UC12
+    Faculty --> UC13
 
-    AI -.->|performs| UC10
-
-    SuperAdmin --> UC1
-    SuperAdmin --> UC12
-    SuperAdmin --> UC13
+    Admin --> UC14
+    Admin --> UC15
+    Admin --> UC16
 
     </div>
   </div>
@@ -85,8 +91,14 @@ flowchart LR
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

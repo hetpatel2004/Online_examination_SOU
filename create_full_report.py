@@ -127,25 +127,47 @@ def add_bullet_point(doc, title, text):
     r.font.color.rgb = COLOR_PRIMARY
     return p
 
-def add_figure(doc, img_rel_path, caption_text, width_inches=5.8):
+from PIL import Image
+
+def add_figure(doc, img_rel_path, caption_text, width_inches=None, height_inches=None, page_break_before=True):
     full_path = os.path.join(WORKSPACE_DIR, img_rel_path)
     if os.path.exists(full_path):
+        if page_break_before:
+            doc.add_page_break()
+            
+        with Image.open(full_path) as im:
+            w, h = im.size
+            aspect = w / h
+
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_before = Pt(12)
+        p.paragraph_format.space_before = Pt(10)
         p.paragraph_format.space_after = Pt(4)
         run = p.add_run()
-        run.add_picture(full_path, width=Inches(width_inches))
+
+        # If explicit dimension provided:
+        if width_inches:
+            run.add_picture(full_path, width=Inches(width_inches))
+        elif height_inches:
+            run.add_picture(full_path, height=Inches(height_inches))
+        else:
+            # Full page coverage:
+            # Vertical diagrams (aspect < 0.85): cover full vertical page height (8.5 inches tall)
+            # Horizontal diagrams (aspect >= 0.85): cover full horizontal page width (6.6 inches wide)
+            if aspect < 0.85:
+                run.add_picture(full_path, height=Inches(8.5))
+            else:
+                run.add_picture(full_path, width=Inches(6.6))
         
         cap = doc.add_paragraph()
         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        cap.paragraph_format.space_before = Pt(2)
+        cap.paragraph_format.space_before = Pt(4)
         cap.paragraph_format.space_after = Pt(12)
         r_cap = cap.add_run(caption_text)
         r_cap.font.name = FONT_BODY
-        r_cap.font.size = Pt(10)
+        r_cap.font.size = Pt(10.5)
         r_cap.font.bold = True
-        r_cap.font.color.rgb = COLOR_MUTED
+        r_cap.font.color.rgb = COLOR_BLUE
 
 def add_code_block(doc, code_str, caption_title):
     cap = doc.add_paragraph()
@@ -327,7 +349,7 @@ def build_front_matter(doc):
     r.font.name = FONT_BODY
     r.font.size = Pt(11.5)
     r.font.bold = True
-    r = p_r.add_run("Mr. Ketan Nakum\nAssistant Professor, Dept. of CS")
+    r = p_r.add_run("Ms. Risha Tiwari\nAssistant Professor, Dept. of CS")
     r.font.name = FONT_BODY
     r.font.size = Pt(11)
 
@@ -369,7 +391,7 @@ def build_front_matter(doc):
     r = p_body.add_run(" under the guidance and supervision of ")
     r.font.name = FONT_BODY
     r.font.size = Pt(12)
-    r = p_body.add_run("Mr. Ketan Nakum")
+    r = p_body.add_run("Ms. Risha Tiwari")
     r.font.name = FONT_BODY
     r.font.size = Pt(12)
     r.font.bold = True
@@ -403,7 +425,7 @@ def build_front_matter(doc):
     
     p = s_l.paragraphs[0]
     format_paragraph(p, space_before=30, space_after=0, align=WD_ALIGN_PARAGRAPH.LEFT)
-    r = p.add_run("_____________________\nInternal Guide\nMr. Ketan Nakum\nAssistant Professor, Dept. of CS")
+    r = p.add_run("_____________________\nInternal Guide\nMs. Risha Tiwari\nAssistant Professor, Dept. of CS")
     r.font.name = FONT_BODY
     r.font.size = Pt(11)
 
@@ -430,7 +452,7 @@ def build_front_matter(doc):
     r.font.bold = True
     r.font.color.rgb = COLOR_PRIMARY
 
-    add_body_paragraph(doc, "I, Het K Patel (Enrollment No: 2504070200049), hereby declare that the project entitled “ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)” submitted to the Department of Computer Science, Silver Oak College of Computer Application (SOCCA), Silver Oak University, Ahmedabad, in partial fulfillment of the requirements for the award of Master of Science in Information Technology (MSc IT) Semester III for the course Software Project II (Course Code: IOM6043C) is an authentic record of original research and software development carried out by me under the supervision and guidance of Mr. Ketan Nakum, Assistant Professor, Department of Computer Science.")
+    add_body_paragraph(doc, "I, Het K Patel (Enrollment No: 2504070200049), hereby declare that the project entitled “ACUMEN: AI-DRIVEN CODE UNDERSTANDING & MONITORED EXAMINATION NETWORK (Intelligent Practical Code Assessment & Real-Time Integrity Guardian)” submitted to the Department of Computer Science, Silver Oak College of Computer Application (SOCCA), Silver Oak University, Ahmedabad, in partial fulfillment of the requirements for the award of Master of Science in Information Technology (MSc IT) Semester III for the course Software Project II (Course Code: IOM6043C) is an authentic record of original research and software development carried out by me under the supervision and guidance of Ms. Risha Tiwari, Assistant Professor, Department of Computer Science.")
 
     add_body_paragraph(doc, "I further declare that the matter embodied in this project report has not been submitted previously, in part or in full, to any other university, institute, or examining body for the award of any diploma, degree, associate-ship, fellowship, or other similar title.")
 
@@ -457,7 +479,7 @@ def build_front_matter(doc):
     r.font.bold = True
     r.font.color.rgb = COLOR_PRIMARY
 
-    add_body_paragraph(doc, "The development and empirical validation of ACUMEN: AI-Driven Code Understanding & Monitored Examination Network has been an intellectually stimulating endeavor. I express my profound gratitude and deepest appreciation to my esteemed project guide, Mr. Ketan Nakum, Assistant Professor, Department of Computer Science, for his invaluable guidance, technical mentoring, continuous encouragement, and constructive critiques throughout each phase of this project. His deep insights into distributed software architecture, algorithmic code evaluation, and automated testing significantly shaped the direction and quality of this work.")
+    add_body_paragraph(doc, "The development and empirical validation of ACUMEN: AI-Driven Code Understanding & Monitored Examination Network has been an intellectually stimulating endeavor. I express my profound gratitude and deepest appreciation to my esteemed project guide, Ms. Risha Tiwari, Assistant Professor, Department of Computer Science, for her invaluable guidance, technical mentoring, continuous encouragement, and constructive critiques throughout each phase of this project. Her deep insights into distributed software architecture, algorithmic code evaluation, and automated testing significantly shaped the direction and quality of this work.")
 
     add_body_paragraph(doc, "I extend my sincere thanks to the Head of Department, Department of Computer Science, and the Principal of Silver Oak College of Computer Application (SOCCA) for granting me the institutional facilities, high-performance computing infrastructure, and academic environment essential for completing this software project.")
 
@@ -1296,7 +1318,7 @@ def build_references_and_appendices(doc):
 
     appendices = [
         ("Appendix A: Review 1 – Project Definition & Requirement Approval Sheet",
-         "Review 1 conducted during Week 4. Focus: Project scope definition, problem formulation, feasibility evaluation, and tech stack approval by Internal Guide Mr. Ketan Nakum.\nStatus: Approved with distinction."),
+         "Review 1 conducted during Week 4. Focus: Project scope definition, problem formulation, feasibility evaluation, and tech stack approval by Internal Guide Ms. Risha Tiwari.\nStatus: Approved with distinction."),
         ("Appendix B: Review 2 – System Architecture & Database Design Verification Sheet",
          "Review 2 conducted during Week 8. Focus: Verification of Three-Tier Cloud Architecture, DFD Levels 0/1/2, 3NF Entity-Relationship Diagram, and Monaco editor integration prototypes.\nStatus: Verified and signed off."),
         ("Appendix C: Review 3 – Mid-Semester Code & Security Audit Review Sheet",

@@ -6,38 +6,38 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.2: Data Flow Diagram (Level 0) — Context Diagram</div>
+    <div class="title">Figure 4.2: Data Flow Diagram (Level 0) – Context Diagram</div>
     <div class="mermaid">
-
 flowchart TD
     Student["👨‍🎓 Student<br/>(Examinee)"]
     Faculty["👨‍🏫 Faculty / Admin<br/>(Examiner)"]
     SuperAdmin["🛡️ Super Admin<br/>(University Controller)"]
-    AIService["🤖 Google Gemini 1.5 Flash<br/>(LLM AI Engine)"]
+    AIService["🤖 Google Gemini 2.5 Flash<br/>(LLM AI Engine)"]
     CommsService["📱 SMS & Email Gateway<br/>(Fast2SMS & Nodemailer)"]
 
     Process0(("0.0<br/>ACUMEN EXAMINATION<br/>& ASSESSMENT PLATFORM<br/>(Central Processing System)"))
@@ -55,8 +55,14 @@ flowchart TD
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

@@ -6,54 +6,58 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.4: Data Flow Diagram (Level 2) — AI Code Evaluation Pipeline</div>
+    <div class="title">Figure 4.4: Data Flow Diagram (Level 2) – Detailed AST & AI Code Evaluation Subsystem</div>
     <div class="mermaid">
-
 flowchart TD
-    RawCode["Student Submitted Code"]
-    
-    P51(("5.1 Isolated Sandbox<br/>Code Execution"))
-    P52(("5.2 Semantic Logic Review<br/>(Gemini 1.5 Flash)"))
-    P53(("5.3 AST Construct Decomposition<br/>& Syntax Parser"))
-    P54(("5.4 Granular Mark Allocator<br/>(Zero Length Bias)"))
-    P55(("5.5 Line-by-Line Annotator<br/>& Diagnostic Synthesizer"))
-    
-    SubStore[("D4: Submissions Collection<br/>(Score, Construct Marks, Annotations)")]
+    SubmissionIn["Code Submission Payload (Language, Source Code, Student ID, Exam ID)"]
 
-    RawCode --> P51
-    RawCode --> P52
-    RawCode --> P53
-    
-    P51 -->|"I/O Test Suite Results"| P54
-    P52 -->|"Semantic Logic Score"| P54
-    P53 -->|"Functions, Loops & Guard Nodes"| P54
-    
-    P54 -->|"Synthesized Score Breakdown"| P55
-    P55 -->|"Persist Final Score & Line Feedback"| SubStore
+    SubProcess1["4.1<br/>Sanitization & Syntax Validation"]
+    SubProcess2["4.2<br/>Dynamic Test Case Execution (Judge0 / Sandbox)"]
+    SubProcess3["4.3<br/>Abstract Syntax Tree (AST) Decompilation"]
+    SubProcess4["4.4<br/>Gemini 2.5 Flash Semantic Logic Evaluation"]
+    SubProcess5["4.5<br/>Weighted Multi-Factor Score Aggregation"]
+
+    DB_TestCases[("D5: Visible & Hidden Test Cases")]
+    DB_Scores[("D6: Submission Evaluation Reports")]
+
+    SubmissionIn --> SubProcess1
+    SubProcess1 -->|"Valid Code"| SubProcess2
+    SubProcess1 -->|"Valid Code"| SubProcess3
+
+    SubProcess2 <-->|"Fetch I/O Fixtures"| DB_TestCases
+    SubProcess2 -->|"Test Case Pass/Fail Ratio (60% Weight)"| SubProcess5
+
+    SubProcess3 -->|"Syntactic Construct Breakdown"| SubProcess4
+    SubProcess3 -->|"AST Structural Validity (20% Weight)"| SubProcess5
+
+    SubProcess4 -->|"Semantic Correctness & Complexity (20% Weight)"| SubProcess5
+
+    SubProcess5 -->|"Final Normalized Mark (0-100) + Feedback JSON"| DB_Scores
 
     </div>
   </div>
@@ -62,8 +66,14 @@ flowchart TD
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

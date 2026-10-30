@@ -6,88 +6,102 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.5: Entity-Relationship (ER) Diagram — Relational Collection Schema</div>
+    <div class="title">Figure 4.5: Entity-Relationship (ER) Diagram – Complete Relational Schema & Cardinality</div>
     <div class="mermaid">
-
 erDiagram
-    COURSES ||--o{ SUBJECTS : "contains"
-    COURSES ||--o{ USERS : "enrolled in"
-    SUBJECTS ||--o{ EXAMS : "scheduled for"
-    EXAMS ||--o{ QUESTIONS : "includes"
-    EXAMS ||--o{ SUBMISSIONS : "receives"
-    USERS ||--o{ SUBMISSIONS : "submits"
-    EXAMS ||--o{ NOTIFICATIONS : "triggers"
-    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ EXAMS : "creates (1:N)"
+    USERS ||--o{ SUBMISSIONS : "submits (1:N)"
+    EXAMS ||--|{ QUESTIONS : "contains (1:N)"
+    QUESTIONS ||--|{ TEST_CASES : "defines (1:N)"
+    QUESTIONS ||--o{ SUBMISSIONS : "receives (1:N)"
+    SUBMISSIONS ||--o{ TELEMETRY_LOGS : "generates (1:N)"
 
-    COURSES {
-        string _id PK
-        string name
-        string code UK
-        string level
-        int totalSemesters
-    }
     USERS {
-        string _id PK
-        string name
-        string enrollmentNumber UK
+        uuid id PK
         string email UK
+        string password_hash
+        string full_name
         string role
-        string course
-        int semester
+        string enrollment_no
+        timestamp created_at
     }
-    SUBJECTS {
-        string _id PK
-        string name
-        string code UK
-        int semester
-    }
+
     EXAMS {
-        string _id PK
-        string subjectName
-        string examType
-        string evaluationMethod
-        int duration
-        date date
-        string resultDate
+        uuid id PK
+        uuid created_by FK
+        string title
+        text description
+        integer duration_mins
+        timestamp start_time
+        timestamp end_time
+        boolean is_active
     }
+
     QUESTIONS {
-        string _id PK
-        string questionText
-        int marks
-        string type
-        string modelAnswer
+        uuid id PK
+        uuid exam_id FK
+        string title
+        text problem_statement
+        string allowed_languages
+        text starter_code
+        integer max_score
+        string difficulty
     }
+
+    TEST_CASES {
+        uuid id PK
+        uuid question_id FK
+        text input_data
+        text expected_output
+        boolean is_hidden
+        integer points
+    }
+
     SUBMISSIONS {
-        string _id PK
-        float score
-        float totalMarks
+        uuid id PK
+        uuid question_id FK
+        uuid student_id FK
+        text code_content
+        string language
+        integer test_cases_passed
+        integer total_test_cases
+        decimal ai_score
+        text ai_feedback
         string status
-        string codeBreakdown
-        string annotatedCode
+    }
+
+    TELEMETRY_LOGS {
+        uuid id PK
+        uuid submission_id FK
+        string event_type
+        integer strike_number
+        timestamp timestamp
+        string ip_address
     }
 
     </div>
@@ -97,8 +111,14 @@ erDiagram
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>

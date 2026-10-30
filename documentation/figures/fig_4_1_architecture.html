@@ -6,37 +6,37 @@
   <style>
     body {
       margin: 0;
-      padding: 15px;
+      padding: 20px;
       background: #ffffff;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: inline-block;
     }
     .wrapper {
       background: #ffffff;
-      border: 2px solid #666666;
-      border-radius: 8px;
-      padding: 20px 25px;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 24px 30px;
       display: inline-block;
       text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
     .title {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: bold;
-      color: #7a1a1a;
-      margin-bottom: 16px;
+      color: #003366;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
 <body>
   <div class="wrapper">
-    <div class="title">Figure 4.1: System Architecture Diagram — Three-Tier ACUMEN Platform</div>
+    <div class="title">Figure 4.1: System Architecture Diagram – Three-Tier ACUMEN Platform</div>
     <div class="mermaid">
-
 flowchart TD
-    subgraph PresentationTier["Tier 1: Presentation Layer (Vite + React 18 SPA)"]
+    subgraph PresentationTier["Tier 1: Presentation Layer (Vite + React 19 SPA)"]
         direction LR
-        UI["React 18 User Interface (Tailwind & CSS3)"]
+        UI["React 19 User Interface (Tailwind & CSS3)"]
         MonacoEditor["Monaco IDE (Multi-Language Code Editor)"]
         ProctoringGuard["Proctoring Guard (Visibility & Blur Telemetry)"]
         StudentPortal["Student Dashboard & Scorecard View"]
@@ -51,7 +51,7 @@ flowchart TD
         ExamService["Examination & Ingestion Service"]
         
         subgraph EvaluationSubsystem["AI & AST Multi-Tier Evaluation Engine"]
-            GeminiAI["Tier 1: Google Gemini 1.5 Flash LLM Engine"]
+            GeminiAI["Tier 1: Google Gemini 2.5 Flash LLM Engine"]
             ASTDecompiler["Tier 2: AST Construct Decompiler & Heuristic Parser"]
             Scorer["Construct-by-Construct Mark Allocator"]
         end
@@ -62,7 +62,7 @@ flowchart TD
 
     subgraph DataTier["Tier 3: Data & Infrastructure Layer (Cloud Services)"]
         direction LR
-        MongoAtlas[("MongoDB Atlas Cloud Database Cluster")]
+        SupabaseDB[("Supabase PostgreSQL Cloud Relational Database")]
         CloudflareEdge["Cloudflare Pages Global CDN Edge"]
         NotificationGateways["SMS (Fast2SMS) & Email (Gmail SMTP) Gateways"]
     end
@@ -75,8 +75,8 @@ flowchart TD
     ExamService --> SandboxEngine
     ExamService --> NotificationEngine
     EvaluationSubsystem <-->|"Async Analysis Query & Response"| GeminiAI
-    EvaluationSubsystem --> MongoAtlas
-    CurriculumService --> MongoAtlas
+    EvaluationSubsystem --> SupabaseDB
+    CurriculumService --> SupabaseDB
     NotificationEngine --> NotificationGateways
     CloudflareEdge --> PresentationTier
 
@@ -87,8 +87,14 @@ flowchart TD
       startOnLoad: true,
       theme: 'default',
       themeVariables: {
-        fontSize: '15px',
-        fontFamily: 'Segoe UI, Arial, sans-serif'
+        fontSize: '17px',
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0284c7',
+        primaryTextColor: '#0f172a',
+        lineColor: '#334155',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#ffffff'
       }
     });
   </script>
