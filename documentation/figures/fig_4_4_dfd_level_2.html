@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.4: Data Flow Diagram (Level 2) — AI Code Evaluation Pipeline</div>
+    <div class="mermaid">
+
+flowchart TD
+    RawCode["Student Submitted Code"]
+    
+    P51(("5.1 Isolated Sandbox<br/>Code Execution"))
+    P52(("5.2 Semantic Logic Review<br/>(Gemini 1.5 Flash)"))
+    P53(("5.3 AST Construct Decomposition<br/>& Syntax Parser"))
+    P54(("5.4 Granular Mark Allocator<br/>(Zero Length Bias)"))
+    P55(("5.5 Line-by-Line Annotator<br/>& Diagnostic Synthesizer"))
+    
+    SubStore[("D4: Submissions Collection<br/>(Score, Construct Marks, Annotations)")]
+
+    RawCode --> P51
+    RawCode --> P52
+    RawCode --> P53
+    
+    P51 -->|"I/O Test Suite Results"| P54
+    P52 -->|"Semantic Logic Score"| P54
+    P53 -->|"Functions, Loops & Guard Nodes"| P54
+    
+    P54 -->|"Synthesized Score Breakdown"| P55
+    P55 -->|"Persist Final Score & Line Feedback"| SubStore
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

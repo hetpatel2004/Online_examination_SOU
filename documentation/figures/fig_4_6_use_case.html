@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.6: Unified System Use Case Diagram — Candidate, Faculty & Admin Roles</div>
+    <div class="mermaid">
+
+flowchart LR
+    Student["👨‍🎓 Student"]
+    Faculty["👨‍🏫 Faculty Admin"]
+    SuperAdmin["🛡️ Super Admin"]
+    AI["🤖 AI Evaluator"]
+    Guard["🚨 Proctoring Guard"]
+
+    subgraph ACUMEN["ACUMEN Examination System"]
+        UC1["Login & Authenticate"]
+        UC2["View Assigned Exams (by Sem)"]
+        UC3["Attempt MCQ / Coding Exam"]
+        UC4["Fullscreen Lock & Blur Monitor"]
+        UC5["Execute Code in Live Sandbox"]
+        UC6["Submit Exam Responses"]
+        UC7["View Scorecard & Line Feedback"]
+        UC8["Schedule Exam & Set Timers"]
+        UC9["Upload Question Pool & CSV"]
+        UC10["Trigger AI Code Evaluation"]
+        UC11["Export Results to Excel/CSV"]
+        UC12["Manage Faculty & Students"]
+        UC13["System Audit Logs & Analytics"]
+    end
+
+    Student --> UC1
+    Student --> UC2
+    Student --> UC3
+    Student --> UC5
+    Student --> UC6
+    Student --> UC7
+
+    UC3 -.->|includes| UC4
+    Guard -.->|enforces| UC4
+
+    Faculty --> UC1
+    Faculty --> UC8
+    Faculty --> UC9
+    Faculty --> UC10
+    Faculty --> UC11
+
+    AI -.->|performs| UC10
+
+    SuperAdmin --> UC1
+    SuperAdmin --> UC12
+    SuperAdmin --> UC13
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

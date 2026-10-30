@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.1: System Architecture Diagram — Three-Tier ACUMEN Platform</div>
+    <div class="mermaid">
+
+flowchart TD
+    subgraph PresentationTier["Tier 1: Presentation Layer (Vite + React 18 SPA)"]
+        direction LR
+        UI["React 18 User Interface (Tailwind & CSS3)"]
+        MonacoEditor["Monaco IDE (Multi-Language Code Editor)"]
+        ProctoringGuard["Proctoring Guard (Visibility & Blur Telemetry)"]
+        StudentPortal["Student Dashboard & Scorecard View"]
+        AdminPortal["Faculty / Admin Dashboard & Reports"]
+    end
+
+    subgraph ApplicationTier["Tier 2: Application & API Layer (Node.js & Express API Gateway)"]
+        direction TB
+        APIGateway["Express.js RESTful API Gateway (/api)"]
+        AuthModule["JWT Authentication & RBAC Middleware"]
+        CurriculumService["Curriculum & Course Management Service"]
+        ExamService["Examination & Ingestion Service"]
+        
+        subgraph EvaluationSubsystem["AI & AST Multi-Tier Evaluation Engine"]
+            GeminiAI["Tier 1: Google Gemini 1.5 Flash LLM Engine"]
+            ASTDecompiler["Tier 2: AST Construct Decompiler & Heuristic Parser"]
+            Scorer["Construct-by-Construct Mark Allocator"]
+        end
+
+        SandboxEngine["Isolated Multi-Language Sandbox (Judge0 / Node / Python)"]
+        NotificationEngine["Comms Service (Fast2SMS & Nodemailer SMTP)"]
+    end
+
+    subgraph DataTier["Tier 3: Data & Infrastructure Layer (Cloud Services)"]
+        direction LR
+        MongoAtlas[("MongoDB Atlas Cloud Database Cluster")]
+        CloudflareEdge["Cloudflare Pages Global CDN Edge"]
+        NotificationGateways["SMS (Fast2SMS) & Email (Gmail SMTP) Gateways"]
+    end
+
+    PresentationTier <-->|"HTTPS / REST JSON Payloads"| APIGateway
+    APIGateway --> AuthModule
+    AuthModule --> CurriculumService
+    AuthModule --> ExamService
+    ExamService --> EvaluationSubsystem
+    ExamService --> SandboxEngine
+    ExamService --> NotificationEngine
+    EvaluationSubsystem <-->|"Async Analysis Query & Response"| GeminiAI
+    EvaluationSubsystem --> MongoAtlas
+    CurriculumService --> MongoAtlas
+    NotificationEngine --> NotificationGateways
+    CloudflareEdge --> PresentationTier
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

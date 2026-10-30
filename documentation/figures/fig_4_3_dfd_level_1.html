@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.3: Data Flow Diagram (Level 1) — Decomposed System Processes</div>
+    <div class="mermaid">
+
+flowchart TD
+    subgraph Processes["System Subsystems"]
+        P1(("1.0 Authentication &<br/>Role-Based Access Control"))
+        P2(("2.0 Curriculum &<br/>Exam Management"))
+        P3(("3.0 Live Proctoring &<br/>Integrity Enforcement"))
+        P4(("4.0 Multi-Language<br/>Sandbox Runtime"))
+        P5(("5.0 AI & AST Code<br/>Evaluation Pipeline"))
+        P6(("6.0 Result Processing &<br/>Publication Engine"))
+    end
+
+    subgraph DataStores["MongoDB Physical Collections"]
+        D1[("D1: Users Collection")]
+        D2[("D2: Courses & Subjects")]
+        D3[("D3: Exams & Questions")]
+        D4[("D4: Submissions Collection")]
+    end
+
+    P1 <--> D1
+    P2 <--> D2
+    P2 <--> D3
+    P3 -->|"Record Blur / Auto-Disqualify"| D4
+    P4 -->|"Execution stdout/stderr"| P5
+    P5 -->|"Construct Marks & Line Annotations"| D4
+    D4 -->|"Published Scores & Scorecards"| P6
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

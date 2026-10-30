@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.2: Data Flow Diagram (Level 0) — Context Diagram</div>
+    <div class="mermaid">
+
+flowchart TD
+    Student["👨‍🎓 Student<br/>(Examinee)"]
+    Faculty["👨‍🏫 Faculty / Admin<br/>(Examiner)"]
+    SuperAdmin["🛡️ Super Admin<br/>(University Controller)"]
+    AIService["🤖 Google Gemini 1.5 Flash<br/>(LLM AI Engine)"]
+    CommsService["📱 SMS & Email Gateway<br/>(Fast2SMS & Nodemailer)"]
+
+    Process0(("0.0<br/>ACUMEN EXAMINATION<br/>& ASSESSMENT PLATFORM<br/>(Central Processing System)"))
+
+    Student <-->|"Login Credentials, Exam Responses, Practical Code, Tab Telemetry / Auth Token, Questions, Scorecard"| Process0
+    Faculty <-->|"Exam Setup, Question Bank Upload, Result Approvals / Submissions Roster, Evaluated Code, Class Analytics"| Process0
+    SuperAdmin <-->|"Faculty Account Provisioning, Global System Config / University Audit Logs, Institution-wide Metrics"| Process0
+    Process0 <-->|"Code Snippet + Model Answer Prompt / Construct Breakdown & Numerical Marks JSON"| AIService
+    Process0 -->|"Exam Schedule Reminders & Result Notification Payloads / SMS & Email Alerts"| CommsService
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

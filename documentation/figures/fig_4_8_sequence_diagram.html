@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.8: UML Sequence Diagram — Student Exam Attempt & Anti-Cheat Flow</div>
+    <div class="mermaid">
+
+sequenceDiagram
+    autonumber
+    actor Student
+    participant UI as React SPA (Client)
+    participant Guard as Proctoring Guard
+    participant API as Express API Gateway
+    participant AI as AI Evaluation Service
+    participant DB as MongoDB Atlas
+
+    Student->>UI: Enters Exam Portal & Authenticates
+    UI->>API: POST /api/auth/login (enrollment, password)
+    API->>DB: Verify bcrypt password & fetch user profile
+    DB-->>API: User details & role
+    API-->>UI: Signed JWT Token
+    
+    Student->>UI: Clicks "Start Exam"
+    UI->>API: GET /api/exams/:id/questions
+    API->>DB: Query assigned randomized questions
+    DB-->>API: Question pool & model answers
+    API-->>UI: Returns questions (state loaded)
+
+    UI->>Guard: Request Fullscreen Lock & Register Blur Listeners
+    
+    alt Proctoring Violation (Tab Switch / Window Blur)
+        Student->>UI: Switches browser tab or presses Alt+Tab
+        Guard->>UI: Trigger window.blur / visibilitychange event
+        UI->>API: POST /api/exams/:id/disqualify (Violation: Tab Switch)
+        API->>DB: Mark Submission status='disqualified', score=0
+        DB-->>API: Confirmed
+        API-->>UI: Disqualification Recorded
+        UI-->>Student: Modal: "Disqualified due to tab switching malpractice"
+    else Normal Practical Code Submission
+        Student->>UI: Types algorithmic solution in Monaco Editor
+        Student->>UI: Clicks "Submit Exam"
+        UI->>API: POST /api/exams/:id/submit (Code payload)
+        API->>AI: Trigger AST Decomposition & Gemini 1.5 Review
+        AI-->>API: Granular Marks (Logic, Loop, Return) + Annotations
+        API->>DB: Save Submission (status='evaluated', score=X)
+        DB-->>API: Confirmed
+        API-->>UI: Submission Received (HTTP 200)
+        UI-->>Student: Display "Exam Completed & Graded Successfully"
+    end
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

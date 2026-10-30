@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.7: Object-Oriented Class Diagram — Architecture & Domain Model</div>
+    <div class="mermaid">
+
+classDiagram
+    class User {
+        +ObjectId _id
+        +String name
+        +String enrollmentNumber
+        +String email
+        +String passwordHash
+        +String role
+        +String course
+        +Integer semester
+        +comparePassword(pwd) Boolean
+        +generateJWT() String
+    }
+
+    class Exam {
+        +ObjectId _id
+        +String subjectName
+        +String subjectCode
+        +String examType
+        +String evaluationMethod
+        +Integer duration
+        +Date date
+        +String status
+        +getAssignedStudents() List
+    }
+
+    class Question {
+        +ObjectId _id
+        +ObjectId examId
+        +String questionText
+        +Integer marks
+        +String type
+        +List options
+        +String modelAnswer
+        +List testCases
+    }
+
+    class Submission {
+        +ObjectId _id
+        +ObjectId examId
+        +ObjectId studentId
+        +Float score
+        +Float totalMarks
+        +String status
+        +List answers
+        +Object codeBreakdown
+        +String annotatedCode
+    }
+
+    class AIEvaluationService {
+        +evaluatePracticalCode(code, question, model) Object
+        +decomposeConstructs(code, lang) Object
+        +callGeminiAPI(prompt) String
+        +generateAnnotatedCode(code, feedback) String
+    }
+
+    class SandboxService {
+        +executeCode(code, lang, input) Object
+        +runDockerContainer(code, lang) Object
+        +validateOutput(actual, expected) Boolean
+    }
+
+    User "1" --> "*" Submission : submits
+    Exam "1" *-- "*" Question : contains
+    Exam "1" --> "*" Submission : receives
+    Submission ..> AIEvaluationService : evaluated by
+    AIEvaluationService ..> SandboxService : runs via
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>

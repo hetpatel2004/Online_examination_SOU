@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="../mermaid.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #ffffff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: inline-block;
+    }
+    .wrapper {
+      background: #ffffff;
+      border: 2px solid #666666;
+      border-radius: 8px;
+      padding: 20px 25px;
+      display: inline-block;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    }
+    .title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #7a1a1a;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">Figure 4.5: Entity-Relationship (ER) Diagram — Relational Collection Schema</div>
+    <div class="mermaid">
+
+erDiagram
+    COURSES ||--o{ SUBJECTS : "contains"
+    COURSES ||--o{ USERS : "enrolled in"
+    SUBJECTS ||--o{ EXAMS : "scheduled for"
+    EXAMS ||--o{ QUESTIONS : "includes"
+    EXAMS ||--o{ SUBMISSIONS : "receives"
+    USERS ||--o{ SUBMISSIONS : "submits"
+    EXAMS ||--o{ NOTIFICATIONS : "triggers"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+
+    COURSES {
+        string _id PK
+        string name
+        string code UK
+        string level
+        int totalSemesters
+    }
+    USERS {
+        string _id PK
+        string name
+        string enrollmentNumber UK
+        string email UK
+        string role
+        string course
+        int semester
+    }
+    SUBJECTS {
+        string _id PK
+        string name
+        string code UK
+        int semester
+    }
+    EXAMS {
+        string _id PK
+        string subjectName
+        string examType
+        string evaluationMethod
+        int duration
+        date date
+        string resultDate
+    }
+    QUESTIONS {
+        string _id PK
+        string questionText
+        int marks
+        string type
+        string modelAnswer
+    }
+    SUBMISSIONS {
+        string _id PK
+        float score
+        float totalMarks
+        string status
+        string codeBreakdown
+        string annotatedCode
+    }
+
+    </div>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '15px',
+        fontFamily: 'Segoe UI, Arial, sans-serif'
+      }
+    });
+  </script>
+</body>
+</html>
